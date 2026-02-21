@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard - AthSys v2.1</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <style>
+        .coach-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .coach-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        .coach-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #f5576c;
+            border-bottom-color: #f5576c;
+        }
+
+        .tab:hover {
+            color: #f5576c;
+            background: #fff5f7;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f5576c;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .athlete-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .athlete-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #f5576c;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .athlete-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .athlete-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .athlete-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .athlete-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .athlete-team {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .athlete-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .athlete-stat {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .athlete-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f5576c;
+        }
+
+        .athlete-stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <nav class="nav">
+        <div class="nav-brand">🏃 AthSys v2.1</div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <span id="userName" style="color: #666;"></span>
+            <a href="index.html" class="btn btn-secondary">Home</a>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="coach-header">
+            <h1>🏅 Coach Dashboard</h1>
+            <div class="coach-meta">
+                <span id="coachName">Loading...</span>
+                <span id="coachTeam">📍 Team</span>
+                <span id="coachEmail">📧 Email</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalAthletes">0</div>
+                <div class="stat-label">Team Athletes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeAthletes">0</div>
+                <div class="stat-label">Active Athletes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="upcomingRaces">0</div>
+                <div class="stat-label">Upcoming Races</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="teamRecords">0</div>
+                <div class="stat-label">Team Records</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('team')">👥 Team Roster</button>
+            <button class="tab" onclick="switchTab('performance')">📊 Performance</button>
+            <button class="tab" onclick="switchTab('registrations')">📋 Registrations</button>
+            <button class="tab" onclick="switchTab('notes')">📝 Notes</button>
+        </div>
+
+        <!-- Team Roster Tab -->
+        <div id="teamTab" class="tab-content active">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Team Athletes</h2>
+                    <button class="btn-primary" onclick="addAthlete()">+ Add Athlete</button>
+                </div>
+                <div id="athleteGrid" class="athlete-grid">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div>No athletes in your team yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="performanceTab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Athlete Performance Overview</h2>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Athlete</th>
+                            <th>Events</th>
+                            <th>Total Races</th>
+                            <th>Best Time</th>
+                            <th>Avg Position</th>
+                            <th>PRs</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performanceTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📊</div>
+                                    <div>No performance data available</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Registrations Tab -->
+        <div id="registrationsTab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Team Race Registrations</h2>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Race</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Athletes</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="registrationsTableBody">
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📋</div>
+                                    <div>No race registrations yet</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Notes Tab -->
+        <div id="notesTab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Training Notes & Plans</h2>
+                    <button class="btn-primary" onclick="addNote()">+ Add Note</button>
+                </div>
+                <div id="notesContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div>No training notes yet. Start documenting your training plans!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="coach.js"></script>
+</body>
+</html>

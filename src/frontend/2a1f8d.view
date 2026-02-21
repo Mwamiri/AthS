@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Management - AthSys v2.1</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <style>
+        .results-header {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 52%, #2BFF88 90%);
+            padding: 2rem;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .results-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #2BD2FF;
+            border-bottom-color: #2BD2FF;
+        }
+
+        .tab:hover {
+            color: #2BD2FF;
+            background: #f0fcff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #2BD2FF;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .leaderboard-table thead {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+        }
+
+        .leaderboard-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .leaderboard-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .position-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .position-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; }
+        .position-2 { background: linear-gradient(135deg, #C0C0C0, #808080); color: white; }
+        .position-3 { background: linear-gradient(135deg, #CD7F32, #8B4513); color: white; }
+        .position-other { background: #e9ecef; color: #666; }
+
+        .time-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2BD2FF;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(43, 210, 255, 0.4);
+        }
+
+        .quick-entry {
+            display: grid;
+            grid-template-columns: 50px 2fr 1fr 1fr 100px;
+            gap: 1rem;
+            align-items: end;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-item {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .status-dns { background: #ffc107; color: white; }
+        .status-dnf { background: #dc3545; color: white; }
+        .status-dq { background: #6c757d; color: white; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .record-badge {
+            background: #FFD700;
+            color: #8B4513;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <nav class="nav">
+        <div class="nav-brand">🏃 AthSys v2.1</div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <span id="userName" style="color: #666;"></span>
+            <a href="index.html" class="btn btn-secondary">Home</a>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="results-header">
+            <h1>🏆 Results Management</h1>
+            <p style="margin: 0; opacity: 0.95;">Enter race results, manage leaderboards, and track records</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('entry')">✍️ Results Entry</button>
+            <button class="tab" onclick="switchTab('leaderboard')">📊 Leaderboard</button>
+            <button class="tab" onclick="switchTab('records')">🏆 Records</button>
+            <button class="tab" onclick="switchTab('export')">📥 Export</button>
+        </div>
+
+        <!-- Results Entry Tab -->
+        <div id="entryTab" class="tab-content active">
+            <div class="section">
+                <h2 style="margin-bottom: 1.5rem;">Enter Race Results</h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Race</label>
+                        <select id="raceSelect" onchange="loadRaceEvents()">
+                            <option value="">Select Race</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Event</label>
+                        <select id="eventSelect" onchange="loadEventAthletes()">
+                            <option value="">Select Event</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Heat</label>
+                        <select id="heatSelect">
+                            <option value="1">Heat 1</option>
+                            <option value="2">Heat 2</option>
+                            <option value="3">Heat 3</option>
+                            <option value="final">Final</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="status-indicators">
+                    <div class="status-item status-dns" onclick="markStatus('DNS')">DNS - Did Not Start</div>
+                    <div class="status-item status-dnf" onclick="markStatus('DNF')">DNF - Did Not Finish</div>
+                    <div class="status-item status-dq" onclick="markStatus('DQ')">DQ - Disqualified</div>
+                </div>
+
+                <div id="quickEntryContainer">
+                    <!-- Quick entry forms will be loaded here -->
+                </div>
+
+                <button class="btn-primary" onclick="saveResults()">💾 Save All Results</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div id="leaderboardTab" class="tab-content">
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2>Live Leaderboard</h2>
+                    <div style="display: flex; gap: 1rem;">
+                        <select id="leaderboardRace" onchange="loadLeaderboard()">
+                            <option value="">All Races</option>
+                        </select>
+                        <select id="leaderboardEvent" onchange="loadLeaderboard()">
+                            <option value="">All Events</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Bib</th>
+                            <th>Athlete</th>
+                            <th>Team</th>
+                            <th>Time</th>
+                            <th>Points</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📊</div>
+                                    <div>No results entered yet. Select a race and event above.</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Records Tab -->
+        <div id="recordsTab" class="tab-content">
+            <div class="section">
+                <h2 style="margin-bottom: 1.5rem;">🏆 Meet Records</h2>
+                
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Record Time</th>
+                            <th>Athlete</th>
+                            <th>Team</th>
+                            <th>Date Set</th>
+                            <th>Race</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">🏆</div>
+                                    <div>No records yet</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="exportTab" class="tab-content">
+            <div class="section">
+                <h2 style="margin-bottom: 1.5rem;">📥 Export Results</h2>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Export Format</label>
+                        <select id="exportFormat">
+                            <option value="pdf">PDF Report</option>
+                            <option value="excel">Excel Spreadsheet</option>
+                            <option value="csv">CSV File</option>
+                            <option value="json">JSON Data</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Include</label>
+                        <select id="exportInclude">
+                            <option value="all">All Results</option>
+                            <option value="race">Selected Race</option>
+                            <option value="event">Selected Event</option>
+                            <option value="records">Records Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="exportResults()">📥 Export Results</button>
+                
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                    <h3 style="margin-top: 0;">Export Options</h3>
+                    <ul style="color: #666;">
+                        <li><strong>PDF Report:</strong> Professional formatted results with headers and logos</li>
+                        <li><strong>Excel Spreadsheet:</strong> Full data export with formulas and formatting</li>
+                        <li><strong>CSV File:</strong> Raw data for import into other systems</li>
+                        <li><strong>JSON Data:</strong> API-compatible format for developers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="2a1f8d.js"></script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athlete Dashboard - AthSys v2.1</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <style>
+        .athlete-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .athlete-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        .athlete-info h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        .athlete-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .records-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .records-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .records-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .time-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .race-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .race-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .race-details {
+            display: flex;
+            gap: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .countdown {
+            background: #fff3cd;
+            color: #856404;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            margin-top: 1.5rem;
+            height: 300px;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <nav class="nav">
+        <div class="nav-brand">🏃 AthSys v2.1</div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <span id="userName" style="color: #666;"></span>
+            <a href="index.html" class="btn btn-secondary">Home</a>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="athlete-header">
+            <div class="athlete-avatar">🏃</div>
+            <div class="athlete-info">
+                <h1 id="athleteName">Loading...</h1>
+                <div class="athlete-meta">
+                    <span id="athleteTeam">📍 Team</span>
+                    <span id="athleteEmail">📧 Email</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalRaces">0</div>
+                <div class="stat-label">Total Races</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="personalRecords">0</div>
+                <div class="stat-label">Personal Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="upcomingRaces">0</div>
+                <div class="stat-label">Upcoming Races</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="bestPosition">-</div>
+                <div class="stat-label">Best Finish</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📈 Personal Records</h2>
+                <button class="btn-register" onclick="window.location.href='index.html#races'">
+                    Find Races
+                </button>
+            </div>
+            <table class="records-table">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Best Time</th>
+                        <th>Race</th>
+                        <th>Date</th>
+                        <th>Position</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🏆</div>
+                                <div>No personal records yet. Register for a race to get started!</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📅 Upcoming Races</h2>
+            </div>
+            <div id="upcomingRacesContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎯</div>
+                    <div>No upcoming races. Check available races and register!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📊 Performance Trends</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📜 Race History</h2>
+            </div>
+            <table class="records-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Race</th>
+                        <th>Event</th>
+                        <th>Time</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <div>No race history yet</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="athlete.js"></script>
+</body>
+</html>

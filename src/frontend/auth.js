@@ -157,13 +157,18 @@ async function handleLogin(event) {
             
             toast.show('Login successful! Redirecting...', 'success');
             
-            // Redirect based on role
+            // Redirect based on role (obfuscated routes for security)
             setTimeout(() => {
-                if (data.user.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
+                const roleRoutes = {
+                    'admin': 'd4f8a9.view',
+                    'chief_registrar': 'c1e5d4.view',
+                    'registrar': 'c1e5d4.view',
+                    'starter': '8b2d7e.view',
+                    'coach': '7e3f9a.view',
+                    'athlete': '9b4e7c.view',
+                    'viewer': '5c8b9e.view'
+                };
+                window.location.href = roleRoutes[data.user.role] || 'a7c3e1.view';
             }, 1500);
         } else {
             toast.show(data.message || 'Login failed. Please check your credentials.', 'error');
@@ -316,7 +321,7 @@ function checkAuth() {
     if (token && user.email) {
         // Redirect to appropriate page
         if (user.role === 'admin') {
-            window.location.href = 'admin.html';
+            window.location.href = 'd4f8a9.view';
         } else {
             window.location.href = 'index.html';
         }

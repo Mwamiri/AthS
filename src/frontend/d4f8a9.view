@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - AthSys</title>
+    <title>Admin Dashboard - AthSys v2.1</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="auth.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
         <div class="container">
             <div class="header-content">
                 <div>
-                    <h1>🏃‍♂️ AthSys Admin</h1>
+                    <h1>🏃‍♂️ AthSys v2.1 Admin</h1>
                     <p class="tagline">⚡ User Management Dashboard ⚡</p>
                 </div>
                 <div class="header-actions">
