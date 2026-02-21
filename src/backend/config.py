@@ -68,12 +68,13 @@ class BaseConfig:
     METRICS_PORT = 9090
     
     # Application Version
-    APP_VERSION = '2.1.6'  # Semantic versioning: MAJOR.MINOR.PATCH
-    API_VERSION = 'v2.1'
+    APP_VERSION = '2.2.0'  # Semantic versioning: MAJOR.MINOR.PATCH
+    API_VERSION = 'v2.2'
     API_TITLE = 'AthSys API'
     
     # Version History for tracking
     VERSION_HISTORY = {
+        '2.2.0': 'Modular plugin system with 20+ configurable plugins, Official timing system for chiefs/officials with manual timer, Public races & results portal (no login required), Plugin admin dashboard, Advanced search and filtering, World Athletics standard timing format',
         '2.1.6': 'CI/CD pipeline, Database migrations, Health monitoring with alerts, Audit logging, Email notifications, Feature flags, Request deduplication, Rate limit dashboard, Graceful shutdown, 2FA optional',
         '2.1.5': 'Two-Factor Authentication (optional, TOTP + backup codes)',
         '2.1.4': 'Advanced admin dashboard, real-time features',

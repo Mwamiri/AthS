@@ -1,4 +1,4 @@
-# AthSys ver 2.1 🏃‍♂️
+# AthSys v2.2 🏃‍♂️
 
 **Enterprise Athletics Management System**
 
@@ -10,13 +10,21 @@
 
 **Domain:** [appstore.co.ke](https://appstore.co.ke)  
 **Developer:** Mwamiri  
-**Version:** 2.1
+**Version:** 2.2.0
 
 ## 📋 Overview
 
 AthSys is a comprehensive, enterprise-grade athletics management system designed for organizing and managing track and field competitions. Built for federation compliance and scalability, it handles everything from athlete registration to real-time results processing and export.
 
-**NEW in v2.1:**
+**NEW in v2.2:**
+- ✅ **Modular Plugin System**: 20+ configurable plugins (core, enterprise, features, security, infrastructure)
+- ✅ **Official Timing System**: Professional timer interface for chiefs/officials with START/STOP buttons (world athletics standard)
+- ✅ **Public Races & Results Portal**: No login required - view races, schedules, and live results
+- ✅ **Plugin Admin Dashboard**: Real-time plugin management interface
+- ✅ **Advanced Search & Filtering**: Filter races by status, location, events, and more
+- ✅ **Public API Endpoints**: /api/races, /api/events, /api/events/results
+
+**Previous in v2.1:**
 - ✅ PostgreSQL database integration with SQLAlchemy ORM
 - ✅ Redis caching and session management
 - ✅ Bcrypt password hashing for enhanced security
@@ -36,6 +44,7 @@ AthSys is a comprehensive, enterprise-grade athletics management system designed
 
 ### 📊 Results Processing
 - **Multiple Input Methods**: 
+  - Official timing system with manual timer
   - Real-time timing mat integration
   - Manual entry interface
   - Bulk import capabilities
@@ -44,6 +53,7 @@ AthSys is a comprehensive, enterprise-grade athletics management system designed
   - Season Bests (SB) tracking
   - Team scoring and rankings
 - **Real-time Leaderboards**: Redis-powered live ranking updates
+- **Public Results Portal**: View race results without login
 
 ### 🔒 Security & Authentication
 - **Role-Based Access Control (RBAC)**: 7 distinct user roles
@@ -51,6 +61,17 @@ AthSys is a comprehensive, enterprise-grade athletics management system designed
 - **Session Management**: Redis-backed sessions with configurable expiry
 - **Rate Limiting**: Protection against abuse and DDoS
 - **Audit Logging**: Complete activity trail for compliance
+- **Optional 2FA**: TOTP with QR codes and backup codes
+
+### 🧩 Modular Architecture
+- **Plugin System**: Enable/disable features at runtime without code changes
+- **20+ Built-in Plugins**:
+  - Core: Authentication, User Management, Race Management
+  - Enterprise: Audit Logging, Email, Health Monitoring, Feature Flags, Request Deduplication
+  - Features: Official Timing, Athlete Registration, Analytics, Leaderboard, Reports
+  - Security: 2FA, RBAC
+  - Infrastructure: Database Migrations, CI/CD Pipeline
+- **Plugin Admin Dashboard**: Full control over system features
 
 ### 💾 Data Management
 - **PostgreSQL Database**: Relational data with ACID compliance
@@ -68,7 +89,17 @@ AthSys is a comprehensive, enterprise-grade athletics management system designed
 AthSys_ver1/
 ├── src/
 │   ├── backend/          # Backend API services
+│   │   ├── app.py        # Main Flask application
+│   │   ├── models.py     # Database models
+│   │   ├── plugin_manager.py  # Plugin system
+│   │   └── config.py     # Configuration
 │   ├── frontend/         # Web interface
+│   │   ├── index.html    # Landing page
+│   │   ├── login.html    # Authentication
+│   │   ├── plugins-admin.html  # Plugin management
+│   │   ├── official-timing.html # Timing interface
+│   │   ├── races-results.html   # Public portal
+│   │   └── ...
 │   ├── mobile/           # Mobile applications
 │   └── plugins/          # Plugin modules
 ├── config/
@@ -82,12 +113,13 @@ AthSys_ver1/
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Python, FastAPI/Django
-- **Frontend**: Modern JavaScript framework
-- **Database**: PostgreSQL/MySQL
+- **Backend**: Python 3.11, Flask 3.0
+- **Frontend**: Modern JavaScript framework, HTML5, CSS3
+- **Database**: PostgreSQL 16, Redis 7
 - **Containerization**: Docker, Docker Compose
 - **Web Server**: Nginx
-- **Monitoring**: Custom health checks
+- **Authentication**: JWT, TOTP (2FA), bcrypt
+- **Monitoring**: Custom health checks, Prometheus-ready
 
 ## 🚀 Quick Start
 

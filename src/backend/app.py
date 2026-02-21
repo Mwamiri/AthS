@@ -51,7 +51,7 @@ def initialize():
 initialize()
 
 # Store version and metadata
-APP_VERSION = '2.1'
+APP_VERSION = '2.2'
 APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
