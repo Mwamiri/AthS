@@ -1,0 +1,17 @@
+{
+  "name": "athsys-frontend",
+  "version": "1.0.0",
+  "description": "AthSys Frontend - Athletics Management System",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "build": "mkdir -p build && cp -r src/* build/"
+  },
+  "keywords": [
+    "athletics",
+    "sports",
+    "management"
+  ],
+  "author": "Mwamiri",
+  "license": "MIT"
+}

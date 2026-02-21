@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthSys - Athletics Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🏃‍♂️ AthSys</h1>
+            <p class="tagline">Enterprise Athletics Management System</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>Welcome to AthSys</h2>
+            <p>Comprehensive athletics competition management platform</p>
+            <div class="status" id="status">
+                <span class="status-indicator"></span>
+                <span>System Status: <span id="system-status">Checking...</span></span>
+            </div>
+        </section>
+
+        <section class="features">
+            <h3>Key Features</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h4>Athlete Management</h4>
+                    <p>Complete registration with World Athletics integration</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h4>Event Tracking</h4>
+                    <p>Multi-event competition support and scheduling</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <h4>Results Processing</h4>
+                    <p>Real-time timing and manual entry</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h4>Analytics</h4>
+                    <p>Performance tracking and team scoring</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats">
+            <h3>System Statistics</h3>
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-athletes">-</div>
+                    <div class="stat-label">Athletes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-events">-</div>
+                    <div class="stat-label">Events</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-results">-</div>
+                    <div class="stat-label">Results</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="api-info">
+            <h3>API Information</h3>
+            <div id="api-info" class="code-block">
+                <pre>Loading API information...</pre>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 AthSys - Developed by Mwamiri | <a href="https://appstore.co.ke" target="_blank">appstore.co.ke</a></p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
