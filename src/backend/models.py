@@ -273,6 +273,43 @@ class AuditLog(Base):
         }
 
 
+class PluginConfig(Base):
+    """Plugin configuration and status tracking"""
+    __tablename__ = 'plugin_configs'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    plugin_id = Column(String(50), unique=True, nullable=False, index=True)  # e.g., 'official_timing'
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    enabled = Column(Boolean, default=False, index=True)
+    required = Column(Boolean, default=False)  # Cannot be disabled if required
+    category = Column(String(50), nullable=True)  # core, enterprise, features, infrastructure, security
+    version = Column(String(20), nullable=True)  # e.g., '2.1.6'
+    module_name = Column(String(100), nullable=True)  # Python module name
+    settings = Column(Text, nullable=True)  # JSON string for plugin-specific settings
+    enabled_by = Column(Integer, ForeignKey('users.id'), nullable=True)  # Admin who enabled it
+    last_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        import json
+        return {
+            'id': self.id,
+            'pluginId': self.plugin_id,
+            'name': self.name,
+            'description': self.description,
+            'enabled': self.enabled,
+            'required': self.required,
+            'category': self.category,
+            'version': self.version,
+            'moduleName': self.module_name,
+            'settings': json.loads(self.settings) if self.settings else {},
+            'enabledBy': self.enabled_by,
+            'lastModified': self.last_modified.isoformat() if self.last_modified else None,
+            'createdAt': self.created_at.isoformat() if self.created_at else None
+        }
+
+
 # Create all tables
 def init_db():
     """Initialize database tables"""

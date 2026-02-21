@@ -14,7 +14,7 @@ from functools import wraps
 # Import database models and Redis config
 from models import (
     get_db, init_db, 
-    User, Athlete, Race, Event, Registration, Result, AuditLog
+    User, Athlete, Race, Event, Registration, Result, AuditLog, PluginConfig
 )
 from redis_config import (
     RedisCache, RateLimiter, SessionManager, 
@@ -436,6 +436,72 @@ def get_events():
         'count': len(DEMO_EVENTS),
         'message': '✅ Events retrieved successfully'
     }))
+
+
+@app.route('/api/races/<int:race_id>/events', methods=['GET'])
+def get_race_events(race_id):
+    """Get events for a specific race (PUBLIC)"""
+    try:
+        db = next(get_db())
+        events = db.query(Event).filter(Event.race_id == race_id).all()
+        events_data = [event.to_dict() for event in events]
+        
+        return jsonify({
+            'events': events_data,
+            'count': len(events_data),
+            'race_id': race_id,
+            'message': '✅ Events retrieved successfully'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve events',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/events/results', methods=['GET'])
+def get_events_results():
+    """Get results for events (PUBLIC) - optionally filtered by race_id"""
+    try:
+        race_id = request.args.get('race_id', type=int)
+        db = next(get_db())
+        
+        query = db.query(Result).join(Event)
+        if race_id:
+            query = query.filter(Event.race_id == race_id)
+        
+        results = query.order_by(Result.position).all()
+        
+        results_data = [
+            {
+                'id': r.id,
+                'athleteName': r.athlete.name if r.athlete else 'Unknown',
+                'athleteId': r.athlete_id,
+                'eventName': r.event.name if r.event else 'Unknown',
+                'eventId': r.event_id,
+                'position': r.position,
+                'timeSeconds': r.time_seconds,
+                'status': r.status,
+                'country': r.athlete.country if r.athlete else None,
+                'category': r.event.category if r.event else None,
+                'gender': r.event.gender if r.event else None,
+                'recordType': r.record_type,
+                'isRecord': r.is_record
+            }
+            for r in results
+        ]
+        
+        return jsonify({
+            'results': results_data,
+            'count': len(results_data),
+            'race_id': race_id,
+            'message': '✅ Results retrieved successfully'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve results',
+            'message': str(e)
+        }), 500
 
 
 @app.route('/api/results', methods=['GET'])
@@ -1203,6 +1269,221 @@ def update_settings():
         'message': '✅ Settings updated successfully',
         'settings': SYSTEM_SETTINGS
     })), 200
+
+
+# ===== PLUGIN MANAGEMENT ENDPOINTS (Admin Only) =====
+
+@app.route('/api/admin/plugins', methods=['GET'])
+@require_auth(roles=['admin'])
+def get_plugins():
+    """Get all plugins and their status"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        plugins = plugin_manager.get_all_plugins()
+        stats = plugin_manager.get_stats()
+        
+        return jsonify(add_metadata({
+            'plugins': plugins,
+            'stats': stats,
+            'count': len(plugins),
+            'message': '✅ Plugins retrieved successfully'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve plugins',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/<plugin_id>', methods=['GET'])
+@require_auth(roles=['admin'])
+def get_plugin(plugin_id):
+    """Get detailed information about a specific plugin"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        plugin_info = plugin_manager.get_plugin_info(plugin_id)
+        
+        if not plugin_info:
+            return jsonify({
+                'error': 'Plugin not found',
+                'plugin_id': plugin_id
+            }), 404
+        
+        return jsonify(add_metadata({
+            'plugin': plugin_info,
+            'message': '✅ Plugin information retrieved'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve plugin',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/<plugin_id>/enable', methods=['POST'])
+@require_auth(roles=['admin'])
+def enable_plugin(plugin_id):
+    """Enable a plugin"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        success = plugin_manager.enable_plugin(plugin_id)
+        
+        if not success:
+            return jsonify({
+                'error': 'Failed to enable plugin',
+                'message': f'Plugin {plugin_id} not found or cannot be enabled'
+            }), 400
+        
+        plugin_info = plugin_manager.get_plugin_info(plugin_id)
+        
+        # Log the action
+        db = next(get_db())
+        audit = AuditLog(
+            user_id=request.user['id'],
+            action='enable_plugin',
+            entity_type='plugin',
+            details=f'Enabled plugin: {plugin_id}',
+            ip_address=request.remote_addr
+        )
+        db.add(audit)
+        db.commit()
+        
+        return jsonify(add_metadata({
+            'plugin': plugin_info,
+            'message': f'✅ Plugin {plugin_info["name"]} enabled successfully'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to enable plugin',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/<plugin_id>/disable', methods=['POST'])
+@require_auth(roles=['admin'])
+def disable_plugin(plugin_id):
+    """Disable a plugin"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        success = plugin_manager.disable_plugin(plugin_id)
+        
+        if not success:
+            return jsonify({
+                'error': 'Failed to disable plugin',
+                'message': f'Plugin {plugin_id} not found, required, or cannot be disabled'
+            }), 400
+        
+        plugin_info = plugin_manager.get_plugin_info(plugin_id)
+        
+        # Log the action
+        db = next(get_db())
+        audit = AuditLog(
+            user_id=request.user['id'],
+            action='disable_plugin',
+            entity_type='plugin',
+            details=f'Disabled plugin: {plugin_id}',
+            ip_address=request.remote_addr
+        )
+        db.add(audit)
+        db.commit()
+        
+        return jsonify(add_metadata({
+            'plugin': plugin_info,
+            'message': f'✅ Plugin {plugin_info["name"]} disabled successfully'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to disable plugin',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/<plugin_id>/toggle', methods=['POST'])
+@require_auth(roles=['admin'])
+def toggle_plugin(plugin_id):
+    """Toggle a plugin on/off"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        success = plugin_manager.toggle_plugin(plugin_id)
+        
+        if not success:
+            return jsonify({
+                'error': 'Failed to toggle plugin',
+                'message': f'Plugin {plugin_id} not found or cannot be toggled'
+            }), 400
+        
+        plugin_info = plugin_manager.get_plugin_info(plugin_id)
+        
+        # Log the action
+        db = next(get_db())
+        audit = AuditLog(
+            user_id=request.user['id'],
+            action='toggle_plugin',
+            entity_type='plugin',
+            details=f'Toggled plugin: {plugin_id} (now {"enabled" if plugin_info["enabled"] else "disabled"})',
+            ip_address=request.remote_addr
+        )
+        db.add(audit)
+        db.commit()
+        
+        return jsonify(add_metadata({
+            'plugin': plugin_info,
+            'message': f'✅ Plugin {plugin_info["name"]} {"enabled" if plugin_info["enabled"] else "disabled"}'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to toggle plugin',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/category/<category>', methods=['GET'])
+@require_auth(roles=['admin'])
+def get_plugins_by_category(category):
+    """Get all plugins in a specific category"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        plugins = plugin_manager.get_plugins_by_category(category)
+        
+        return jsonify(add_metadata({
+            'category': category,
+            'plugins': plugins,
+            'count': len(plugins),
+            'message': f'✅ Plugins in category "{category}" retrieved'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve plugins by category',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/stats', methods=['GET'])
+@require_auth(roles=['admin'])
+def get_plugin_stats():
+    """Get plugin system statistics"""
+    try:
+        from plugin_manager import plugin_manager
+        
+        stats = plugin_manager.get_stats()
+        enabled_plugins = plugin_manager.get_enabled_plugins()
+        
+        return jsonify(add_metadata({
+            'stats': stats,
+            'enabled': [p['pluginId'] for p in enabled_plugins],
+            'message': '✅ Plugin statistics retrieved'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve plugin statistics',
+            'message': str(e)
+        }), 500
 
 
 @app.errorhandler(404)
