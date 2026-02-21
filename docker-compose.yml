@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./src/backend
+    container_name: athsys_backend
+    restart: unless-stopped
+    environment:
+      - DB_HOST=db
+      - DB_USER=athsys
+      - DB_PASS=\
+      - DB_NAME=athsys_db
+      - PORT=5000
+      - NODE_ENV=production
+    ports:
+      - '5000:5000'
+    depends_on:
+      - db
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./src/frontend
+    container_name: athsys_frontend
+    restart: unless-stopped
+    environment:
+      - API_URL=http://backend:5000
+      - NODE_ENV=production
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:16-alpine
+    container_name: athsys_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=athsys
+      - POSTGRES_PASSWORD=\
+      - POSTGRES_DB=athsys_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U athsys']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: athsys_pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@appstore.co.ke
+      - PGADMIN_DEFAULT_PASSWORD=\
+    ports:
+      - '8080:80'
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: athsys_nginx
+    restart: unless-stopped
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/letsencrypt
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      - frontend
+      - backend
+    healthcheck:
+      test: ['CMD', 'nginx', '-t']
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+volumes:
+  db_data:
