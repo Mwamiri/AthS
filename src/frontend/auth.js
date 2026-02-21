@@ -213,8 +213,7 @@ async function handleRegister(event) {
     const name = document.getElementById('register-name').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-    const role = document.getElementById('user-role').value;
+    const role = document.getElementById('register-role').value;
     
     // Validation
     if (name.length < 2) {
@@ -230,11 +229,6 @@ async function handleRegister(event) {
     const passwordCheck = validatePassword(password);
     if (!passwordCheck.valid) {
         toast.show(passwordCheck.message, 'error');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        toast.show('Passwords do not match', 'error');
         return;
     }
     
@@ -257,7 +251,7 @@ async function handleRegister(event) {
         const data = await response.json();
         
         if (response.ok) {
-            toast.show('Registration successful! Please log in.', 'success');
+            toast.show('✅ Registration successful! Please log in.', 'success');
             
             // Clear form
             event.target.reset();
@@ -398,12 +392,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initPasswordToggle();
     
     // Attach form event listeners
-    const loginForm = document.getElementById('login-form')?.querySelector('form');
+    const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
     
-    const registerForm = document.getElementById('register-form')?.querySelector('form');
+    const registerForm = document.getElementById('register-form');
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
     }
