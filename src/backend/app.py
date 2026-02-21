@@ -3,13 +3,15 @@ AthSys Backend - Athletics Management System
 Main application entry point with enhanced UX features
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
 import time
 from datetime import datetime
 
-app = Flask(__name__)
+# Configure Flask to serve frontend files
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app)
 
 # Configuration
@@ -205,7 +207,13 @@ def add_metadata(data):
 
 @app.route('/')
 def index():
-    """Root endpoint with comprehensive system information"""
+    """Serve the modern frontend landing page"""
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
+
+@app.route('/api/info')
+def api_info():
+    """API endpoint with comprehensive system information"""
     return jsonify(add_metadata({
         'name': APP_NAME,
         'version': APP_VERSION,
@@ -215,6 +223,7 @@ def index():
         'environment': 'production' if not app.config['DEBUG'] else 'development',
         'endpoints': {
             'health': '/health',
+            'livez': '/livez',
             'stats': '/api/stats',
             'athletes': '/api/athletes',
             'events': '/api/events',
@@ -1092,6 +1101,17 @@ def bad_request(error):
         'message': 'Invalid request data',
         'timestamp': datetime.now().isoformat()
     }), 400
+
+
+# Serve static frontend files (HTML, CSS, JS)
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve static frontend files"""
+    try:
+        return send_from_directory(FRONTEND_DIR, path)
+    except:
+        # If file not found, return 404 or redirect to index
+        return send_from_directory(FRONTEND_DIR, 'index.html')
 
 
 if __name__ == '__main__':

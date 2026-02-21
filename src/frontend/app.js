@@ -7,7 +7,7 @@
 // Configuration
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000' 
-    : '/api';
+    : '';
 
 // Color schemes for different statuses
 const STATUS_COLORS = {
@@ -145,7 +145,7 @@ async function fetchAPIInfo() {
     const apiInfoElement = document.getElementById('api-info');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/`);
+        const response = await fetch(`${API_BASE_URL}/api/info`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
