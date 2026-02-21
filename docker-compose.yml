@@ -70,10 +70,28 @@ services:
     networks:
       - athsys_network
     labels:
+      # Coolify Management Labels
       - "coolify.managed=true"
+      - "coolify.name=athsys"
       - "coolify.version=2.1"
+      
+      # Enable public access with auto-generated domain
       - "coolify.proxy.enabled=true"
+      - "coolify.http.enabled=true"
+      - "coolify.https.enabled=true"
+      
+      # Service configuration
       - "coolify.proxy.port=5000"
+      - "coolify.proxy.protocol=http"
+      - "coolify.main=true"
+      
+      # SSL/TLS configuration
+      - "coolify.ssl.enabled=true"
+      - "coolify.ssl.letsencrypt=true"
+      
+      # Health check
+      - "coolify.healthcheck.path=/health"
+      - "coolify.healthcheck.port=5000"
 
 volumes:
   postgres_data:
