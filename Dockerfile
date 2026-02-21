@@ -5,7 +5,7 @@ FROM python:3.11-slim as backend-builder
 
 WORKDIR /app/backend
 
-# Install minimal system dependencies for Python packages
+# Install system dependencies for Python packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
@@ -14,14 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install requirements
-COPY src/backend/requirements.txt* ./
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    if [ -f requirements.txt ]; then \
-        pip install --no-cache-dir -r requirements.txt; \
-    else \
-        pip install --no-cache-dir flask flask-cors psycopg2-binary python-dotenv gunicorn; \
-    fi
+# Upgrade pip first
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Copy requirements and install
+COPY src/backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt --no-deps 2>&1 | head -50 || true && \
+    pip install --no-cache-dir -r requirements.txt 2>&1 | tail -20 || pip install --no-cache-dir flask flask-cors psycopg2-binary python-dotenv gunicorn
 
 # Copy backend source
 COPY src/backend/ ./
