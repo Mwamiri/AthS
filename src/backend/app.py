@@ -839,25 +839,28 @@ def create_race():
             name=data['name'],
             date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
             location=data['location'],
-        'status': data.get('status', 'draft'),
-        'created_by': data.get('created_by', 2),
-        'registration_link': link_id,
-        'events': data.get('events', []),
-        'createdAt': datetime.now().strftime('%Y-%m-%d')
-    }
-    
-    DEMO_RACES.append(new_race)
-    PUBLIC_LINKS[link_id] = {
-        'race_id': new_race['id'],
-        'active': True,
-        'expires': data['date']
-    }
-    
-    return jsonify(add_metadata({
-        'message': '✅ Race created successfully',
-        'race': new_race,
-        'registration_url': f'/register/{link_id}'
-    })), 201
+            status=data.get('status', 'draft'),
+            created_by=data.get('created_by', 2),
+            registration_link=link_id
+        )
+        
+        db.add(new_race)
+        db.commit()
+        db.refresh(new_race)
+        
+        # Cache the new race
+        RedisCache.delete('races:all')
+        
+        race_data = new_race.to_dict()
+        
+        return jsonify(add_metadata({
+            'message': '✅ Race created successfully',
+            'race': race_data,
+            'registration_url': f'/register/{link_id}'
+        })), 201
+    except Exception as e:
+        print(f"Error creating race: {e}")
+        return jsonify({'error': 'Failed to create race', 'details': str(e)}), 500
 
 
 @app.route('/api/races/<int:race_id>', methods=['PUT'])
