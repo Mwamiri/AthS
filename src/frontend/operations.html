@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Dashboard - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>🏃‍♂️ AthSys Operations</h1>
+                    <p id="user-role-display" class="user-info"></p>
+                </div>
+                <div class="header-actions">
+                    <span id="operations-user-name" class="user-info"></span>
+                    <button class="btn btn-secondary btn-small" onclick="window.location.href='index.html'">📊 Dashboard</button>
+                    <button class="btn btn-secondary btn-small" id="logout-btn">🔓 Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" style="margin-top: 2rem;">
+        <!-- Navigation Tabs -->
+        <nav class="admin-nav">
+            <button class="nav-btn active" data-section="races">
+                <span class="icon">🏁</span>
+                Race Management
+            </button>
+            <button class="nav-btn" data-section="registrations">
+                <span class="icon">📝</span>
+                Registrations
+            </button>
+            <button class="nav-btn" data-section="startlists">
+                <span class="icon">🎯</span>
+                Start Lists
+            </button>
+            <button class="nav-btn" data-section="settings">
+                <span class="icon">⚙️</span>
+                Settings
+            </button>
+        </nav>
+
+        <!-- Race Management Section -->
+        <section id="races-section" class="admin-section active">
+            <div class="section-header">
+                <h2>🏁 Race Management</h2>
+                <button class="btn btn-primary" id="create-race-btn">➕ Create New Race</button>
+            </div>
+
+            <div class="search-filter-bar">
+                <input type="text" id="race-search" class="search-input" placeholder="🔍 Search races...">
+                <select id="race-status-filter" class="filter-select" aria-label="Filter by status">
+                    <option value="all">All Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Race Name</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Registrations</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="races-tbody">
+                        <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading races...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Registrations Section -->
+        <section id="registrations-section" class="admin-section">
+            <div class="section-header">
+                <h2>📝 Athlete Registrations</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" id="register-athlete-btn">➕ Register Athlete</button>
+                    <button class="btn btn-secondary" id="bulk-upload-btn">📤 Bulk Upload</button>
+                    <button class="btn btn-secondary" id="download-template-btn">📥 Download Template</button>
+                </div>
+            </div>
+
+            <div class="search-filter-bar">
+                <select id="registration-race-filter" class="filter-select" aria-label="Filter by race">
+                    <option value="all">All Races</option>
+                </select>
+                <input type="text" id="registration-search" class="search-input" placeholder="🔍 Search athlete name or email...">
+                <select id="registration-status-filter" class="filter-select" aria-label="Filter by status">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Athlete</th>
+                            <th>Race</th>
+                            <th>Events</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="registrations-tbody">
+                        <tr><td colspan="6" style="text-align: center; padding: 2rem;">Select a race to view registrations</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Start Lists Section -->
+        <section id="startlists-section" class="admin-section">
+            <div class="section-header">
+                <h2>🎯 Start Lists</h2>
+                <button class="btn btn-primary" id="generate-startlist-btn">🔄 Generate Start List</button>
+            </div>
+
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Race</th>
+                            <th>Event</th>
+                            <th>Athletes</th>
+                            <th>Status</th>
+                            <th>Confirmed By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="startlists-tbody">
+                        <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading start lists...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="admin-section">
+            <div class="section-header">
+                <h2>⚙️ System Settings</h2>
+            </div>
+
+            <div class="security-settings">
+                <!-- Logo Upload -->
+                <div class="setting-card">
+                    <h3>Organization Logo</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">Upload your organization's logo. Image will be automatically resized.</p>
+                    
+                    <div id="logo-preview" style="margin-bottom: 1rem; text-align: center;">
+                        <img id="current-logo" src="" alt="Current Logo" style="max-width: 200px; max-height: 100px; display: none; border-radius: 8px;">
+                        <p id="no-logo-text" style="color: var(--text-secondary);">No logo uploaded</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="file" id="logo-upload-input" accept="image/*" style="display: none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('logo-upload-input').click()">📷 Upload Logo</button>
+                        <button class="btn btn-secondary" id="remove-logo-btn">🗑️ Remove Logo</button>
+                    </div>
+                </div>
+
+                <!-- Registration Settings -->
+                <div class="setting-card">
+                    <h3>Registration Settings</h3>
+                    <div class="setting-options">
+                        <label>
+                            <input type="checkbox" id="allow-public-registration" checked>
+                            Allow public registration via links
+                        </label>
+                        <label>
+                            <input type="checkbox" id="require-email-verification">
+                            Require email verification for registrations
+                        </label>
+                        <label>
+                            <input type="checkbox" id="allow-bulk-upload" checked>
+                            Allow bulk registration via Excel upload
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Organization Info -->
+                <div class="setting-card">
+                    <h3>Organization Information</h3>
+                    <div class="form-group">
+                        <label for="org-name">Organization Name</label>
+                        <input type="text" id="org-name" value="AthSys Athletics" class="search-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="org-email">Contact Email</label>
+                        <input type="email" id="org-email" placeholder="contact@athsys.com" class="search-input">
+                    </div>
+                    <button class="btn btn-primary">💾 Save Settings</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Race Modal -->
+    <div id="race-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="race-modal-title">Create New Race</h3>
+                <button class="modal-close" onclick="closeRaceModal()">&times;</button>
+            </div>
+            <form id="race-form">
+                <div class="form-group">
+                    <label for="race-name">Race Name *</label>
+                    <input type="text" id="race-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="race-date">Date *</label>
+                    <input type="date" id="race-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="race-location">Location *</label>
+                    <input type="text" id="race-location" required>
+                </div>
+                <div class="form-group">
+                    <label for="race-status">Status</label>
+                    <select id="race-status">
+                        <option value="draft">Draft</option>
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Events (select multiple)</label>
+                    <div id="race-events-list" style="max-height: 200px; overflow-y: auto; background: var(--background-light); padding: 1rem; border-radius: 8px;">
+                        <!-- Events will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRaceModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Race</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="registration-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register Athlete</h3>
+                <button class="modal-close" onclick="closeRegistrationModal()">&times;</button>
+            </div>
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="reg-race">Race *</label>
+                    <select id="reg-race" required>
+                        <option value="">Select Race</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reg-athlete-name">Athlete Name *</label>
+                    <input type="text" id="reg-athlete-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-athlete-email">Email *</label>
+                    <input type="email" id="reg-athlete-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Events * (select at least one)</label>
+                    <div id="reg-events-list" style="max-height: 200px; overflow-y: auto; background: var(--background-light); padding: 1rem; border-radius: 8px;">
+                        <!-- Events will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRegistrationModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">✅ Register Athlete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bulk Upload Modal -->
+    <div id="bulk-upload-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📤 Bulk Registration Upload</h3>
+                <button class="modal-close" onclick="closeBulkUploadModal()">&times;</button>
+            </div>
+            <div style="padding: 2rem;">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Upload a filled registration template to register multiple athletes at once.
+                </p>
+                
+                <div class="form-group">
+                    <label for="bulk-race-select">Select Race *</label>
+                    <select id="bulk-race-select" required>
+                        <option value="">Select Race</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Template File</label>
+                    <input type="file" id="bulk-file-input" accept=".xlsx,.xls,.csv">
+                    <span class="hint">Accepted formats: .xlsx, .xls, .csv</span>
+                </div>
+                
+                <div id="upload-progress" style="display: none; margin: 1rem 0;">
+                    <div style= "background: var(--background-light); height: 30px; border-radius: 8px; overflow: hidden;">
+                        <div id="upload-progress-bar" style="height: 100%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                    <p id="upload-status" style="margin-top: 0.5rem; color: var(--text-secondary);"></p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeBulkUploadModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="upload-file-btn">📤 Upload & Process</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="operations.js"></script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>🏃‍♂️ AthSys</h1>
+                <p>Elite Athletics Management System</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="register">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <h2>Welcome Back</h2>
+                
+                <div class="form-group">
+                    <label for="login-email">
+                        <span class="icon">📧</span>
+                        Email Address
+                    </label>
+                    <input type="email" id="login-email" name="email" required 
+                           placeholder="your.email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">
+                        <span class="icon">🔒</span>
+                        Password
+                    </label>
+                    <input type="password" id="login-password" name="password" required 
+                           placeholder="Enter your password">
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember-me" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-password" id="forgot-password-link">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loader" style="display: none;"></span>
+                </button>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <button type="button" class="btn btn-secondary" id="demo-login">
+                    Quick Demo Access
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <h2>Create Account</h2>
+                
+                <div class="form-group">
+                    <label for="register-name">
+                        <span class="icon">👤</span>
+                        Full Name
+                    </label>
+                    <input type="text" id="register-name" name="name" required 
+                           placeholder="John Doe">
+                </div>
+
+                <div class="form-group">
+                    <label for="register-email">
+                        <span class="icon">📧</span>
+                        Email Address
+                    </label>
+                    <input type="email" id="register-email" name="email" required 
+                           placeholder="your.email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="register-password">
+                        <span class="icon">🔒</span>
+                        Password
+                    </label>
+                    <input type="password" id="register-password" name="password" required 
+                           placeholder="Choose a strong password" minlength="8">
+                    <small class="hint">At least 8 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="register-role">
+                        <span class="icon">🎯</span>
+                        Role
+                    </label>
+                    <select id="register-role" name="role" required>
+                        <option value="">Select your role</option>
+                        <option value="athlete">Athlete</option>
+                        <option value="coach">Coach</option>
+                        <option value="official">Official</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="accept-terms" name="terms" required>
+                        <span>I agree to the <a href="#">Terms & Conditions</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display: none;"></span>
+                </button>
+            </form>
+
+            <!-- Password Reset Form -->
+            <form id="reset-form" class="auth-form">
+                <h2>Reset Password</h2>
+                <p class="form-description">Enter your email address and we'll send you a reset link.</p>
+                
+                <div class="form-group">
+                    <label for="reset-email">
+                        <span class="icon">📧</span>
+                        Email Address
+                    </label>
+                    <input type="email" id="reset-email" name="email" required 
+                           placeholder="your.email@example.com">
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Send Reset Link</span>
+                    <span class="btn-loader" style="display: none;"></span>
+                </button>
+
+                <button type="button" class="btn btn-secondary" id="back-to-login">
+                    Back to Login
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>© 2026 AthSys - Secure Athletics Management</p>
+            </div>
+        </div>
+
+        <!-- Background decoration -->
+        <div class="auth-bg-decoration">
+            <div class="decoration-circle"></div>
+            <div class="decoration-circle"></div>
+            <div class="decoration-circle"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

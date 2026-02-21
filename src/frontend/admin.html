@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>🏃‍♂️ AthSys Admin</h1>
+                    <p class="tagline">⚡ User Management Dashboard ⚡</p>
+                </div>
+                <div class="header-actions">
+                    <span class="user-info">
+                        👤 <span id="current-user">Admin</span>
+                    </span>
+                    <button class="btn btn-small" id="logout-btn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Admin Navigation -->
+        <section class="admin-nav">
+            <button class="nav-btn active" data-section="users">
+                <span class="icon">👥</span>
+                User Management
+            </button>
+            <button class="nav-btn" data-section="roles">
+                <span class="icon">🎯</span>
+                Roles & Permissions
+            </button>
+            <button class="nav-btn" data-section="security">
+                <span class="icon">🔐</span>
+                Security Settings
+            </button>
+            <button class="nav-btn" data-section="audit">
+                <span class="icon">📋</span>
+                Audit Logs
+            </button>
+        </section>
+
+        <!-- User Management Section -->
+        <section id="users-section" class="admin-section active">
+            <div class="section-header">
+                <h3>👥 User Management</h3>
+                <button class="btn btn-primary" id="add-user-btn">
+                    <span>➕ Add New User</span>
+                </button>
+            </div>
+
+            <div class="search-filter-bar">
+                <input type="search" id="user-search" placeholder="🔍 Search users by name or email..." class="search-input">
+                <select id="role-filter" class="filter-select">
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="chief_registrar">Chief Registrar</option>
+                    <option value="registrar">Registrar</option>
+                    <option value="starter">Starter</option>
+                    <option value="coach">Coach</option>
+                    <option value="athlete">Athlete</option>
+                    <option value="viewer">Viewer</option>
+                </select>
+                <select id="status-filter" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+            </div>
+
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>2FA</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Roles & Permissions Section -->
+        <section id="roles-section" class="admin-section">
+            <div class="section-header">
+                <h3>🎯 Roles & Permissions</h3>
+            </div>
+
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">👑</span>
+                        <h4>Administrator</h4>
+                    </div>
+                    <p class="role-description">Full system access and user management</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ All Permissions</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="admin-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">📋</span>
+                        <h4>Chief Registrar</h4>
+                    </div>
+                    <p class="role-description">Manage race operations and create events</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ Create Races</span>
+                        <span class="permission-badge">✅ Manage Events</span>
+                        <span class="permission-badge">✅ Generate Links</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="chief_registrar-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">✍️</span>
+                        <h4>Registrar</h4>
+                    </div>
+                    <p class="role-description">Register athletes and manage registrations</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ Register Athletes</span>
+                        <span class="permission-badge">✅ Bulk Upload</span>
+                        <span class="permission-badge">✅ View Registrations</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="registrar-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">🎯</span>
+                        <h4>Starter</h4>
+                    </div>
+                    <p class="role-description">Confirm start lists and manage race starts</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ View Start Lists</span>
+                        <span class="permission-badge">✅ Confirm Athletes</span>
+                        <span class="permission-badge">✅ Start Races</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="starter-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">🎓</span>
+                        <h4>Coach</h4>
+                    </div>
+                    <p class="role-description">Manage athletes and training programs</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ View Athletes</span>
+                        <span class="permission-badge">✅ Manage Training</span>
+                        <span class="permission-badge">✅ View Results</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="coach-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">⚖️</span>
+                        <h4>Official</h4>
+                    </div>
+                    <p class="role-description">Manage competitions and results</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ Manage Events</span>
+                        <span class="permission-badge">✅ Enter Results</span>
+                        <span class="permission-badge">✅ View Reports</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="official-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">🏃</span>
+                        <h4>Athlete</h4>
+                    </div>
+                    <p class="role-description">View personal data and results</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ View Profile</span>
+                        <span class="permission-badge">✅ View Results</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="athlete-count">0</strong> users</span>
+                    </div>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-header">
+                        <span class="role-icon">👁️</span>
+                        <h4>Viewer</h4>
+                    </div>
+                    <p class="role-description">Read-only access to public data</p>
+                    <div class="permissions-list">
+                        <span class="permission-badge">✅ View Public Data</span>
+                    </div>
+                    <div class="role-stats">
+                        <span>👥 <strong id="viewer-count">0</strong> users</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security Settings Section -->
+        <section id="security-section" class="admin-section">
+            <div class="section-header">
+                <h3>🔐 Security Settings</h3>
+            </div>
+
+            <div class="security-settings">
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div>
+                            <h4>🔑 Two-Factor Authentication</h4>
+                            <p>Require 2FA for all admin users</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="require-2fa">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div>
+                            <h4>🔒 Password Policy</h4>
+                            <p>Minimum password requirements</p>
+                        </div>
+                    </div>
+                    <div class="setting-options">
+                        <label>
+                            <input type="checkbox" checked disabled> Minimum 8 characters
+                        </label>
+                        <label>
+                            <input type="checkbox" id="require-uppercase"> Require uppercase letters
+                        </label>
+                        <label>
+                            <input type="checkbox" id="require-numbers"> Require numbers
+                        </label>
+                        <label>
+                            <input type="checkbox" id="require-special"> Require special characters
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <div class="setting-header">
+                        <div>
+                            <h4>⏰ Session Timeout</h4>
+                            <p>Auto-logout after inactivity</p>
+                        </div>
+                    </div>
+                    <div class="setting-options">
+                        <select id="session-timeout" class="filter-select">
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Audit Logs Section -->
+        <section id="audit-section" class="admin-section">
+            <div class="section-header">
+                <h3>📋 Audit Logs</h3>
+            </div>
+
+            <div class="audit-logs">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-logs-body">
+                        <!-- Logs will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add/Edit User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New User</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="user-form">
+                <div class="form-group">
+                    <label for="user-name">Full Name</label>
+                    <input type="text" id="user-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-email">Email Address</label>
+                    <input type="email" id="user-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-role">Role</label>
+                    <select id="user-role" required>
+                        <option value="viewer">Viewer</option>
+                        <option value="athlete">Athlete</option>
+                        <option value="coach">Coach</option>
+                        <option value="starter">Starter</option>
+                        <option value="registrar">Registrar</option>
+                        <option value="chief_registrar">Chief Registrar</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="user-password">Password</label>
+                    <input type="password" id="user-password" minlength="8">
+                    <small class="hint">Leave blank to auto-generate</small>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="user-2fa">
+                        <span>Enable 2FA</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="send-welcome">
+                        <span>Send welcome email</span>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

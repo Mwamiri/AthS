@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starter Dashboard - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        .starter-header {
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            color: white;
+        }
+        
+        .athlete-checklist {
+            background: var(--background-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .athlete-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .athlete-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .athlete-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+        
+        .athlete-details {
+            flex: 1;
+        }
+        
+        .athlete-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+        
+        .athlete-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        .athlete-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-present {
+            background: rgba(6, 214, 160, 0.2);
+            color: var(--success-color);
+        }
+        
+        .status-absent {
+            background: rgba(230, 57, 70, 0.2);
+            color: var(--danger-color);
+        }
+        
+        .confirm-panel {
+            position: sticky;
+            bottom: 20px;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+        
+        .stats-display {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>🎯 Starter Dashboard</h1>
+                    <p id="starter-user-display" class="user-info"></p>
+                </div>
+                <div class="header-actions">
+                    <span id="starter-user-name" class="user-info"></span>
+                    <button class="btn btn-secondary btn-small" onclick="window.location.href='index.html'">📊 Dashboard</button>
+                    <button class="btn btn-secondary btn-small" id="logout-btn">🔓 Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" style="margin-top: 2rem; margin-bottom: 3rem;">
+        <!-- Starter Header -->
+        <div class="starter-header">
+            <h2 style="margin-bottom: 0.5rem;">Start List Confirmation</h2>
+            <p style="opacity: 0.9;">Check athletes present and confirm start lists before races begin</p>
+        </div>
+
+        <!-- Race Selection -->
+        <div class="auth-card" style="margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem;">Select Race & Event</h3>
+            <div class="search-filter-bar">
+                <select id="race-filter" class="filter-select" aria-label="Select race">
+                    <option value="">Select Race</option>
+                </select>
+                <select id="event-filter" class="filter-select" aria-label="Select event">
+                    <option value="">Select Event</option>
+                </select>
+                <button class="btn btn-primary" id="load-startlist-btn">📋 Load Start List</button>
+            </div>
+        </div>
+
+        <!-- Start List Container -->
+        <div id="startlist-container" style="display: none;">
+            <div class="auth-card">
+                <div class="section-header">
+                    <div>
+                        <h3 id="startlist-title">Start List</h3>
+                        <p id="startlist-info" style="color: var(--text-secondary); margin-top: 0.5rem;"></p>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" id="check-all-btn">✅ Check All</button>
+                        <button class="btn btn-secondary" id="uncheck-all-btn">❌ Uncheck All</button>
+                    </div>
+                </div>
+
+                <div class="athlete-checklist" id="athletes-list">
+                    <!-- Athletes will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Confirmation Panel -->
+            <div class="confirm-panel">
+                <div class="stats-display">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-athletes">0</div>
+                        <div class="stat-label">Total Athletes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="present-count" style="color: var(--success-color);">0</div>
+                        <div class="stat-label">Present</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="absent-count" style="color: var(--danger-color);">0</div>
+                        <div class="stat-label">Absent</div>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-primary" id="confirm-startlist-btn" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                        ✅ Confirm Start List
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmed Start Lists -->
+        <div class="auth-card" style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1.5rem;">📜 Recently Confirmed Start Lists</h3>
+            <div class="users-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Race</th>
+                            <th>Event</th>
+                            <th>Athletes</th>
+                            <th>Confirmed At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="confirmed-lists-tbody">
+                        <tr><td colspan="5" style="text-align: center; padding: 2rem;">Loading confirmed start lists...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="starter.js"></script>
+</body>
+</html>

@@ -88,7 +88,7 @@ header .container {
 }
 
 header h1 {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     margin-bottom: 0.5rem;
     font-weight: 800;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -100,7 +100,7 @@ header h1 {
 }
 
 .tagline {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     opacity: 0.95;
     font-weight: 500;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
@@ -140,7 +140,7 @@ section:hover {
 
 section h3 {
     color: var(--text-accent);
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     text-transform: uppercase;
@@ -153,7 +153,7 @@ section h3 {
 }
 
 .hero h2 {
-    font-size: 2.8rem;
+    font-size: 2rem;
     margin-bottom: 1rem;
     font-weight: 800;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -296,7 +296,7 @@ section h3 {
 }
 
 .stat-value {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
     font-weight: 900;
     background: linear-gradient(135deg, var(--medal-gold), var(--primary-color));
     -webkit-background-clip: text;

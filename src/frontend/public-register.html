@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Registration - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        .registration-hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 3rem 2rem;
+            text-align: center;
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+        
+        .registration-hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 900;
+        }
+        
+        .registration-hero .race-info {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            margin-top: 1rem;
+        }
+        
+        .registration-hero .race-info span {
+            display: inline-block;
+            margin: 0 1rem;
+        }
+        
+        .event-selection {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .event-card {
+            background: var(--background-light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .event-card:hover {
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+        
+        .event-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(255, 107, 53, 0.1);
+        }
+        
+        .event-card input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .event-info {
+            flex: 1;
+        }
+        
+        .event-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .event-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .registration-form {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 3rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounceIn 0.6s;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .info-banner {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(230, 57, 70, 0.1));
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="margin-top: 2rem; margin-bottom: 3rem;">
+        <!-- Race Hero -->
+        <div class="registration-hero" id="race-hero">
+            <h1>🏃‍♂️ Race Registration</h1>
+            <div class="race-info" id="race-info">
+                <span id="race-name-display">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="registration-form" id="registration-form-container">
+            <div class="info-banner">
+                <strong>📋 Registration Information</strong>
+                <p style="margin-top: 0.5rem; color: var(--text-secondary);">
+                    Please fill out all required fields. You can select multiple events. 
+                    After registration, you will receive a confirmation via email.
+                </p>
+            </div>
+
+            <form id="public-registration-form">
+                <!-- Personal Information -->
+                <div class="auth-card" style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem;">👤 Personal Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="athlete-name">Full Name *</label>
+                        <input type="text" id="athlete-name" required placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="athlete-email">Email Address *</label>
+                        <input type="email" id="athlete-email" required placeholder="your.email@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="athlete-phone">Phone Number</label>
+                        <input type="tel" id="athlete-phone" placeholder="+1 (555) 123-4567">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="athlete-team">Team/Club (Optional)</label>
+                        <input type="text" id="athlete-team" placeholder="Enter your team or club name">
+                    </div>
+                </div>
+
+                <!-- Event Selection -->
+                <div class="auth-card">
+                    <h3 style="margin-bottom: 1.5rem;">🏁 Select Events *</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        Choose one or more events you want to participate in:
+                    </p>
+                    
+                    <div id="events-container">
+                        <p style="text-align: center; color: var(--text-secondary);">Loading events...</p>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;">
+                        ✅ Complete Registration
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="success-message">
+            <div class="success-icon">🎉</div>
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Registration Successful!</h2>
+            <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+                Thank you for registering! You will receive a confirmation email shortly.
+            </p>
+            <div style="background: var(--background-light); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📋 Registration Summary</h3>
+                <div id="registration-summary"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">
+                Return to Home
+            </button>
+        </div>
+
+        <!-- Error Message -->
+        <div class="auth-card" id="error-container" style="display: none; text-align: center; background: rgba(230, 57, 70, 0.1); border: 2px solid var(--danger-color);">
+            <h2 style="color: var(--danger-color);">⚠️ Registration Unavailable</h2>
+            <p id="error-message" style="color: var(--text-secondary); margin-top: 1rem;"></p>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'" style="margin-top: 1rem;">
+                Return to Home
+            </button>
+        </div>
+    </div>
+
+    <script src="public-register.js"></script>
+</body>
+</html>
