@@ -1,3 +1,6 @@
+# Keep .gitkeep files to preserve folder structure
+!.gitkeep
+
 # Logs
 logs/
 *.log
