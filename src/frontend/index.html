@@ -12,8 +12,20 @@
 <body>
     <header>
         <div class="container">
-            <h1>🏃‍♂️ AthSys</h1>
-            <p class="tagline">⚡ Elite Athletics Management Platform ⚡</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>🏃‍♂️ AthSys</h1>
+                    <p class="tagline">⚡ Elite Athletics Management Platform ⚡</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="login.html" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.3s;">
+                        🔐 Login
+                    </a>
+                    <a href="admin.html" class="btn" style="background: linear-gradient(135deg, var(--success-color), #05b88a); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.3s;">
+                        ⚙️ Dashboard
+                    </a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -68,6 +80,62 @@
                     <h4>Advanced Analytics</h4>
                     <p>Performance tracking, team scoring, and comprehensive statistical reporting</p>
                 </div>
+            </div>
+        </section>
+
+        <section class="quick-access" style="background: rgba(255, 107, 53, 0.05); border-radius: 12px; padding: 2rem; margin: 2rem 0;">
+            <h3>🚀 Quick Access - Demo Accounts</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Login with any of these demo accounts to explore the system:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                <div class="credential-card" style="background: var(--background-dark); border-left: 4px solid var(--danger-color); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--danger-color); margin: 0 0 0.5rem 0;">👑 Admin</h4>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Email:</strong> admin@athsys.com</p>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Password:</strong> Admin@123</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Full system access, user management</p>
+                </div>
+                
+                <div class="credential-card" style="background: var(--background-dark); border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--primary-color); margin: 0 0 0.5rem 0;">📋 Chief Registrar</h4>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Email:</strong> chief@athsys.com</p>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Password:</strong> Chief@123</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Create races, manage events, generate links</p>
+                </div>
+                
+                <div class="credential-card" style="background: var(--background-dark); border-left: 4px solid var(--accent-color); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--accent-color); margin: 0 0 0.5rem 0;">✍️ Registrar</h4>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Email:</strong> registrar@athsys.com</p>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Password:</strong> Registrar@123</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Register athletes, bulk upload, view registrations</p>
+                </div>
+                
+                <div class="credential-card" style="background: var(--background-dark); border-left: 4px solid var(--success-color); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--success-color); margin: 0 0 0.5rem 0;">🎯 Starter</h4>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Email:</strong> starter@athsys.com</p>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Password:</strong> Starter@123</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">View start lists, confirm athletes, start races</p>
+                </div>
+                
+                <div class="credential-card" style="background: var(--background-dark); border-left: 4px solid #6bcbf7; padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: #6bcbf7; margin: 0 0 0.5rem 0;">🏅 Coach</h4>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Email:</strong> sarah@athsys.com</p>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Password:</strong> Coach@123</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">Team management, athlete tracking</p>
+                </div>
+                
+                <div class="credential-card" style="background: var(--background-dark); border-left: 4px solid #a855f7; padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: #a855f7; margin: 0 0 0.5rem 0;">🏃 Athlete</h4>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Email:</strong> john@athsys.com</p>
+                    <p style="font-size: 0.9rem; margin: 0.25rem 0;"><strong>Password:</strong> Athlete@123</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">View personal records, race registrations</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(6, 214, 160, 0.1); border-radius: 8px; border-left: 4px solid var(--success-color);">
+                <p style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem;">💡</span>
+                    <strong>Tip:</strong> Click the <strong>Login</strong> button above and use any of these credentials to explore role-based features!
+                </p>
             </div>
         </section>
 
