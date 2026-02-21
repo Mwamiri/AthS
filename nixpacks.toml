@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["python311", "gcc", "postgresql"]
+
+[phases.install]
+cmds = ["pip install -r src/backend/requirements.txt"]
+
+[phases.build]
+cmds = ["echo 'Build complete'"]
+
+[start]
+cmd = "cd src/backend && python app.py"
+
+[variables]
+PORT = "5000"
+PYTHONUNBUFFERED = "1"
