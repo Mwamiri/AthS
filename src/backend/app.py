@@ -33,20 +33,22 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'development-secret-key-chang
 app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://athsys_user:athsys_pass@localhost:5432/athsys_db')
 app.config['REDIS_URL'] = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
-# Initialize connections on startup
-@app.before_first_request
+# Initialize connections on startup (Flask 3.0+ compatible)
 def initialize():
     """Initialize database and test connections"""
     try:
-        init_db()
-        print("✅ Database initialized")
+        # Database is already initialized by docker-entrypoint.sh
+        print("✅ Database connection ready")
     except Exception as e:
-        print(f"⚠️  Database initialization warning: {e}")
+        print(f"⚠️  Database connection warning: {e}")
     
     if test_redis_connection():
         print("✅ Redis connected")
     else:
         print("⚠️  Redis unavailable - caching disabled")
+
+# Run initialization immediately
+initialize()
 
 # Store version and metadata
 APP_VERSION = '2.1'
