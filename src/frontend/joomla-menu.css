@@ -1,0 +1,345 @@
+/* Joomla-Style Backend Menu System */
+
+.joomla-menu-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, #1a1d29 0%, #2d3142 100%);
+    box-shadow: 4px 0 12px rgba(0,0,0,0.2);
+    z-index: 9000;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+}
+
+.joomla-menu-container.collapsed {
+    transform: translateX(-280px);
+}
+
+.joomla-menu-header {
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.joomla-menu-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.joomla-menu-toggle {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background 0.2s;
+}
+
+.joomla-menu-toggle:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.joomla-menu-search {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.joomla-menu-search input {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.joomla-menu-search input::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+.joomla-menu-nav {
+    padding: 0.5rem 0;
+}
+
+.joomla-menu-category {
+    margin-bottom: 0.5rem;
+}
+
+.joomla-menu-category-header {
+    padding: 0.75rem 1.5rem;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.joomla-menu-category-header:hover {
+    color: rgba(255,255,255,0.9);
+}
+
+.joomla-menu-category.collapsed .joomla-menu-items {
+    display: none;
+}
+
+.joomla-menu-category-icon {
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.joomla-menu-category.collapsed .joomla-menu-category-icon {
+    transform: rotate(-90deg);
+}
+
+.joomla-menu-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.joomla-menu-item {
+    position: relative;
+}
+
+.joomla-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.5rem;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.joomla-menu-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-left-color: var(--primary-color);
+}
+
+.joomla-menu-link.active {
+    background: rgba(255, 107, 53, 0.2);
+    color: white;
+    border-left-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.joomla-menu-icon {
+    font-size: 1.2rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+.joomla-menu-badge {
+    margin-left: auto;
+    background: var(--danger-color);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.joomla-menu-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0,0,0,0.2);
+    display: none;
+}
+
+.joomla-menu-item.has-submenu.open .joomla-menu-submenu {
+    display: block;
+}
+
+.joomla-menu-submenu .joomla-menu-link {
+    padding-left: 3.5rem;
+    font-size: 0.9rem;
+}
+
+.joomla-menu-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+}
+
+.joomla-content-area {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+    background: var(--background-color);
+}
+
+.joomla-content-area.expanded {
+    margin-left: 0;
+}
+
+.joomla-top-bar {
+    background: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 8999;
+}
+
+.joomla-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.joomla-breadcrumb a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.joomla-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.joomla-user-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.joomla-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--danger-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.joomla-content-main {
+    padding: 2rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .joomla-menu-container {
+        transform: translateX(-280px);
+    }
+    
+    .joomla-menu-container.mobile-open {
+        transform: translateX(0);
+    }
+    
+    .joomla-content-area {
+        margin-left: 0;
+    }
+}
+
+/* Menu Item Hover Effects */
+.joomla-menu-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.joomla-menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: var(--primary-color);
+    transform: translateX(-3px);
+    transition: transform 0.2s;
+}
+
+.joomla-menu-item:hover::before {
+    transform: translateX(0);
+}
+
+/* Category Expand/Collapse Animation */
+.joomla-menu-items {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.joomla-menu-category.collapsed .joomla-menu-items {
+    max-height: 0;
+}
+
+/* Search Highlight */
+.joomla-menu-item.search-highlight {
+    animation: highlightPulse 1s ease;
+}
+
+@keyframes highlightPulse {
+    0%, 100% { background: transparent; }
+    50% { background: rgba(255, 107, 53, 0.2); }
+}
+
+/* Submenu Toggle Arrow */
+.joomla-submenu-toggle {
+    margin-left: auto;
+    padding: 0.25rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.joomla-menu-item.has-submenu.open .joomla-submenu-toggle {
+    transform: rotate(180deg);
+}
+
+/* Settings Panel (Similar to Joomla Global Configuration) */
+.joomla-settings-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-color), var(--danger-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+    z-index: 8998;
+}
+
+.joomla-settings-icon:hover {
+    transform: scale(1.1) rotate(90deg);
+}

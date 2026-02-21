@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Management - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="joomla-menu.css">
+    <script src="utils.js"></script>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <nav class="nav">
+        <div class="nav-brand">🏃 AthSys v2.1</div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <span id="userName" style="color: #666;"></span>
+            <a href="dashboard.html" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="index.html" class="btn btn-secondary">Home</a>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <div class="dashboard-header">
+            <h1>🏆 Results Management</h1>
+            <p>View and manage race results</p>
+        </div>
+
+        <!-- Filters and Actions -->
+        <div class="actions-bar" style="display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; align-items: center;">
+            <button id="addResultBtn" class="btn btn-primary" onclick="showAddResultModal()">
+                ➕ Add Result
+            </button>
+            <button class="btn btn-secondary" onclick="refreshResults()">
+                🔄 Refresh
+            </button>
+            <button class="export-btn" onclick="exportResults()" title="Export results to CSV">
+                📥 Export
+            </button>
+            <select id="raceFilter" onchange="filterResults()" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                <option value="">All Races</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="🔍 Search by athlete... (Ctrl+K)" 
+                   style="flex: 1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;"
+                   onkeyup="debouncedFilterResults()">
+        </div>
+
+        <!-- Results Table -->
+        <div id="resultsContainer" style="background: var(--background-dark); border-radius: 12px; overflow: hidden;">
+            <div class="loading" style="padding: 2rem; text-align: center;">Loading results...</div>
+        </div>
+    </div>
+
+    <!-- Add Result Modal -->
+    <div id="resultModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Add Race Result</h2>
+                <button class="btn-close" onclick="closeResultModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="resultForm">
+                    <div class="form-group">
+                        <label>Select Race *</label>
+                        <select id="resultRace" required onchange="loadRaceEvents()">
+                            <option value="">Choose a race...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Event *</label>
+                        <select id="resultEvent" required onchange="loadEventAthletes()">
+                            <option value="">Choose an event...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Athlete *</label>
+                        <select id="resultAthlete" required>
+                            <option value="">Choose an athlete...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Position *</label>
+                        <input type="number" id="resultPosition" required min="1" placeholder="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Time (format: MM:SS.ms or HH:MM:SS.ms)</label>
+                        <input type="text" id="resultTime" placeholder="e.g., 10:23.45">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="resultNotes" rows="3" placeholder="Additional notes (e.g., records, conditions)"></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeResultModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Result</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="joomla-menu.js"></script>
+    <script src="results.js"></script>
+</body>
+</html>

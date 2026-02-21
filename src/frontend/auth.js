@@ -157,25 +157,49 @@ async function handleLogin(event) {
             
             toast.show('Login successful! Redirecting...', 'success');
             
-            // Redirect based on role (obfuscated routes for security)
+            // Add notification
+            if (typeof notificationCenter !== 'undefined') {
+                notificationCenter.add('auth', 'Login Successful', 
+                    `Welcome back, ${data.user.name}!`, 'success');
+            }
+            
+            // Redirect to dashboard after successful login
             setTimeout(() => {
-                const roleRoutes = {
-                    'admin': 'd4f8a9.view',
-                    'chief_registrar': 'c1e5d4.view',
-                    'registrar': 'c1e5d4.view',
-                    'starter': '8b2d7e.view',
-                    'coach': '7e3f9a.view',
-                    'athlete': '9b4e7c.view',
-                    'viewer': '5c8b9e.view'
-                };
-                window.location.href = roleRoutes[data.user.role] || 'a7c3e1.view';
+                window.location.href = 'dashboard.html';
             }, 1500);
         } else {
-            toast.show(data.message || 'Login failed. Please check your credentials.', 'error');
+            // Show detailed error notification
+            const errorMsg = data.message || 'Login failed. Please check your credentials.';
+            toast.show(errorMsg, 'error');
+            
+            // Add to notification center with more context
+            if (typeof notificationCenter !== 'undefined') {
+                let detailedMessage = errorMsg;
+                if (errorMsg.includes('credentials') || errorMsg.includes('password')) {
+                    detailedMessage = '❌ Invalid email or password. Please verify your credentials and try again.';
+                } else if (errorMsg.includes('account')) {
+                    detailedMessage = '🔒 Account issue detected. Please contact your administrator.';
+                } else if (errorMsg.includes('network') || errorMsg.includes('connection')) {
+                    detailedMessage = '📡 Network error. Please check your internet connection.';
+                }
+                
+                notificationCenter.add('auth', 'Login Failed', detailedMessage, 'error');
+            }
+            
+            // Shake the form for visual feedback
+            const form = event.target;
+            form.style.animation = 'shake 0.5s';
+            setTimeout(() => form.style.animation = '', 500);
         }
     } catch (error) {
         console.error('Login error:', error);
-        toast.show('Connection error. Please try again.', 'error');
+        const errorMessage = 'Connection error. Please check your internet and try again.';
+        toast.show(errorMessage, 'error');
+        
+        if (typeof notificationCenter !== 'undefined') {
+            notificationCenter.add('system', 'Connection Error', 
+                'Unable to reach server. Please check your internet connection.', 'error');
+        }
     } finally {
         hideLoading(button);
     }
@@ -319,12 +343,8 @@ function checkAuth() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (token && user.email) {
-        // Redirect to appropriate page
-        if (user.role === 'admin') {
-            window.location.href = 'd4f8a9.view';
-        } else {
-            window.location.href = 'index.html';
-        }
+        // Redirect to dashboard for authenticated users
+        window.location.href = 'dashboard.html';
     }
 }
 

@@ -615,3 +615,254 @@ footer a:hover {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, var(--secondary-color), var(--primary-color));
 }
+
+/* ============================================
+   Loading Skeletons
+   ============================================ */
+.skeleton {
+    background: linear-gradient(90deg, #2d3748 25%, #374151 50%, #2d3748 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    height: 20px;
+    margin-bottom: 10px;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #374151;
+}
+
+.skeleton-title {
+    height: 28px;
+    width: 60%;
+    margin-bottom: 1rem;
+}
+
+.skeleton-text {
+    height: 16px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.skeleton-text:last-child {
+    width: 70%;
+}
+
+/* ============================================
+   Empty States
+   ============================================ */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    margin: 2rem auto;
+    max-width: 500px;
+    border: 2px dashed var(--border-color);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.empty-state .btn {
+    display: inline-block;
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--card-hover);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.pagination-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+    color: var(--text-secondary);
+    padding: 0 0.5rem;
+}
+
+/* ============================================
+   Table Sorting
+   ============================================ */
+th[data-sort] {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+th[data-sort]:hover {
+    background: var(--card-hover);
+}
+
+.sort-icon {
+    font-size: 0.8rem;
+    opacity: 0.4;
+    margin-left: 0.25rem;
+}
+
+th.sort-asc .sort-icon::after,
+th.sort-desc .sort-icon::after {
+    opacity: 1;
+    font-weight: bold;
+}
+
+th.sort-asc .sort-icon {
+    opacity: 1;
+}
+
+th.sort-desc .sort-icon {
+    opacity: 1;
+    transform: rotate(180deg);
+    display: inline-block;
+}
+
+/* ============================================
+   Enhanced Animations
+   ============================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.modal {
+    animation: fadeIn 0.3s ease;
+}
+
+.race-card,
+.athlete-card,
+.user-card,
+.result-card,
+.stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.race-card:hover,
+.athlete-card:hover,
+.user-card:hover,
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   Export Button
+   ============================================ */
+.export-btn {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
+    background: #05b58a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(6, 214, 160, 0.3);
+}
+
+/* ============================================
+   Keyboard Shortcut Hints
+   ============================================ */
+.shortcut-hint {
+    display: inline-block;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: var(--text-secondary);
+    margin-left: 0.5rem;
+}
