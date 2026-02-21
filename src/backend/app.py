@@ -242,6 +242,12 @@ def health():
     return jsonify(health_status), 200
 
 
+@app.route('/livez')
+def livez():
+    """Lightweight liveness probe endpoint for container orchestration"""
+    return jsonify({'status': 'ok', 'timestamp': time.time()}), 200
+
+
 @app.route('/api/docs')
 def api_docs():
     """API documentation endpoint"""

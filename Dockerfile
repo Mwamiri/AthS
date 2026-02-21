@@ -73,12 +73,12 @@ ENV NODE_ENV=production
 # Expose port
 EXPOSE 5000
 
-# Health check
+# Health check - use lightweight liveness endpoint with dynamic PORT
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:${PORT}/livez || exit 1
 
 # Set working directory to backend
 WORKDIR /app/backend
 
-# Default command - use Gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "app:app"]
+# Default command - use Gunicorn for production, bind to 0.0.0.0
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 app:app"]
