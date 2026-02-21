@@ -955,37 +955,81 @@ def register_athlete(race_id):
 @app.route('/register/<link_id>', methods=['GET'])
 def public_registration_page(link_id):
     """Get public registration page details"""
-    if link_id not in PUBLIC_LINKS:
-        return jsonify({'error': 'Invalid or expired registration link'}), 404
-    
-    link_data = PUBLIC_LINKS[link_id]
-    if not link_data['active']:
-        return jsonify({'error': 'Registration link is no longer active'}), 403
-    
-    race = next((r for r in DEMO_RACES if r['id'] == link_data['race_id']), None)
-    
-    return jsonify(add_metadata({
-        'race': race,
-        'expires': link_data['expires'],
-        'message': '✅ Registration link is valid'
-    })), 200
+    try:
+        db = next(get_db())
+        
+        # Find race by registration link
+        race = db.query(Race).filter(Race.registration_link == link_id).first()
+        
+        if not race:
+            return jsonify({'error': 'Invalid or expired registration link'}), 404
+        
+        if race.status == 'cancelled':
+            return jsonify({'error': 'Registration link is no longer active'}), 403
+        
+        race_data = race.to_dict()
+        
+        # Get events for this race
+        events = db.query(Event).filter(Event.race_id == race.id).all()
+        race_data['events'] = [event.to_dict() for event in events]
+        
+        return jsonify(add_metadata({
+            'race': race_data,
+            'expires': race.date.strftime('%Y-%m-%d'),
+            'message': '✅ Registration link is valid'
+        })), 200
+    except Exception as e:
+        print(f"Error fetching registration page: {e}")
+        return jsonify({'error': 'Failed to load registration page'}), 500
 
 
 @app.route('/register/<link_id>', methods=['POST'])
 def public_register_athlete(link_id):
     """Public athlete registration via link"""
-    if link_id not in PUBLIC_LINKS:
-        return jsonify({'error': 'Invalid or expired registration link'}), 404
-    
-    link_data = PUBLIC_LINKS[link_id]
-    if not link_data['active']:
-        return jsonify({'error': 'Registration link is no longer active'}), 403
-    
-    data = request.get_json()
-    data['registration_type'] = 'public'
-    data['registered_by'] = None
-    
-    return register_athlete(link_data['race_id'])
+    try:
+        db = next(get_db())
+        
+        # Find race by registration link
+        race = db.query(Race).filter(Race.registration_link == link_id).first()
+        
+        if not race:
+            return jsonify({'error': 'Invalid or expired registration link'}), 404
+        
+        if race.status == 'cancelled':
+            return jsonify({'error': 'Registration link is no longer active'}), 403
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        required = ['athlete_id', 'event_id']
+        missing = [f for f in required if f not in data]
+        if missing:
+            return jsonify({'error': f'Missing fields: {", ".join(missing)}'}), 400
+        
+        # Create registration
+        registration = Registration(
+            athlete_id=data['athlete_id'],
+            event_id=data['event_id'],
+            race_id=race.id,
+            registration_type='public',
+            status='pending',
+            payment_status='unpaid'
+        )
+        
+        db.add(registration)
+        db.commit()
+        db.refresh(registration)
+        
+        # Clear cache
+        RedisCache.delete('registrations:all')
+        
+        return jsonify(add_metadata({
+            'message': '✅ Registration successful',
+            'registration': registration.to_dict()
+        })), 201
+    except Exception as e:
+        print(f"Error creating public registration: {e}")
+        return jsonify({'error': 'Failed to register', 'details': str(e)}), 500
 
 
 # Excel Template Endpoints
