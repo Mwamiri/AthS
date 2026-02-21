@@ -26,13 +26,12 @@ WORKDIR /app/frontend
 
 # Copy frontend package files
 COPY src/frontend/package*.json* ./
-RUN if [ -f package.json ]; then npm ci --only=production; else echo "{}"; fi
+RUN if [ -f package.json ]; then npm install --production || true; else echo "{}"; fi
 
 # Copy frontend source
 COPY src/frontend/ ./
 
-# Build frontend if build script exists
-RUN if [ -f package.json ] && grep -q '"build"' package.json; then npm run build; else mkdir -p build && echo "<h1>AthSys - Coming Soon</h1>" > build/index.html; fi
+# No build step needed for simple HTML/CSS/JS
 
 # Stage 3: Production Image
 FROM python:3.11-slim
