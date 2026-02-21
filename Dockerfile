@@ -78,9 +78,9 @@ ENV NODE_ENV=production
 # Expose port
 EXPOSE 5000
 
-# Health check - use lightweight liveness endpoint with dynamic PORT
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/livez || exit 1
+# Health check - use lightweight liveness endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:5000/livez || exit 1
 
 # Set working directory to backend
 WORKDIR /app/backend
