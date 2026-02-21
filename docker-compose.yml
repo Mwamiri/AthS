@@ -19,6 +19,11 @@ services:
       retries: 5
     networks:
       - athsys_network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=athsys-postgres"
+      - "coolify.type=database"
+      - "coolify.proxy.enabled=false"
 
   # Redis Cache
   redis:
@@ -35,9 +40,15 @@ services:
       retries: 5
     networks:
       - athsys_network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=athsys-redis"
+      - "coolify.type=cache"
+      - "coolify.proxy.enabled=false"
 
-  # Backend API Service
+  # Backend API Service - Main Application
   backend:
+    image: athsys/backend:latest
     build: 
       context: .
       dockerfile: Dockerfile
@@ -53,6 +64,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - '5000:5000'
+    expose:
+      - '5000'
     depends_on:
       postgres:
         condition: service_healthy
@@ -72,8 +85,9 @@ services:
     labels:
       # Coolify Management Labels
       - "coolify.managed=true"
-      - "coolify.name=athsys"
+      - "coolify.name=athsys-backend"
       - "coolify.version=2.1"
+      - "coolify.type=application"
       
       # Enable public access with auto-generated domain
       - "coolify.proxy.enabled=true"
@@ -84,14 +98,23 @@ services:
       - "coolify.proxy.port=5000"
       - "coolify.proxy.protocol=http"
       - "coolify.main=true"
+      - "coolify.public=true"
       
       # SSL/TLS configuration
       - "coolify.ssl.enabled=true"
       - "coolify.ssl.letsencrypt=true"
+      - "coolify.ssl.redirect=true"
+      
+      # Domain configuration (Coolify will auto-generate or you can set custom)
+      - "coolify.domain.auto=true"
       
       # Health check
+      - "coolify.healthcheck.enabled=true"
       - "coolify.healthcheck.path=/health"
       - "coolify.healthcheck.port=5000"
+      - "coolify.healthcheck.interval=30s"
+      - "coolify.healthcheck.timeout=10s"
+      - "coolify.healthcheck.retries=3"
 
 volumes:
   postgres_data:
