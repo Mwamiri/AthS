@@ -48,6 +48,7 @@ services:
 
   # Backend API Service - Main Application
   backend:
+    image: athsys-backend:latest
     build: 
       context: .
       dockerfile: Dockerfile
