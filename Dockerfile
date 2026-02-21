@@ -1,53 +1,79 @@
 # Multi-stage build for AthSys Athletics Management System
 
-# Stage 1: Backend Development
+# Stage 1: Backend Builder
 FROM python:3.11-slim as backend-builder
 
 WORKDIR /app/backend
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install minimal system dependencies for Python packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    postgresql-client \
-    curl \
+    libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libfreetype6-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend requirements and install dependencies
+# Copy and install requirements
 COPY src/backend/requirements.txt* ./
-RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; else pip install flask flask-cors psycopg2-binary python-dotenv gunicorn; fi
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    if [ -f requirements.txt ]; then \
+        pip install --no-cache-dir -r requirements.txt; \
+    else \
+        pip install --no-cache-dir flask flask-cors psycopg2-binary python-dotenv gunicorn; \
+    fi
 
 # Copy backend source
 COPY src/backend/ ./
 
-# Stage 2: Frontend Build
+# Stage 2: Frontend
 FROM node:18-alpine as frontend-builder
 
 WORKDIR /app/frontend
 
-# Copy frontend package files
-COPY src/frontend/package*.json* ./
-RUN if [ -f package.json ]; then npm install --production || true; else echo "{}"; fi
-
-# Copy frontend source
+# Copy frontend files
 COPY src/frontend/ ./
 
-# No build step needed for simple HTML/CSS/JS
+# No build step needed for vanilla HTML/CSS/JS
 
-# Stage 3: Production Image
+# Stage 3: Production Runtime
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+# Install runtime system dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     postgresql-client \
     redis-tools \
-    curl \
-    nginx \
+    libpq5 \
+    libjpeg62-turbo \
+    libfreetype6 \
+    zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies from builder
+# Copy Python packages from builder
 COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=backend-builder /usr/local/bin /usr/local/bin
+
+# Copy backend
+COPY --from=backend-builder /app/backend /app/backend
+
+# Copy frontend
+COPY --from=frontend-builder /app/frontend /app/frontend
+
+# Set working directory
+WORKDIR /app/backend
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Expose port
+EXPOSE 5000
+
+# Run application
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "2", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
 COPY --from=backend-builder /usr/local/bin /usr/local/bin
 
 # Copy backend application
