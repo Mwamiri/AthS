@@ -45,3 +45,12 @@ mypy==1.7.1
 # Security
 PyJWT==2.8.1
 cryptography==41.0.7
+pyotp==2.9.0
+qrcode==7.4.2
+Pillow==10.1.0
+bandit==1.7.5
+safety==2.3.5
+
+# Database Migrations
+flask-migrate==4.0.5
+flask-sqlalchemy==3.1.1

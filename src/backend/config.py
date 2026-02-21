@@ -42,6 +42,13 @@ class BaseConfig:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     
+    # Two-Factor Authentication (2FA) Configuration
+    TWO_FA_ENABLED = os.getenv('TWO_FA_ENABLED', 'True') == 'True'
+    TWO_FA_OPTIONAL = os.getenv('TWO_FA_OPTIONAL', 'True') == 'True'
+    TWO_FA_ISSUER_NAME = 'AthSys'
+    TWO_FA_TOTP_WINDOW = 1  # Allow ±1 time window for TOTP verification
+    TWO_FA_BACKUP_CODES_COUNT = 10
+    
     # CORS Configuration
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
     
@@ -60,10 +67,21 @@ class BaseConfig:
     PROMETHEUS_ENABLED = True
     METRICS_PORT = 9090
     
-    # API Configuration
-    API_TITLE = 'AthSys API'
+    # Application Version
+    APP_VERSION = '2.1.6'  # Semantic versioning: MAJOR.MINOR.PATCH
     API_VERSION = 'v2.1'
-    API_DESCRIPTION = 'Elite Athletics Management System API'
+    API_TITLE = 'AthSys API'
+    
+    # Version History for tracking
+    VERSION_HISTORY = {
+        '2.1.6': 'CI/CD pipeline, Database migrations, Health monitoring with alerts, Audit logging, Email notifications, Feature flags, Request deduplication, Rate limit dashboard, Graceful shutdown, 2FA optional',
+        '2.1.5': 'Two-Factor Authentication (optional, TOTP + backup codes)',
+        '2.1.4': 'Advanced admin dashboard, real-time features',
+        '2.1.3': 'Report generation system',
+        '2.1.2': 'API rate limiting with per-user policies',
+        '2.1.1': 'Enterprise backend infrastructure (config, logging, validation, error handling, API service layer, monitoring, documentation, testing, state management, DevOps)',
+        '2.1.0': 'Joomla-style menu system, notification center, offline caching, enhanced authentication'
+    }
     
     # Pagination
     DEFAULT_PAGE_SIZE = 20
