@@ -3,6 +3,9 @@ set -e
 
 echo "🚀 Starting AthSys Backend..."
 
+# Change to backend directory for Python imports
+cd /app/backend
+
 # Wait for PostgreSQL to be ready
 echo "⏳ Waiting for PostgreSQL..."
 while ! pg_isready -h postgres -p 5432 -U ${DB_USER:-athsys_user} > /dev/null 2>&1; do
@@ -42,7 +45,6 @@ except Exception as e:
 
 if [ "$DB_INITIALIZED" = "no" ]; then
     echo "📊 Initializing database with demo data..."
-    cd /app/backend
     python init_db.py
     echo "✅ Database initialized successfully!"
 else
@@ -51,7 +53,6 @@ fi
 
 # Start the application
 echo "🌐 Starting Gunicorn server..."
-cd /app/backend
 exec gunicorn --bind 0.0.0.0:${PORT:-5000} \
     --workers 4 \
     --timeout 120 \
