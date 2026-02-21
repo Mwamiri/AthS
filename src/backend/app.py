@@ -1,6 +1,7 @@
 """
 AthSys Backend - Athletics Management System
 Main application entry point with enhanced UX features
+Production-ready with PostgreSQL and Redis
 """
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -8,6 +9,17 @@ from flask_cors import CORS
 import os
 import time
 from datetime import datetime
+from functools import wraps
+
+# Import database models and Redis config
+from models import (
+    get_db, init_db, 
+    User, Athlete, Race, Event, Registration, Result, AuditLog
+)
+from redis_config import (
+    RedisCache, RateLimiter, SessionManager, 
+    LeaderboardManager, PubSubManager, test_redis_connection
+)
 
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
@@ -17,135 +29,100 @@ CORS(app)
 # Configuration
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
 app.config['PORT'] = int(os.getenv('PORT', 5000))
-app.config['DB_HOST'] = os.getenv('DB_HOST', 'localhost')
-app.config['DB_NAME'] = os.getenv('DB_NAME', 'athsys_db')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'development-secret-key-change-in-production')
+app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://athsys_user:athsys_pass@localhost:5432/athsys_db')
+app.config['REDIS_URL'] = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+
+# Initialize connections on startup
+@app.before_first_request
+def initialize():
+    """Initialize database and test connections"""
+    try:
+        init_db()
+        print("✅ Database initialized")
+    except Exception as e:
+        print(f"⚠️  Database initialization warning: {e}")
+    
+    if test_redis_connection():
+        print("✅ Redis connected")
+    else:
+        print("⚠️  Redis unavailable - caching disabled")
 
 # Store version and metadata
-APP_VERSION = '1.0.0'
+APP_VERSION = '2.1'
 APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
 REQUEST_COUNT = 0
 
-# Demo data for better UX demonstration
-DEMO_ATHLETES = [
-    {'id': 1, 'name': 'Eliud Kipchoge', 'country': 'KEN', 'events': ['Marathon', '5000m']},
-    {'id': 2, 'name': 'Faith Kipyegon', 'country': 'KEN', 'events': ['1500m', '5000m']},
-    {'id': 3, 'name': 'Usain Bolt', 'country': 'JAM', 'events': ['100m', '200m']},
-]
+# Rate limiting decorator
+def rate_limit(max_requests=100, window=3600):
+    """Rate limiting decorator"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            identifier = request.remote_addr
+            allowed, remaining = RateLimiter.check_rate_limit(identifier, max_requests, window)
+            if not allowed:
+                return jsonify({'error': 'Rate limit exceeded', 'retry_after': window}), 429
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
-DEMO_EVENTS = [
-    {'id': 1, 'name': '100m Sprint', 'category': 'Track', 'participants': 8},
-    {'id': 2, 'name': 'Marathon', 'category': 'Road', 'participants': 150},
-    {'id': 3, 'name': '1500m', 'category': 'Track', 'participants': 12},
-]
+# Authentication decorator
+def require_auth(roles=None):
+    """Authentication decorator with role-based access"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Get auth token from header
+            auth_header = request.headers.get('Authorization')
+            if not auth_header:
+                return jsonify({'error': 'No authorization header'}), 401
+            
+            # For demo, extract user_id from token (In production, use JWT)
+            try:
+                user_id = int(auth_header.replace('Bearer ', ''))
+                
+                # Get session from Redis
+                session = SessionManager.get_session(user_id)
+                if not session:
+                    return jsonify({'error': 'Invalid or expired session'}), 401
+                
+                # Check role if specified
+                if roles and session.get('role') not in roles:
+                    return jsonify({'error': 'Insufficient permissions'}), 403
+                
+                # Add user to request context
+                request.user = session
+                return func(*args, **kwargs)
+            except Exception as e:
+                return jsonify({'error': 'Invalid token'}), 401
+        return wrapper
+    return decorator
 
-# Demo users data for authentication - Expanded roles
-DEMO_USERS = [
-    {
-        'id': 1,
-        'name': 'Admin User',
-        'email': 'admin@athsys.com',
-        'password': 'Admin@123',  # In production, this would be hashed
-        'role': 'admin',
-        'status': 'active',
-        'lastLogin': 'Just now',
-        'createdAt': '2024-01-01'
-    },
-    {
-        'id': 2,
-        'name': 'Chief Registrar',
-        'email': 'chief@athsys.com',
-        'password': 'Chief@123',
-        'role': 'chief_registrar',
-        'status': 'active',
-        'lastLogin': '1 hour ago',
-        'createdAt': '2024-01-02'
-    },
-    {
-        'id': 3,
-        'name': 'Registrar User',
-        'email': 'registrar@athsys.com',
-        'password': 'Registrar@123',
-        'role': 'registrar',
-        'status': 'active',
-        'lastLogin': '3 hours ago',
-        'createdAt': '2024-01-03'
-    },
-    {
-        'id': 4,
-        'name': 'Starter Official',
-        'email': 'starter@athsys.com',
-        'password': 'Starter@123',
-        'role': 'starter',
-        'status': 'active',
-        'lastLogin': '2 hours ago',
-        'createdAt': '2024-01-04'
-    },
-    {
-        'id': 5,
-        'name': 'John Athlete',
-        'email': 'john@athsys.com',
-        'password': 'Athlete@123',
-        'role': 'athlete',
-        'status': 'active',
-        'lastLogin': '5 hours ago',
-        'createdAt': '2024-01-15'
-    },
-    {
-        'id': 6,
-        'name': 'Sarah Coach',
-        'email': 'sarah@athsys.com',
-        'password': 'Coach@123',
-        'role': 'coach',
-        'status': 'active',
-        'lastLogin': '1 day ago',
-        'createdAt': '2024-01-10'
-    }
-]
+# Audit logging
+def log_audit(action, entity_type, entity_id=None, details=None):
+    """Log action to audit trail"""
+    try:
+        db = next(get_db())
+        user_id = getattr(request, 'user', {}).get('id')
+        
+        audit = AuditLog(
+            user_id=user_id,
+            action=action,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            details=details,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string
+        )
+        db.add(audit)
+        db.commit()
+    except Exception as e:
+        print(f"Audit log error: {e}")
 
-# Races/Competitions data
-DEMO_RACES = [
-    {
-        'id': 1,
-        'name': 'National Athletics Championship 2026',
-        'date': '2026-03-15',
-        'location': 'National Stadium',
-        'status': 'open',
-        'created_by': 2,  # Chief Registrar
-        'registration_link': 'pub_race_abc123',
-        'events': [1, 2, 3],
-        'createdAt': '2026-02-01'
-    },
-    {
-        'id': 2,
-        'name': 'Regional Track Meet 2026',
-        'date': '2026-04-10',
-        'location': 'Regional Sports Complex',
-        'status': 'draft',
-        'created_by': 2,
-        'registration_link': 'pub_race_xyz789',
-        'events': [1, 3],
-        'createdAt': '2026-02-10'
-    }
-]
-
-# Race registrations
-DEMO_REGISTRATIONS = [
-    {
-        'id': 1,
-        'race_id': 1,
-        'athlete_name': 'John Athlete',
-        'email': 'john@athsys.com',
-        'events': [1, 2],
-        'status': 'confirmed',
-        'registered_by': 3,  # Registrar
-        'registration_type': 'manual',
-        'createdAt': '2026-02-15'
-    }
-]
-
-# Start lists for races
+# Start lists placeholder
 DEMO_STARTLISTS = [
     {
         'id': 1,
@@ -345,16 +322,45 @@ def api_docs():
 
 
 @app.route('/api/athletes', methods=['GET'])
+@rate_limit(max_requests=200, window=3600)
 def get_athletes():
-    """Get all athletes with demo data"""
-    return jsonify(add_metadata({
-        'athletes': DEMO_ATHLETES,
-        'count': len(DEMO_ATHLETES),
-        'message': '✅ Athletes retrieved successfully'
-    }))
+    """Get all athletes from database with Redis caching"""
+    try:
+        # Try to get from cache first
+        cache_key = "athletes:all"
+        cached = RedisCache.get(cache_key)
+        if cached:
+            return jsonify({
+                'athletes': cached,
+                'count': len(cached),
+                'message': '✅ Athletes retrieved successfully (cached)',
+                'version': APP_VERSION
+            })
+        
+        # Query from database
+        db = next(get_db())
+        athletes = db.query(Athlete).all()
+        athletes_data = [athlete.to_dict() for athlete in athletes]
+        
+        # Cache results for 5 minutes
+        RedisCache.set(cache_key, athletes_data, expiry=300)
+        
+        return jsonify({
+            'athletes': athletes_data,
+            'count': len(athletes_data),
+            'message': '✅ Athletes retrieved successfully',
+            'version': APP_VERSION
+        })
+    except Exception as e:
+        print(f"Get athletes error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to retrieve athletes'
+        }), 500
 
 
 @app.route('/api/athletes', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar'])
 def create_athlete():
     """Create new athlete"""
     data = request.get_json()
@@ -375,17 +381,45 @@ def create_athlete():
             'message': f'Missing required fields: {", ".join(missing_fields)}'
         }), 400
     
-    # Simulate athlete creation
-    new_athlete = {
-        'id': len(DEMO_ATHLETES) + 1,
-        'name': data.get('name'),
-        'country': data.get('country'),
-        'events': data.get('events', []),
-        'created_at': datetime.now().isoformat()
-    }
-    
-    DEMO_ATHLETES.append(new_athlete)
-    
+    try:
+        db = next(get_db())
+        
+        # Create new athlete
+        new_athlete = Athlete(
+            name=data.get('name'),
+            country=data.get('country'),
+            date_of_birth=data.get('dateOfBirth'),
+            gender=data.get('gender'),
+            email=data.get('email'),
+            phone=data.get('phone'),
+            coach_name=data.get('coachName'),
+            bib_number=data.get('bibNumber')
+        )
+        
+        db.add(new_athlete)
+        db.commit()
+        db.refresh(new_athlete)
+        
+        # Clear athletes cache
+        RedisCache.delete("athletes:all")
+        
+        # Log action
+        log_audit('create', 'athlete', new_athlete.id, f'Created athlete: {new_athlete.name}')
+        
+        return jsonify({
+            'message': '✅ Athlete created successfully',
+            'athlete': new_athlete.to_dict(),
+            'version': APP_VERSION
+        }), 201
+        
+    except Exception as e:
+        print(f"Create athlete error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to create athlete'
+        }), 500
+
+
     return jsonify(add_metadata({
         'message': '✅ Athlete created successfully',
         'athlete': new_athlete
@@ -434,8 +468,9 @@ def get_stats():
 # Authentication Endpoints
 
 @app.route('/api/auth/login', methods=['POST'])
+@rate_limit(max_requests=10, window=300)  # 10 login attempts per 5 minutes
 def login():
-    """User login endpoint"""
+    """User login endpoint with database and Redis sesssion"""
     data = request.get_json()
     
     if not data or 'email' not in data or 'password' not in data:
@@ -447,43 +482,64 @@ def login():
     email = data.get('email')
     password = data.get('password')
     
-    # Find user by email
-    user = next((u for u in DEMO_USERS if u['email'] == email), None)
-    
-    if not user:
+    try:
+        # Query user from database
+        db = next(get_db())
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            log_audit('login_failed', 'user', details=f'Email not found: {email}')
+            return jsonify({
+                'error': 'Authentication failed',
+                'message': 'Invalid email or password'
+            }), 401
+        
+        # Check password using bcrypt
+        if not user.check_password(password):
+            log_audit('login_failed', 'user', user.id, f'Invalid password for {email}')
+            return jsonify({
+                'error': 'Authentication failed',
+                'message': 'Invalid email or password'
+            }), 401
+        
+        # Check if user is active
+        if user.status != 'active':
+            return jsonify({
+                'error': 'Account inactive',
+                'message': 'Your account has been deactivated. Please contact administrator.'
+            }), 403
+        
+        # Update last login
+        user.last_login = datetime.now()
+        db.commit()
+        
+        # Create session in Redis
+        session_data = user.to_dict()
+        session_data.pop('password_hash', None)  # Remove password hash
+        SessionManager.create_session(user.id, session_data, expiry=86400)  # 24 hours
+        
+        # Generate token (in production, use JWT with secret key)
+        token = f"{user.id}"  # Simplified for demo
+        
+        # Log successful login
+        log_audit('login_success', 'user', user.id, f'Logged in from {request.remote_addr}')
+        
+        # Cache user data for quick access
+        RedisCache.set(f"user:{user.id}", session_data, expiry=3600)
+        
         return jsonify({
-            'error': 'Authentication failed',
-            'message': 'Invalid email or password'
-        }), 401
-    
-    # Check password (in production, use proper password hashing)
-    if user['password'] != password:
+            'message': '✅ Login successful',
+            'token': token,
+            'user': session_data,
+            'version': APP_VERSION
+        }), 200
+        
+    except Exception as e:
+        print(f"Login error: {e}")
         return jsonify({
-            'error': 'Authentication failed',
-            'message': 'Invalid email or password'
-        }), 401
-    
-    # Check if user is active
-    if user.get('status') != 'active':
-        return jsonify({
-            'error': 'Account inactive',
-            'message': 'Your account has been deactivated. Please contact administrator.'
-        }), 403
-    
-    # Update last login
-    user['lastLogin'] = 'Just now'
-    
-    # Generate demo token (in production, use JWT)
-    token = f"demo_token_{user['id']}_{int(time.time())}"
-    
-    # Return user data (excluding password)
-    user_data = {k: v for k, v in user.items() if k != 'password'}
-    
-    return jsonify(add_metadata({
-        'message': '✅ Login successful',
-        'token': token,
-        'user': user_data
-    })), 200
+            'error': 'Server error',
+            'message': 'An error occurred during login'
+        }), 500
 
 
 @app.route('/api/auth/register', methods=['POST'])
@@ -716,16 +772,45 @@ def delete_user(user_id):
 # Race Management Endpoints (Chief Registrar)
 
 @app.route('/api/races', methods=['GET'])
+@rate_limit(max_requests=200, window=3600)
 def get_races():
-    """Get all races"""
-    return jsonify(add_metadata({
-        'races': DEMO_RACES,
-        'count': len(DEMO_RACES),
-        'message': '✅ Races retrieved successfully'
-    })), 200
+    """Get all races from database with Redis caching"""
+    try:
+        # Try to get from cache first
+        cache_key = "races:all"
+        cached = RedisCache.get(cache_key)
+        if cached:
+            return jsonify({
+                'races': cached,
+                'count': len(cached),
+                'message': '✅ Races retrieved successfully (cached)',
+                'version': APP_VERSION
+            }), 200
+        
+        # Query from database
+        db = next(get_db())
+        races = db.query(Race).order_by(Race.date.desc()).all()
+        races_data = [race.to_dict() for race in races]
+        
+        # Cache results for 5 minutes
+        RedisCache.set(cache_key, races_data, expiry=300)
+        
+        return jsonify({
+            'races': races_data,
+            'count': len(races_data),
+            'message': '✅ Races retrieved successfully',
+            'version': APP_VERSION
+        }), 200
+    except Exception as e:
+        print(f"Get races error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to retrieve races'
+        }), 500
 
 
 @app.route('/api/races', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def create_race():
     """Create new race (Chief Registrar only)"""
     data = request.get_json()
@@ -742,16 +827,18 @@ def create_race():
             'message': f'Missing required fields: {", ".join(missing_fields)}'
         }), 400
     
-    # Generate public registration link
-    import random
-    import string
-    link_id = 'pub_race_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    
-    new_race = {
-        'id': len(DEMO_RACES) + 1,
-        'name': data['name'],
-        'date': data['date'],
-        'location': data['location'],
+    try:
+        db = next(get_db())
+        
+        # Generate public registration link
+        import random
+        import string
+        link_id = 'pub_race_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        
+        new_race = Race(
+            name=data['name'],
+            date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
+            location=data['location'],
         'status': data.get('status', 'draft'),
         'created_by': data.get('created_by', 2),
         'registration_link': link_id,

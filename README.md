@@ -1,18 +1,30 @@
-# AthSys ver1 🏃‍♂️
+# AthSys ver 2.1 🏃‍♂️
 
 **Enterprise Athletics Management System**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 
 **Domain:** [appstore.co.ke](https://appstore.co.ke)  
 **Developer:** Mwamiri  
-**Version:** 1.0.0
+**Version:** 2.1
 
 ## 📋 Overview
 
 AthSys is a comprehensive, enterprise-grade athletics management system designed for organizing and managing track and field competitions. Built for federation compliance and scalability, it handles everything from athlete registration to real-time results processing and export.
+
+**NEW in v2.1:**
+- ✅ PostgreSQL database integration with SQLAlchemy ORM
+- ✅ Redis caching and session management
+- ✅ Bcrypt password hashing for enhanced security
+- ✅ Production-ready Docker Compose configuration
+- ✅ Rate limiting on API endpoints
+- ✅ Audit logging for all critical operations
+- ✅ Real-time leaderboards with Redis sorted sets
+- ✅ Enhanced security with obfuscated view filenames
 
 ## ✨ Key Features
 
@@ -20,6 +32,7 @@ AthSys is a comprehensive, enterprise-grade athletics management system designed
 - **Athlete Registration**: Complete athlete profiles with optional World Athletics codes
 - **Bib Assignment**: Automated bib number allocation and conflict resolution
 - **Event Management**: Multi-event competition support with scheduling
+- **Race Dashboard**: Role-based dashboards for athletes, coaches, starters, and officials
 
 ### 📊 Results Processing
 - **Multiple Input Methods**: 
@@ -30,24 +43,24 @@ AthSys is a comprehensive, enterprise-grade athletics management system designed
   - Personal Bests (PB) calculation
   - Season Bests (SB) tracking
   - Team scoring and rankings
+- **Real-time Leaderboards**: Redis-powered live ranking updates
 
-### 🔌 Extensibility
-- **Plugin Ecosystem**: Modular architecture for custom extensions
-- **Tabbed Management Interface**: Intuitive plugin control panel
-- **API Support**: RESTful endpoints for third-party integrations
+### 🔒 Security & Authentication
+- **Role-Based Access Control (RBAC)**: 7 distinct user roles
+- **Bcrypt Password Hashing**: Industry-standard password security
+- **Session Management**: Redis-backed sessions with configurable expiry
+- **Rate Limiting**: Protection against abuse and DDoS
+- **Audit Logging**: Complete activity trail for compliance
 
 ### 💾 Data Management
-- **Auto Backup**: Scheduled automatic backups
+- **PostgreSQL Database**: Relational data with ACID compliance
+- **Redis Caching**: Sub-millisecond data access for frequently used queries
+- **Auto Backup**: Scheduled automatic database backups
 - **Self-Healing**: Automated error detection and recovery
 - **Multi-Format Export**:
   - Excel spreadsheets
   - HTML reports
   - XML/JSON for federation compliance
-
-### 🚀 Deployment
-- **Docker Support**: Containerized deployment for easy scaling
-- **Coolify Integration**: One-click cloud deployment
-- **Nginx Configuration**: Production-ready web server setup
 
 ## 🏗️ Architecture
 
