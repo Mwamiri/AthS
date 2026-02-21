@@ -41,6 +41,7 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     postgresql-client \
+    redis-tools \
     curl \
     nginx \
     && rm -rf /var/lib/apt/lists/*
@@ -51,6 +52,10 @@ COPY --from=backend-builder /usr/local/bin /usr/local/bin
 
 # Copy backend application
 COPY --from=backend-builder /app/backend /app/backend
+
+# Copy docker entrypoint script
+COPY src/backend/docker-entrypoint.sh /app/backend/docker-entrypoint.sh
+RUN chmod +x /app/backend/docker-entrypoint.sh
 
 # Copy frontend source files
 COPY --from=frontend-builder /app/frontend /app/frontend
@@ -80,5 +85,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Set working directory to backend
 WORKDIR /app/backend
 
-# Default command - use Gunicorn for production, bind to 0.0.0.0
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT} --workers 2 --timeout 120 app:app"]
+# Use entrypoint script for auto-initialization
+CMD ["/app/backend/docker-entrypoint.sh"]
