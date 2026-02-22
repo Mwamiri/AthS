@@ -3,131 +3,648 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Athletes Management - AthSys</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="joomla-menu.css">
-    <script src="utils.js"></script>
+    <title>Athletes Management - AthSys v2.2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .athletes-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--bg-light);
+            padding: 1.25rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        .athlete-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-male {
+            background: rgba(74, 144, 226, 0.15);
+            color: #4a90e2;
+        }
+
+        .badge-female {
+            background: rgba(230, 57, 70, 0.15);
+            color: #e63946;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-btn.danger {
+            background: var(--danger);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="toast-container"></div>
+    <div class="container">
+        <header>
+            <div>
+                <h1>🏃 Athletes Management</h1>
+                <p style="color: var(--text-light); margin-top: 0.5rem;">View and manage athlete profiles</p>
+            </div>
+            <div class="header-actions">
+                <a href="admin.html" class="btn btn-secondary">← Back to Dashboard</a>
+                <button onclick="openAddAthleteModal()" class="btn">➕ Add Athlete</button>
+            </div>
+        </header>
 
-    <nav class="nav">
-        <div class="nav-brand">🏃 AthSys v2.1</div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <span id="userName" style="color: #666;"></span>
-            <a href="dashboard.html" class="btn btn-secondary">📊 Dashboard</a>
-            <a href="index.html" class="btn btn-secondary">Home</a>
-            <button onclick="logout()" class="btn btn-danger">Logout</button>
-        </div>
-    </nav>
-
-    <div class="container" style="margin-top: 2rem;">
-        <div class="dashboard-header">
-            <h1>🏃 Athletes Management</h1>
-            <p>View and manage athlete profiles and registrations</p>
-        </div>
-
-        <!-- Filters and Actions -->
-        <div class="actions-bar" style="display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; align-items: center;">
-            <button id="addAthleteBtn" class="btn btn-primary" onclick="showAddAthleteModal()">
-                ➕ Add Athlete
-            </button>
-            <button class="btn btn-secondary" onclick="refreshAthletes()">
-                🔄 Refresh
-            </button>
-            <button class="export-btn" onclick="exportAthletes()" title="Export athletes to CSV">
-                📥 Export
-            </button>
-            <select id="genderFilter" onchange="filterAthletes()" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;">
-                <option value="">All Genders</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-            </select>
-            <input type="text" id="searchInput" placeholder="🔍 Search athletes... (Ctrl+K)" 
-                   style="flex: 1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;"
-                   onkeyup="debouncedFilterAthletes()">
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search athletes by name or email..." onkeyup="filterAthletes()">
+            </div>
+            <button onclick="refreshAthletes()" class="btn btn-secondary">🔄 Refresh</button>
+            <button onclick="exportAthletes()" class="btn btn-secondary">📥 Export CSV</button>
         </div>
 
-        <!-- Athletes Grid -->
-        <div id="athletesContainer" class="athletes-grid">
-            <div class="loading">Loading athletes...</div>
+        <div class="athletes-table">
+            <div id="athletesContainer">
+                <div class="loading">Loading athletes...</div>
+            </div>
         </div>
     </div>
 
     <!-- Add/Edit Athlete Modal -->
-    <div id="athleteModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+    <div id="athleteModal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add New Athlete</h2>
-                <button class="btn-close" onclick="closeAthleteModal()">×</button>
+                <button class="close-btn" onclick="closeAthleteModal()">×</button>
             </div>
-            <div class="modal-body">
-                <form id="athleteForm">
-                    <input type="hidden" id="athleteId">
-                    
-                    <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="athleteName" required placeholder="e.g., John Doe">
-                    </div>
+            <form id="athleteForm" onsubmit="handleSaveAthlete(event)">
+                <input type="hidden" id="athleteId">
 
-                    <div class="form-group">
-                        <label>Date of Birth *</label>
-                        <input type="date" id="athleteDob" required>
-                    </div>
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="athleteName" required placeholder="John Doe">
+                </div>
 
-                    <div class="form-group">
-                        <label>Gender *</label>
-                        <select id="athleteGender" required>
-                            <option value="">Select...</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="athleteEmail" placeholder="john@example.com">
+                </div>
 
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="athleteEmail" placeholder="athlete@example.com">
-                    </div>
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="athleteDob">
+                </div>
 
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" id="athletePhone" placeholder="+1234567890">
-                    </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="athleteGender">
+                        <option value="">Select...</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
 
-                    <div class="form-group">
-                        <label>Team/Club</label>
-                        <input type="text" id="athleteTeam" placeholder="e.g., Speed Runners Club">
-                    </div>
+                <div class="form-group">
+                    <label>Team/Club</label>
+                    <input type="text" id="athleteTeam" placeholder="Speed Runners Club">
+                </div>
 
-                    <div class="form-group">
-                        <label>Coach</label>
-                        <input type="text" id="athleteCoach" placeholder="Coach name">
-                    </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="athletePhone" placeholder="+254712345678">
+                </div>
 
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closeAthleteModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Athlete</button>
-                    </div>
-                </form>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeAthleteModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn">Save Athlete</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Athlete Details Modal -->
-    <div id="athleteDetailsModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2 id="detailsTitle">Athlete Profile</h2>
-                <button class="btn-close" onclick="closeDetailsModal()">×</button>
-            </div>
-            <div class="modal-body" id="athleteDetailsContent">
-                <!-- Dynamically loaded -->
-            </div>
-        </div>
-    </div>
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let allAthletes = [];
 
-    <script src="joomla-menu.js"></script>
-    <script src="athletes.js"></script>
+        async function loadAthletes() {
+            const container = document.getElementById('athletesContainer');
+            container.innerHTML = '<div class="loading">Loading athletes...</div>';
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/athletes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to load athletes');
+
+                const athletes = await response.json();
+                allAthletes = Array.isArray(athletes) ? athletes : [];
+                displayAthletes(allAthletes);
+            } catch (error) {
+                console.error('Error loading athletes:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Athletes</h3>
+                        <p>${error.message}</p>
+                        <button onclick="loadAthletes()" class="btn" style="margin-top: 1rem;">🔄 Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayAthletes(athletes) {
+            const container = document.getElementById('athletesContainer');
+
+            if (!athletes || athletes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏃</div>
+                        <h3>No Athletes Yet</h3>
+                        <p>Start by registering your first athlete</p>
+                        <button onclick="openAddAthleteModal()" class="btn" style="margin-top: 1rem;">➕ Add First Athlete</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Gender</th>
+                            <th>Team</th>
+                            <th>DOB</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${athletes.map(athlete => `
+                            <tr>
+                                <td class="athlete-name">${athlete.name || 'N/A'}</td>
+                                <td>${athlete.email || 'N/A'}</td>
+                                <td><span class="badge badge-${athlete.gender === 'Male' ? 'male' : 'female'}">${athlete.gender || 'N/A'}</span></td>
+                                <td>${athlete.team || 'N/A'}</td>
+                                <td>${athlete.dob ? new Date(athlete.dob).toLocaleDateString() : 'N/A'}</td>
+                                <td>
+                                    <div class="actions">
+                                        <button onclick="editAthlete(${athlete.id})" class="action-btn">✏️ Edit</button>
+                                        <button onclick="deleteAthlete(${athlete.id})" class="action-btn danger">🗑️ Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = html;
+        }
+
+        function filterAthletes() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allAthletes.filter(a =>
+                (a.name && a.name.toLowerCase().includes(search)) ||
+                (a.email && a.email.toLowerCase().includes(search))
+            );
+            displayAthletes(filtered);
+        }
+
+        function openAddAthleteModal() {
+            document.getElementById('athleteId').value = '';
+            document.getElementById('modalTitle').textContent = 'Add New Athlete';
+            document.getElementById('athleteForm').reset();
+            document.getElementById('athleteModal').classList.add('active');
+        }
+
+        function closeAthleteModal() {
+            document.getElementById('athleteModal').classList.remove('active');
+        }
+
+        function editAthlete(id) {
+            const athlete = allAthletes.find(a => a.id === id);
+            if (!athlete) return;
+
+            document.getElementById('athleteId').value = athlete.id;
+            document.getElementById('athleteName').value = athlete.name || '';
+            document.getElementById('athleteEmail').value = athlete.email || '';
+            document.getElementById('athleteDob').value = athlete.dob ? athlete.dob.split('T')[0] : '';
+            document.getElementById('athleteGender').value = athlete.gender || '';
+            document.getElementById('athleteTeam').value = athlete.team || '';
+            document.getElementById('athletePhone').value = athlete.phone || '';
+
+            document.getElementById('modalTitle').textContent = 'Edit Athlete';
+            document.getElementById('athleteModal').classList.add('active');
+        }
+
+        async function handleSaveAthlete(event) {
+            event.preventDefault();
+
+            const athleteId = document.getElementById('athleteId').value;
+            const athleteData = {
+                name: document.getElementById('athleteName').value,
+                email: document.getElementById('athleteEmail').value,
+                dob: document.getElementById('athleteDob').value,
+                gender: document.getElementById('athleteGender').value,
+                team: document.getElementById('athleteTeam').value,
+                phone: document.getElementById('athletePhone').value
+            };
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const url = athleteId 
+                    ? `${API_URL}/api/athletes/${athleteId}`
+                    : `${API_URL}/api/athletes`;
+                const method = athleteId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(athleteData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to save athlete');
+                }
+
+                closeAthleteModal();
+                loadAthletes();
+                alert(athleteId ? '✅ Athlete updated!' : '✅ Athlete created!');
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function deleteAthlete(id) {
+            if (!confirm('Are you sure you want to delete this athlete?')) return;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/athletes/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete');
+
+                loadAthletes();
+                alert('✅ Athlete deleted!');
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        function refreshAthletes() {
+            loadAthletes();
+        }
+
+        function exportAthletes() {
+            if (allAthletes.length === 0) {
+                alert('No athletes to export');
+                return;
+            }
+
+            const csv = [
+                ['Name', 'Email', 'Gender', 'Team', 'DOB', 'Phone'],
+                ...allAthletes.map(a => [
+                    a.name || '',
+                    a.email || '',
+                    a.gender || '',
+                    a.team || '',
+                    a.dob ? new Date(a.dob).toLocaleDateString() : '',
+                    a.phone || ''
+                ])
+            ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `athletes_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.id) {
+                window.location.href = 'index.html';
+                return;
+            }
+            loadAthletes();
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('athleteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'athleteModal') closeAthleteModal();
+        });
+    </script>
 </body>
 </html>

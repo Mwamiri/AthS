@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athletes Management - AthSys</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="joomla-menu.css">
+    <script src="utils.js"></script>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <nav class="nav">
+        <div class="nav-brand">🏃 AthSys v2.1</div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <span id="userName" style="color: #666;"></span>
+            <a href="dashboard.html" class="btn btn-secondary">📊 Dashboard</a>
+            <a href="index.html" class="btn btn-secondary">Home</a>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <div class="dashboard-header">
+            <h1>🏃 Athletes Management</h1>
+            <p>View and manage athlete profiles and registrations</p>
+        </div>
+
+        <!-- Filters and Actions -->
+        <div class="actions-bar" style="display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; align-items: center;">
+            <button id="addAthleteBtn" class="btn btn-primary" onclick="showAddAthleteModal()">
+                ➕ Add Athlete
+            </button>
+            <button class="btn btn-secondary" onclick="refreshAthletes()">
+                🔄 Refresh
+            </button>
+            <button class="export-btn" onclick="exportAthletes()" title="Export athletes to CSV">
+                📥 Export
+            </button>
+            <select id="genderFilter" onchange="filterAthletes()" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                <option value="">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="🔍 Search athletes... (Ctrl+K)" 
+                   style="flex: 1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;"
+                   onkeyup="debouncedFilterAthletes()">
+        </div>
+
+        <!-- Athletes Grid -->
+        <div id="athletesContainer" class="athletes-grid">
+            <div class="loading">Loading athletes...</div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Athlete Modal -->
+    <div id="athleteModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Athlete</h2>
+                <button class="btn-close" onclick="closeAthleteModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="athleteForm">
+                    <input type="hidden" id="athleteId">
+                    
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="athleteName" required placeholder="e.g., John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" id="athleteDob" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gender *</label>
+                        <select id="athleteGender" required>
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="athleteEmail" placeholder="athlete@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="athletePhone" placeholder="+1234567890">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Team/Club</label>
+                        <input type="text" id="athleteTeam" placeholder="e.g., Speed Runners Club">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Coach</label>
+                        <input type="text" id="athleteCoach" placeholder="Coach name">
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeAthleteModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Athlete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Athlete Details Modal -->
+    <div id="athleteDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 id="detailsTitle">Athlete Profile</h2>
+                <button class="btn-close" onclick="closeDetailsModal()">×</button>
+            </div>
+            <div class="modal-body" id="athleteDetailsContent">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+    </div>
+
+    <script src="joomla-menu.js"></script>
+    <script src="athletes.js"></script>
+</body>
+</html>

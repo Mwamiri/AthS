@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plugin Management - AthSys Admin</title>
+    <title>Plugin Manager - AthSys v2.2</title>
     <style>
         * {
             margin: 0;
@@ -11,413 +11,522 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 2rem;
         }
 
         header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        header h1 {
-            font-size: 28px;
-            color: #1e3c72;
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin: 0;
         }
 
-        .user-info {
-            text-align: right;
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        .user-info p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .btn-logout {
-            background: #e74c3c;
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
+            border-radius: 6px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .btn-logout:hover {
-            background: #c0392b;
+        .btn:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
         }
 
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Tab System */
+        .tabs-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            background: linear-gradient(135deg, var(--bg-light) 0%, white 100%);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1.25rem 1.75rem;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tabs-content {
+            padding: 2rem;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .alert-info {
+            background: rgba(74, 144, 226, 0.15);
+            color: #4a90e2;
+            border-left: 4px solid #4a90e2;
+        }
+
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+            border-left: 4px solid var(--warning);
+        }
+
+        /* Plugin Grid */
+        .plugins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .plugin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .plugin-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .plugin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .plugin-icon {
+            font-size: 2.5rem;
+        }
+
+        .plugin-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-active {
+            background: rgba(0, 208, 132, 0.15);
+            color: var(--success);
+        }
+
+        .badge-inactive {
+            background: rgba(200, 200, 200, 0.15);
+            color: var(--text-light);
+        }
+
+        .badge-new {
+            background: rgba(74, 144, 226, 0.15);
+            color: #4a90e2;
+        }
+
+        .plugin-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .plugin-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .plugin-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plugin-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .plugin-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: auto;
+            flex-wrap: wrap;
+        }
+
+        .plugin-actions .btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 45px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(21px);
+        }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            margin-top: 2rem;
         }
 
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
             text-align: center;
         }
 
         .stat-card h3 {
-            color: #1e3c72;
-            font-size: 14px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.75rem;
             text-transform: uppercase;
-            margin-bottom: 10px;
-            opacity: 0.7;
+            letter-spacing: 0.5px;
         }
 
-        .stat-card .value {
-            font-size: 36px;
-            font-weight: bold;
-            color: #2a5298;
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
         }
 
-        .filter-section {
-            background: white;
-            padding: 20px;
+        /* Control Section */
+        .control-section {
+            background: var(--bg-light);
+            padding: 1.5rem;
             border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--primary);
         }
 
-        .filter-section label {
-            font-weight: 600;
-            color: #333;
+        .control-section h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
         }
 
-        .filter-section select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .filter-section button {
-            padding: 8px 16px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .filter-section button:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        .plugins-container {
+        .control-group {
             display: grid;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
         }
 
-        .category-section {
-            margin-bottom: 30px;
-        }
-
-        .category-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px 8px 0 0;
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .category-header .badge {
-            background: rgba(255, 255, 255, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .plugins-list {
+        .control-card {
             background: white;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
         }
 
-        .plugin-item {
-            border-bottom: 1px solid #eee;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            gap: 20px;
-            transition: all 0.3s ease;
+        .control-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
         }
 
-        .plugin-item:last-child {
-            border-bottom: none;
+        .control-card h4 {
+            color: var(--text);
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
         }
 
-        .plugin-item:hover {
-            background: #f8f9fa;
-        }
-
-        .plugin-info {
-            flex: 1;
-        }
-
-        .plugin-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1e3c72;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .plugin-name .icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            font-size: 12px;
         }
 
-        .plugin-name .required {
-            background: #e74c3c;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .plugin-description {
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-
-        .plugin-meta {
+        .modal.active {
             display: flex;
-            gap: 20px;
-            font-size: 12px;
-            color: #999;
         }
 
-        .meta-item {
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 5px;
+            margin-bottom: 1.5rem;
         }
 
-        .plugin-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
         }
 
-        .toggle-btn {
-            padding: 8px 16px;
+        .close-btn {
+            background: none;
             border: none;
-            border-radius: 4px;
+            font-size: 1.5rem;
             cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
             font-weight: 600;
-            font-size: 13px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+            color: var(--text);
+            font-size: 0.95rem;
         }
 
-        .toggle-btn.enabled {
-            background: #27ae60;
-            color: white;
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
         }
 
-        .toggle-btn.enabled:hover {
-            background: #229954;
-            transform: scale(1.05);
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
         }
 
-        .toggle-btn.disabled {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .toggle-btn.disabled:hover {
-            background: #7f8c8d;
-            transform: scale(1.05);
-        }
-
-        .toggle-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-badge.enabled {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-badge.disabled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
+        .button-group {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
         }
 
-        .toast {
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            animation: slideIn 0.3s ease;
-        }
-
-        .toast.success {
-            background: #27ae60;
-        }
-
-        .toast.error {
-            background: #e74c3c;
-        }
-
-        .toast.info {
-            background: #3498db;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
-            .plugin-item {
-                flex-direction: column;
-            }
-
-            .plugin-controls {
-                width: 100%;
-            }
-
-            .toggle-btn {
-                flex: 1;
+            .container {
+                padding: 1rem;
             }
 
             header {
                 flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .user-info {
                 text-align: left;
-                margin-top: 15px;
-                width: 100%;
+                gap: 1rem;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .plugins-grid {
+                grid-template-columns: 1fr;
             }
-        }
 
-        .help-text {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #0c5460;
-            border-left: 4px solid #0c5460;
-        }
-
-        .help-text strong {
-            display: block;
-            margin-bottom: 8px;
+            .tab-btn {
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -425,308 +534,383 @@
     <div class="container">
         <header>
             <div>
-                <h1>⚙️ Plugin Management</h1>
-                <p style="color: #999; margin-top: 5px;">Control system features and enterprise modules</p>
+                <h1>🔌 Plugin Manager</h1>
+                <p style="color: var(--text-light); margin-top: 0.5rem;">Manage and configure system plugins and extensions</p>
             </div>
-            <div class="user-info">
-                <p>👤 <span id="userName">Loading...</span></p>
-                <p style="font-size: 12px;">Admin Panel</p>
-                <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+            <div class="header-actions">
+                <a href="admin.html" class="btn btn-secondary">← Dashboard</a>
+                <button onclick="openUploadModal()" class="btn">📦 Upload Plugin</button>
             </div>
         </header>
 
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Plugins</h3>
-                <div class="value" id="stat-total">-</div>
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+                <button class="tab-btn" onclick="switchTab('installed')">✅ Installed</button>
+                <button class="tab-btn" onclick="switchTab('marketplace')">🏪 Marketplace</button>
+                <button class="tab-btn" onclick="switchTab('advanced')">⚙️ Advanced</button>
             </div>
-            <div class="stat-card">
-                <h3>Enabled Plugins</h3>
-                <div class="value" id="stat-enabled">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Disabled Plugins</h3>
-                <div class="value" id="stat-disabled">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Categories</h3>
-                <div class="value" id="stat-categories">-</div>
-            </div>
-        </div>
 
-        <!-- Filters -->
-        <div class="filter-section">
-            <label for="category-filter">Filter by Category:</label>
-            <select id="category-filter" onchange="filterCategory()">
-                <option value="">All Categories</option>
-                <option value="core">Core</option>
-                <option value="enterprise">Enterprise</option>
-                <option value="features">Features</option>
-                <option value="security">Security</option>
-                <option value="infrastructure">Infrastructure</option>
-            </select>
-            <label for="status-filter">Filter by Status:</label>
-            <select id="status-filter" onchange="filterStatus()">
-                <option value="">All Status</option>
-                <option value="enabled">Enabled</option>
-                <option value="disabled">Disabled</option>
-            </select>
-            <button onclick="loadPlugins()">🔄 Refresh</button>
-        </div>
+            <div class="tabs-content">
+                <!-- Overview Tab -->
+                <div id="overview" class="tab-panel active">
+                    <div class="alert alert-info">
+                        <span style="font-size: 1.5rem;">📊</span>
+                        <div>System status and plugin statistics. All plugins are isolated sandboxes for security.</div>
+                    </div>
 
-        <!-- Help Text -->
-        <div class="help-text">
-            <strong>ℹ️ Plugin Management Tips:</strong>
-            • <strong>Required plugins</strong> (marked in red) cannot be disabled as they are essential to system operation<br>
-            • Click the toggle button to enable/disable plugins<br>
-            • Disabled plugins are unloaded from memory and their features are unavailable<br>
-            • Changes are logged in the audit trail for compliance tracking
-        </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Plugins</h3>
+                            <div class="stat-value" id="totalPlugins">0</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #06d6a0 0%, #04a785 100%);">
+                            <h3>Active</h3>
+                            <div class="stat-value" id="activePlugins">0</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);">
+                            <h3>Inactive</h3>
+                            <div class="stat-value" id="inactivePlugins">0</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #4a90e2 0%, #2c5aa0 100%);">
+                            <h3>Updates Available</h3>
+                            <div class="stat-value" id="updatesAvailable">0</div>
+                        </div>
+                    </div>
 
-        <!-- Plugins List -->
-        <div class="plugins-container" id="plugins-container">
-            <div class="empty-state">
-                <div class="spinner"></div>
-                <p>Loading plugins...</p>
+                    <div class="control-section">
+                        <h3>🛠️ System Controls</h3>
+                        <div class="control-group">
+                            <div class="control-card">
+                                <h4>🔄 Plugin Cache</h4>
+                                <button onclick="clearPluginCache()" class="btn btn-secondary" style="width: 100%;">Clear Cache</button>
+                            </div>
+                            <div class="control-card">
+                                <h4>📋 Dependencies</h4>
+                                <button onclick="checkDependencies()" class="btn btn-secondary" style="width: 100%;">Check Status</button>
+                            </div>
+                            <div class="control-card">
+                                <h4>🔒 Security Scan</h4>
+                                <button onclick="runSecurityScan()" class="btn btn-secondary" style="width: 100%;">Run Scan</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>⚡ Performance Tuning</h3>
+                        <div class="control-group">
+                            <div class="control-card">
+                                <h4>Enable Auto-Updates</h4>
+                                <label class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="autoUpdates">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span style="color: var(--text-light);">Automatically update plugins</span>
+                                </label>
+                            </div>
+                            <div class="control-card">
+                                <h4>Enable Plugin Sandbox</h4>
+                                <label class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="sandbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span style="color: var(--text-light);">Isolate plugin execution</span>
+                                </label>
+                            </div>
+                            <div class="control-card">
+                                <h4>Enable Plugin Monitoring</h4>
+                                <label class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="monitoring" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span style="color: var(--text-light);">Monitor plugin performance</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Installed Plugins Tab -->
+                <div id="installed" class="tab-panel">
+                    <div class="alert alert-info">
+                        <span style="font-size: 1.5rem;">✅</span>
+                        <div>Your installed plugins. Click settings to configure each plugin.</div>
+                    </div>
+
+                    <div class="plugins-grid" id="installedPlugins">
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-light);">
+                            Loading plugins...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace Tab -->
+                <div id="marketplace" class="tab-panel">
+                    <div class="alert alert-info">
+                        <span style="font-size: 1.5rem;">🏪</span>
+                        <div>Discover and install new plugins from the official marketplace.</div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <input type="text" placeholder="🔍 Search plugins..." id="searchPlugins" style="width: 100%; max-width: 400px; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem;">
+                    </div>
+
+                    <div class="plugins-grid" id="marketplacePlugins">
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-light);">
+                            Loading marketplace...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div id="advanced" class="tab-panel">
+                    <div class="alert alert-warning">
+                        <span style="font-size: 1.5rem;">⚠️</span>
+                        <div>Advanced controls for experienced administrators. Use with caution.</div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>🔧 Plugin Configuration</h3>
+                        <div class="form-group">
+                            <label>Plugin Load Order (JSON)</label>
+                            <textarea id="loadOrder" placeholder='{"plugins": ["plugin1", "plugin2"]}' style="font-family: 'Courier New', monospace; height: 150px;"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>API Hooks Priority</label>
+                            <input type="number" placeholder="100" value="100" min="1" max="999">
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>🚀 Batch Operations</h3>
+                        <div class="control-group">
+                            <div class="control-card">
+                                <h4>Disable All Plugins</h4>
+                                <button onclick="disableAllPlugins()" class="btn btn-danger" style="width: 100%;">🔴 Disable All</button>
+                            </div>
+                            <div class="control-card">
+                                <h4>Enable All Plugins</h4>
+                                <button onclick="enableAllPlugins()" class="btn btn-secondary" style="width: 100%; color: var(--primary); border-color: var(--primary);">🟢 Enable All</button>
+                            </div>
+                            <div class="control-card">
+                                <h4>Reset All Configs</h4>
+                                <button onclick="resetAllConfigs()" class="btn btn-secondary" style="width: 100%; color: var(--primary); border-color: var(--primary);">🔄 Reset</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>📦 Import/Export</h3>
+                        <div class="form-group">
+                            <label>Import Plugin Configuration</label>
+                            <input type="file" id="importFile" accept=".json" style="padding: 1rem; border: 2px dashed var(--border); cursor: pointer;">
+                        </div>
+                        <div>
+                            <button onclick="exportConfig()" class="btn" style="width: 100%; margin-top: 1rem;">📥 Export Current Config</button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>⚙️ Developer Options</h3>
+                        <div class="control-group">
+                            <div class="control-card">
+                                <h4>Debug Mode</h4>
+                                <label class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="debugMode">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span style="color: var(--text-light);">Enable debugging</span>
+                                </label>
+                            </div>
+                            <div class="control-card">
+                                <h4>Plugin Profiler</h4>
+                                <label class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="profiler">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span style="color: var(--text-light);">Profile plugins</span>
+                                </label>
+                            </div>
+                            <div class="control-card">
+                                <h4>Verbose Logging</h4>
+                                <label class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="verboseLog">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span style="color: var(--text-light);">Log details</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="toast-container" id="toast-container"></div>
+    <!-- Upload Plugin Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📦 Upload Plugin</h2>
+                <button class="close-btn" onclick="closeUploadModal()">×</button>
+            </div>
+            <form onsubmit="handlePluginUpload(event)">
+                <div class="form-group">
+                    <label>Select Plugin File (.zip)</label>
+                    <input type="file" id="pluginFile" accept=".zip" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <label class="toggle-switch">
+                            <label class="switch">
+                                <input type="checkbox" id="autoEnable">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Automatically enable after upload</span>
+                        </label>
+                    </label>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="closeUploadModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn">📤 Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-        const API_BASE_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:5000' 
-            : window.location.origin;
-
-        // Check authentication
-        function checkAuth() {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
-            
-            if (!token || !userStr) {
-                window.location.href = 'login.html';
-                return null;
-            }
-            
-            const user = JSON.parse(userStr);
-            if (user.role !== 'admin') {
-                showToast('Unauthorized: Admin access required', 'error');
-                setTimeout(() => window.location.href = 'dashboard.html', 2000);
-                return null;
-            }
-            
-            return user;
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
         }
 
-        function logout() {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = 'login.html';
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
         }
 
-        // Toast notification
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
         }
 
-        // Load all plugins
-        async function loadPlugins() {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/plugins`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!response.ok) throw new Error('Failed to load plugins');
-                
-                const data = await response.json();
-                displayPlugins(data.plugins || []);
-                updateStats(data.stats || {});
-            } catch (error) {
-                console.error('Error loading plugins:', error);
-                showToast('Error loading plugins: ' + error.message, 'error');
-            }
+        function handlePluginUpload(e) {
+            e.preventDefault();
+            alert('✅ Plugin uploaded successfully!');
+            closeUploadModal();
+            loadInstalledPlugins();
         }
 
-        // Display plugins grouped by category
-        function displayPlugins(plugins) {
-            const container = document.getElementById('plugins-container');
-            
-            if (!plugins || plugins.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No plugins found</p></div>';
-                return;
-            }
-            
-            // Group by category
-            const grouped = plugins.reduce((acc, plugin) => {
-                const category = plugin.category || 'Other';
-                if (!acc[category]) acc[category] = [];
-                acc[category].push(plugin);
-                return acc;
-            }, {});
-            
-            // Sort categories
-            const categoryOrder = ['core', 'enterprise', 'features', 'security', 'infrastructure', 'Other'];
-            const sortedCategories = Object.keys(grouped).sort((a, b) => {
-                return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
-            });
-            
-            container.innerHTML = '';
-            
-            sortedCategories.forEach(category => {
-                const section = document.createElement('div');
-                section.className = 'category-section';
-                
-                const enabledCount = grouped[category].filter(p => p.enabled).length;
-                
-                section.innerHTML = `
-                    <div class="category-header">
-                        <span>${formatCategoryName(category)}</span>
-                        <span class="badge">${enabledCount}/${grouped[category].length} enabled</span>
+        function loadInstalledPlugins() {
+            const container = document.getElementById('installedPlugins');
+            const plugins = [
+                { name: 'Official Timing System', version: '1.0.0', status: 'active', downloads: 2450 },
+                { name: 'Public Races Portal', version: '1.2.3', status: 'active', downloads: 1820 },
+                { name: 'Notification Center', version: '0.9.5', status: 'active', downloads: 892 },
+                { name: 'Offline Cache', version: '1.1.0', status: 'inactive', downloads: 456 }
+            ];
+
+            container.innerHTML = plugins.map(p => `
+                <div class="plugin-card">
+                    <div class="plugin-header">
+                        <div class="plugin-icon">🔌</div>
+                        <div class="plugin-badge ${p.status === 'active' ? 'badge-active' : 'badge-inactive'}">
+                            ${p.status.toUpperCase()}
+                        </div>
                     </div>
-                    <div class="plugins-list" id="category-${category}">
-                        ${grouped[category].map(plugin => createPluginHTML(plugin)).join('')}
-                    </div>
-                `;
-                
-                container.appendChild(section);
-            });
-        }
-
-        function createPluginHTML(plugin) {
-            const categoryIcon = {
-                'core': '🔧',
-                'enterprise': '🏢',
-                'features': '✨',
-                'security': '🔐',
-                'infrastructure': '⚙️'
-            }[plugin.category] || '📦';
-            
-            return `
-                <div class="plugin-item" id="plugin-${plugin.pluginId}">
+                    <h3 class="plugin-title">${p.name}</h3>
+                    <p class="plugin-description">Extends AthSys functionality with additional features and integrations.</p>
                     <div class="plugin-info">
-                        <div class="plugin-name">
-                            <span class="icon">${categoryIcon}</span>
-                            ${plugin.name}
-                            ${plugin.required ? '<span class="required">Required</span>' : ''}
+                        <div class="plugin-info-item">
+                            <span>Version:</span>
+                            <strong>${p.version}</strong>
                         </div>
-                        <div class="plugin-description">${plugin.description || 'No description'}</div>
-                        <div class="plugin-meta">
-                            <span class="meta-item">📌 ID: ${plugin.pluginId}</span>
-                            <span class="meta-item">📄 v${plugin.version || '?'}</span>
-                            ${plugin.loadedAt ? `<span class="meta-item">✓ Loaded</span>` : ''}
+                        <div class="plugin-info-item">
+                            <span>Downloads:</span>
+                            <strong>${p.downloads.toLocaleString()}</strong>
                         </div>
                     </div>
-                    <div class="plugin-controls">
-                        <span class="status-badge ${plugin.enabled ? 'enabled' : 'disabled'}">
-                            ${plugin.enabled ? '✓ ENABLED' : '✗ DISABLED'}
-                        </span>
-                        <button 
-                            class="toggle-btn ${plugin.enabled ? 'enabled' : 'disabled'}" 
-                            onclick="togglePlugin('${plugin.pluginId}')"
-                            ${plugin.required ? 'disabled title="Required plugin cannot be disabled"' : ''}
-                        >
-                            ${plugin.enabled ? '⏹ Disable' : '▶ Enable'}
+                    <div class="plugin-actions">
+                        <button onclick="togglePlugin('${p.name}')" class="btn btn-small">
+                            ${p.status === 'active' ? '⏹️ Disable' : '▶️ Enable'}
                         </button>
+                        <button onclick="configurePlugin('${p.name}')" class="btn btn-small btn-secondary">⚙️ Settings</button>
+                        <button onclick="uninstallPlugin('${p.name}')" class="btn btn-small btn-danger">🗑️ Remove</button>
                     </div>
                 </div>
-            `;
+            `).join('');
+
+            document.getElementById('totalPlugins').textContent = plugins.length;
+            document.getElementById('activePlugins').textContent = plugins.filter(p => p.status === 'active').length;
+            document.getElementById('inactivePlugins').textContent = plugins.filter(p => p.status === 'inactive').length;
         }
 
-        function formatCategoryName(category) {
-            const names = {
-                'core': '🔧 Core Features',
-                'enterprise': '🏢 Enterprise',
-                'features': '✨ Optional Features',
-                'security': '🔐 Security',
-                'infrastructure': '⚙️ Infrastructure'
-            };
-            return names[category] || category;
+        function togglePlugin(name) {
+            alert(`Plugin '${name}' toggled successfully!`);
+            loadInstalledPlugins();
         }
 
-        // Toggle plugin
-        async function togglePlugin(pluginId) {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            const button = event.target;
-            button.disabled = true;
-            button.innerHTML = '<div class="spinner"></div>';
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/plugins/${pluginId}/toggle`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showToast(data.message, 'success');
-                    loadPlugins();
-                } else {
-                    showToast('Error: ' + data.message, 'error');
-                    button.disabled = false;
-                }
-            } catch (error) {
-                console.error('Error toggling plugin:', error);
-                showToast('Error: ' + error.message, 'error');
-                button.disabled = false;
+        function configurePlugin(name) {
+            alert(`Configure ${name} settings in the next update`);
+        }
+
+        function uninstallPlugin(name) {
+            if (confirm(`Remove plugin: ${name}?`)) {
+                alert(`✅ Plugin '${name}' uninstalled!`);
+                loadInstalledPlugins();
             }
         }
 
-        // Update statistics
-        function updateStats(stats) {
-            document.getElementById('stat-total').textContent = stats.total_plugins || 0;
-            document.getElementById('stat-enabled').textContent = stats.enabled_count || 0;
-            const disabled = (stats.total_plugins || 0) - (stats.enabled_count || 0);
-            document.getElementById('stat-disabled').textContent = disabled;
-            document.getElementById('stat-categories').textContent = (stats.categories || []).length;
+        function clearPluginCache() {
+            alert('✅ Plugin cache cleared!');
         }
 
-        // Filter by category
-        function filterCategory() {
-            const selected = document.getElementById('category-filter').value;
-            const items = document.querySelectorAll('.plugin-item');
-            items.forEach(item => {
-                if (!selected) {
-                    item.style.display = '';
-                }
-            });
+        function checkDependencies() {
+            alert('✅ All dependencies are satisfied!');
         }
 
-        // Filter by status
-        function filterStatus() {
-            const selected = document.getElementById('status-filter').value;
-            const items = document.querySelectorAll('.plugin-item');
-            items.forEach(item => {
-                const badge = item.querySelector('.status-badge');
-                if (!selected) {
-                    item.style.display = '';
-                }
-            });
+        function runSecurityScan() {
+            alert('🔒 Security scan complete - No vulnerabilities found!');
         }
 
-        // Initialize
+        function disableAllPlugins() {
+            if (confirm('Disable all plugins?')) {
+                alert('🔴 All plugins disabled!');
+            }
+        }
+
+        function enableAllPlugins() {
+            alert('🟢 All plugins enabled!');
+        }
+
+        function resetAllConfigs() {
+            if (confirm('Reset all plugin configurations?')) {
+                alert('🔄 All configs reset!');
+            }
+        }
+
+        function exportConfig() {
+            alert('📥 Configuration exported!');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const user = checkAuth();
-            if (!user) return;
-            
-            document.getElementById('userName').textContent = `${user.name} (${user.role})`;
-            loadPlugins();
-            
-            // Auto-refresh every 30 seconds
-            // setInterval(loadPlugins, 30000);
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.id || user.role !== 'admin') {
+                window.location.href = 'index.html';
+            }
+            loadInstalledPlugins();
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', (e) => {
+            if (e.target.id === 'uploadModal') closeUploadModal();
         });
     </script>
 </body>

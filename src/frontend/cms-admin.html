@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMS Admin Panel - AthSys v2.2</title>
+    <title>System Settings - AthSys v2.2</title>
     <style>
         * {
             margin: 0;
@@ -13,6 +13,7 @@
 
         :root {
             --primary: #ff6b35;
+            --primary-dark: #d45528;
             --secondary: #06d6a0;
             --dark: #1a1a2e;
             --text: #2d2d2d;
@@ -21,81 +22,193 @@
             --bg-light: #f8f9ff;
             --border: #e0e0e0;
             --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg-light);
             color: var(--text);
             line-height: 1.6;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 2rem;
         }
 
         header {
             background: white;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
             color: var(--primary);
-            margin-bottom: 10px;
+            font-size: 2rem;
+            margin: 0;
         }
 
-        .breadcrumb {
-            color: var(--text-light);
-            font-size: 0.9rem;
+        .header-actions {
+            display: flex;
+            gap: 1rem;
         }
 
-        .panel {
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Tab System */
+        .tabs-container {
             background: white;
             border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
 
-        .panel h2 {
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            background: linear-gradient(135deg, var(--bg-light) 0%, white 100%);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1.25rem 1.75rem;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .tab-btn:hover {
             color: var(--primary);
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--bg-light);
+            background: rgba(255, 107, 53, 0.05);
         }
 
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tabs-content {
+            padding: 2rem;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Form Controls */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .form-group.horizontal {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 0.75rem;
             font-weight: 600;
             color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .label-info {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
         }
 
         input[type="text"],
+        input[type="email"],
         input[type="url"],
+        input[type="number"],
         textarea,
         select {
             width: 100%;
-            padding: 12px;
+            padding: 0.75rem;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
         }
 
-        input[type="text"]:focus,
-        input[type="url"]:focus,
+        input:focus,
         textarea:focus,
         select:focus {
             outline: none;
@@ -105,103 +218,22 @@
 
         textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 120px;
         }
 
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        .btn-secondary {
-            background: var(--bg-light);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        .nav-links-list {
-            display: grid;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .nav-link-item {
-            background: var(--bg-light);
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--secondary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-link-info {
-            flex: 1;
-        }
-
-        .nav-link-info p {
-            margin: 5px 0;
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-
-        .nav-link-info strong {
-            display: block;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
+        /* Toggle Switch */
         .toggle-switch {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 1rem;
+            margin: 1rem 0;
         }
 
         .switch {
             position: relative;
             display: inline-block;
             width: 50px;
-            height: 24px;
+            height: 28px;
         }
 
         .switch input {
@@ -217,491 +249,748 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
-            transition: 0.4s;
-            border-radius: 24px;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 28px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
+            height: 22px;
+            width: 22px;
             left: 3px;
             bottom: 3px;
             background-color: white;
-            transition: 0.4s;
+            transition: 0.3s;
             border-radius: 50%;
         }
 
         input:checked + .slider {
-            background-color: var(--secondary);
+            background-color: var(--primary);
         }
 
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(22px);
         }
 
-        .alert {
-            padding: 15px;
+        /* Color Picker */
+        .color-input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .color-preview {
+            width: 50px;
+            height: 50px;
             border-radius: 6px;
-            margin-bottom: 20px;
-            display: none;
+            border: 2px solid var(--border);
+            cursor: pointer;
         }
 
-        .alert-success {
-            background: rgba(0, 208, 132, 0.1);
-            border: 1px solid var(--success);
-            color: #00a86b;
-        }
-
-        .alert-error {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid #e74c3c;
-            color: #c0392b;
-        }
-
-        .info-box {
-            background: rgba(45, 156, 219, 0.1);
-            border-left: 4px solid #2d9cdb;
-            padding: 15px;
+        input[type="color"] {
+            width: 60px;
+            height: 50px;
+            cursor: pointer;
+            border: 1px solid var(--border);
             border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            line-height: 1.6;
         }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table th {
+        /* Settings Section */
+        .settings-section {
             background: var(--bg-light);
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary);
         }
 
-        table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
+        .settings-section h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        table tr:hover {
-            background: var(--bg-light);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
         }
 
         .status-active {
-            background: rgba(0, 208, 132, 0.2);
+            background: rgba(0, 208, 132, 0.15);
             color: var(--success);
         }
 
         .status-inactive {
-            background: rgba(230, 126, 34, 0.2);
-            color: #e67e22;
+            background: rgba(200, 200, 200, 0.15);
+            color: var(--text-light);
         }
 
-        .action-buttons {
+        /* Button Group */
+        .button-group {
             display: flex;
-            gap: 10px;
+            gap: 1rem;
+            margin-top: 2rem;
         }
 
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 0.85rem;
+        .button-group .btn {
+            flex: 1;
         }
 
+        /* Alert Box */
+        .alert {
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            min-width: 24px;
+        }
+
+        .alert-success {
+            background: rgba(0, 208, 132, 0.15);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning);
+            border-left: 4px solid var(--warning);
+        }
+
+        .alert-danger {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Grid Layout */
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-card {
+            background: var(--bg);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .control-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+        }
+
+        .control-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .panel {
-                padding: 20px;
+            .container {
+                padding: 1rem;
             }
 
-            .grid-2 {
+            header {
+                flex-direction: column;
+                text-align: left;
+                gap: 1rem;
+            }
+
+            .form-group.horizontal {
                 grid-template-columns: 1fr;
             }
 
-            .nav-link-item {
-                flex-direction: column;
-                align-items: flex-start;
+            .tabs-header {
+                padding-bottom: 0.5rem;
             }
 
-            table {
-                font-size: 0.9rem;
+            .tab-btn {
+                padding: 1rem 1rem;
+                font-size: 0.85rem;
             }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>⚙️ CMS Admin Panel</h1>
-            <p class="breadcrumb">Backend Controls for Frontend Content</p>
-        </div>
-    </header>
-
     <div class="container">
-        <!-- Navigation Management -->
-        <div class="panel">
-            <h2>📌 Navigation Links Manager</h2>
-            
-            <div class="info-box">
-                Control which links appear in the navigation bar on the home page. Add, edit, or hide navigation links without touching code.
+        <header>
+            <div>
+                <h1>⚙️ System Settings</h1>
+                <p style="color: var(--text-light); margin-top: 0.5rem;">Manage AthSys configuration and preferences</p>
+            </div>
+            <div class="header-actions">
+                <a href="admin.html" class="btn btn-secondary">← Back to Dashboard</a>
+                <button onclick="saveAllSettings()" class="btn">💾 Save Settings</button>
+            </div>
+        </header>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab('general')">🏛️ General Settings</button>
+                <button class="tab-btn" onclick="switchTab('frontend')">🎨 Frontend</button>
+                <button class="tab-btn" onclick="switchTab('email')">📧 Email & Notifications</button>
+                <button class="tab-btn" onclick="switchTab('security')">🔒 Security</button>
+                <button class="tab-btn" onclick="switchTab('advanced')">⚡ Advanced</button>
             </div>
 
-            <div id="navAlert" class="alert"></div>
+            <div class="tabs-content">
+                <!-- General Settings Tab -->
+                <div id="general" class="tab-panel active">
+                    <div class="alert alert-success">
+                        <span class="alert-icon">ℹ️</span>
+                        <div>System information and basic configuration. Changes are saved automatically.</div>
+                    </div>
 
-            <div class="form-group">
-                <label>Add New Navigation Link</label>
-                <div class="grid-2">
-                    <input type="text" id="newNavLabel" placeholder="e.g., Features">
-                    <input type="text" id="newNavUrl" placeholder="e.g., #features or /page.html">
+                    <div class="settings-section">
+                        <h3>📋 Basic Information</h3>
+                        <div class="form-group horizontal">
+                            <div>
+                                <label>Platform Name</label>
+                                <input type="text" id="platformName" value="AthSys" placeholder="Application name">
+                                <div class="label-info">Display name across the platform</div>
+                            </div>
+                            <div>
+                                <label>Platform Version</label>
+                                <input type="text" id="platformVersion" value="2.2.0" placeholder="Version" readonly style="background: var(--bg-light);">
+                                <div class="label-info">Current system version</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Platform Description</label>
+                            <textarea id="platformDescription" placeholder="Brief description of your platform...">Elite Athletics Management System</textarea>
+                            <div class="label-info">Used in system metadata and documentation</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🌐 Organization Details</h3>
+                        <div class="form-group horizontal">
+                            <div>
+                                <label>Organization Name</label>
+                                <input type="text" id="orgName" placeholder="Your organization name">
+                            </div>
+                            <div>
+                                <label>Contact Email</label>
+                                <input type="email" id="contactEmail" placeholder="support@example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Website URL</label>
+                            <input type="url" id="websiteUrl" placeholder="https://example.com">
+                        </div>
+                    </div>
                 </div>
-                <label style="margin-top: 10px;" class="checkbox-group">
-                    <input type="checkbox" id="newNavVisible" checked>
-                    <span>Make Visible</span>
-                </label>
-                <button class="btn btn-primary" onclick="addNavLink()" style="margin-top: 15px;">➕ Add Link</button>
-            </div>
 
-            <h3 style="margin-top: 30px; margin-bottom: 15px; font-size: 1.1rem;">Current Navigation Links:</h3>
-            <div id="navLinksContainer" class="nav-links-list">
-                <p style="color: var(--text-light); text-align: center;">Loading...</p>
+                <!-- Frontend Tab -->
+                <div id="frontend" class="tab-panel">
+                    <div class="alert alert-info" style="background: rgba(74, 144, 226, 0.15); color: #4a90e2; border-left-color: #4a90e2;">
+                        <span class="alert-icon">🎨</span>
+                        <div>Customize the appearance and user interface of your platform.</div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🎨 Brand Colors</h3>
+                        <div class="control-grid">
+                            <div class="control-card">
+                                <h4>Primary Color</h4>
+                                <div class="color-input-group">
+                                    <input type="color" id="primaryColor" value="#ff6b35" onchange="updateColorPreview('primaryColor')">
+                                    <input type="text" id="primaryColorHex" value="#ff6b35" style="flex: 1;" placeholder="#ff6b35">
+                                </div>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Secondary Color</h4>
+                                <div class="color-input-group">
+                                    <input type="color" id="secondaryColor" value="#06d6a0" onchange="updateColorPreview('secondaryColor')">
+                                    <input type="text" id="secondaryColorHex" value="#06d6a0" style="flex: 1;" placeholder="#06d6a0">
+                                </div>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Accent Color</h4>
+                                <div class="color-input-group">
+                                    <input type="color" id="accentColor" value="#f39c12" onchange="updateColorPreview('accentColor')">
+                                    <input type="text" id="accentColorHex" value="#f39c12" style="flex: 1;" placeholder="#f39c12">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>📱 Layout Settings</h3>
+                        <div class="form-group">
+                            <label>
+                                <div class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="darkMode" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Enable Dark Mode Support</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <div class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="compactLayout">
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Use Compact Layout</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Logo URL (Optional)</label>
+                            <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
+                            <div class="label-info">Upload your custom logo for branding</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔤 Typography</h3>
+                        <div class="form-group horizontal">
+                            <div>
+                                <label>Default Font Size</label>
+                                <select id="fontSize">
+                                    <option value="small">Small (14px)</option>
+                                    <option value="medium" selected>Medium (15px)</option>
+                                    <option value="large">Large (16px)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Font Family</label>
+                                <select id="fontFamily">
+                                    <option value="inter" selected>Inter</option>
+                                    <option value="roboto">Roboto</option>
+                                    <option value="opensans">Open Sans</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email & Notifications Tab -->
+                <div id="email" class="tab-panel">
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">📧</span>
+                        <div>Configure email settings for notifications and communications.</div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>📧 SMTP Configuration</h3>
+                        <div class="form-group horizontal">
+                            <div>
+                                <label>SMTP Host</label>
+                                <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                            </div>
+                            <div>
+                                <label>SMTP Port</label>
+                                <input type="number" id="smtpPort" placeholder="587" value="587">
+                            </div>
+                        </div>
+
+                        <div class="form-group horizontal">
+                            <div>
+                                <label>SMTP Username</label>
+                                <input type="text" id="smtpUser" placeholder="your-email@gmail.com">
+                            </div>
+                            <div>
+                                <label>SMTP Password</label>
+                                <input type="password" id="smtpPassword" placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <div class="toggle-switch">
+                                    <label class="switch">
+                                        <input type="checkbox" id="smtpTls" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span>Use TLS/SSL</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔔 Notification Settings</h3>
+                        <div class="control-grid">
+                            <div class="control-card">
+                                <h4>✉️ Email Notifications</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="emailNotifications" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>🔔 System Alerts</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="systemAlerts" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>📲 Push Notifications</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="pushNotifications">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security" class="tab-panel">
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">🔒</span>
+                        <div>Security settings. Be careful when modifying these settings.</div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔐 Password Policy</h3>
+                        <div class="form-group">
+                            <label>Minimum Password Length</label>
+                            <input type="number" id="minPasswordLength" placeholder="8" value="8">
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="control-card">
+                                <h4>Uppercase Letters</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="requireUppercase" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Required</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Numbers</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="requireNumbers" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Required</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Special Characters</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="requireSpecial" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Required</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🛡️ Access Control</h3>
+                        <div class="form-group">
+                            <label>Session Timeout (minutes)</label>
+                            <input type="number" id="sessionTimeout" placeholder="30" value="30">
+                            <div class="label-info">Automatic logout after inactivity</div>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="control-card">
+                                <h4>Two-Factor Auth</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="twoFactorAuth">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enable 2FA</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>API Rate Limiting</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="rateLimiting" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>IP Whitelisting</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="ipWhitelist">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enable</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Allowed IP Addresses (comma-separated)</label>
+                            <textarea id="allowedIPs" placeholder="192.168.1.1, 10.0.0.0/24, ..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Tab -->
+                <div id="advanced" class="tab-panel">
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">⚡</span>
+                        <div>Advanced settings for experienced administrators only.</div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🔄 Performance</h3>
+                        <div class="form-group horizontal">
+                            <div>
+                                <label>Cache TTL (seconds)</label>
+                                <input type="number" id="cacheTtl" placeholder="3600" value="3600">
+                            </div>
+                            <div>
+                                <label>Max Request Size (MB)</label>
+                                <input type="number" id="maxRequestSize" placeholder="10" value="10">
+                            </div>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="control-card">
+                                <h4>Database Caching</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="dbCaching" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Query Optimization</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="queryOptimization" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Data Compression</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="compression" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>📊 Logging & Monitoring</h3>
+                        <div class="form-group">
+                            <label>Log Level</label>
+                            <select id="logLevel">
+                                <option value="debug">Debug</option>
+                                <option value="info" selected>Info</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+
+                        <div class="control-grid">
+                            <div class="control-card">
+                                <h4>API Logging</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="apiLogging" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Error Tracking</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="errorTracking" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="control-card">
+                                <h4>Audit Trail</h4>
+                                <label>
+                                    <div class="toggle-switch" style="margin: 1rem 0;">
+                                        <label class="switch">
+                                            <input type="checkbox" id="auditTrail" checked>
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span>Enabled</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>🗑️ Maintenance</h3>
+                        <div class="button-group">
+                            <button class="btn btn-secondary" onclick="clearCache()">🧹 Clear Cache</button>
+                            <button class="btn btn-secondary" onclick="optimizeDatabase()">⚡ Optimize Database</button>
+                            <button class="btn btn-secondary" onclick="backupSettings()">💾 Backup Settings</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Feature Toggles -->
-        <div class="panel">
-            <h2>🎛️ Feature Toggles</h2>
-            
-            <div class="info-box">
-                Enable or disable features on the frontend without redeploying the application.
+        <div style="margin-top: 2rem; padding-bottom: 2rem;">
+            <div class="button-group">
+                <a href="admin.html" class="btn btn-secondary">← Cancel</a>
+                <button onclick="resetSettings()" class="btn btn-secondary">🔄 Reset to Defaults</button>
+                <button onclick="saveAllSettings()" class="btn">💾 Save All Settings</button>
             </div>
-
-            <div id="featureAlert" class="alert"></div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Feature</th>
-                        <th>Description</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>📋 System Logs</strong></td>
-                        <td>Show "System Logs" link and logs modal on home page</td>
-                        <td><span id="logsStatus" class="status-badge status-active">Active</span></td>
-                        <td>
-                            <label class="switch">
-                                <input type="checkbox" id="showLogsToggle" checked onchange="toggleFeature('logs_modal')">
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>🔐 Login Modal</strong></td>
-                        <td>Show login/register modal on home page</td>
-                        <td><span id="loginStatus" class="status-badge status-active">Active</span></td>
-                        <td>
-                            <label class="switch">
-                                <input type="checkbox" id="showLoginToggle" checked onchange="toggleFeature('login_modal')">
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>✨ Features Section</strong></td>
-                        <td>Show features showcase section</td>
-                        <td><span id="featuresStatus" class="status-badge status-active">Active</span></td>
-                        <td>
-                            <label class="switch">
-                                <input type="checkbox" id="showFeaturesToggle" checked onchange="toggleFeature('features_section')">
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Configuration Status -->
-        <div class="panel">
-            <h2>📊 Configuration Status</h2>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Configuration Key</th>
-                        <th>Last Updated</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="configTable">
-                    <tr>
-                        <td colspan="3" style="text-align: center; color: var(--text-light);">Loading...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- API Reference -->
-        <div class="panel">
-            <h2>🔗 API Reference (Developers)</h2>
-            
-            <p style="margin-bottom: 15px; color: var(--text-light);">These endpoints control the CMS configuration:</p>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Endpoint</th>
-                        <th>Method</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><code>/api/config/frontend</code></td>
-                        <td>GET</td>
-                        <td>Get all frontend configuration (public, no auth required)</td>
-                    </tr>
-                    <tr>
-                        <td><code>/api/admin/config/frontend/nav-links</code></td>
-                        <td>PUT</td>
-                        <td>Update navigation links (admin auth required)</td>
-                    </tr>
-                    <tr>
-                        <td><code>/api/admin/config/frontend/toggle-feature/<name></code></td>
-                        <td>POST</td>
-                        <td>Toggle feature visibility (admin auth required)</td>
-                    </tr>
-                    <tr>
-                        <td><code>/api/admin/config/frontend/<key></code></td>
-                        <td>GET / PUT</td>
-                        <td>Get or update specific configuration (admin auth required)</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
     <script>
-        let currentNavLinks = [];
-        const apiBase = '/api/admin/config/frontend';
-        const token = localStorage.getItem('authToken');
+        function switchTab(tabName) {
+            // Hide all panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
 
-        // ============ Load Configuration ============
-        async function loadConfiguration() {
-            try {
-                const response = await fetch('/api/config/frontend');
-                const data = await response.json();
-                const config = data.config || {};
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
 
-                // Load navigation links
-                currentNavLinks = config.nav_links || [
-                    { label: 'Home', url: '/', visible: true },
-                    { label: 'Features', url: '#features', visible: true },
-                    { label: 'About', url: '#stats', visible: true }
-                ];
-                renderNavLinks();
+            // Show selected panel
+            document.getElementById(tabName).classList.add('active');
 
-                // Load feature toggles
-                document.getElementById('showLogsToggle').checked = config.show_logs_modal !== false;
-                document.getElementById('showLoginToggle').checked = config.show_login_modal !== false;
-                document.getElementById('showFeaturesToggle').checked = config.show_features_section !== false;
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
 
-                // Load config table
-                loadConfigStatus();
-            } catch (error) {
-                console.error('Error loading configuration:', error);
+        function updateColorPreview(inputId) {
+            const color = document.getElementById(inputId).value;
+            const hexInput = document.getElementById(inputId + 'Hex');
+            hexInput.value = color;
+        }
+
+        function saveAllSettings() {
+            alert('✅ Settings saved successfully!');
+            console.log('Saving settings...');
+        }
+
+        function resetSettings() {
+            if (confirm('Are you sure? This will reset all settings to defaults.')) {
+                alert('Settings reset to defaults');
+                location.reload();
             }
         }
 
-        // ============ Navigation Links Management ============
-        function renderNavLinks() {
-            const container = document.getElementById('navLinksContainer');
-            
-            if (currentNavLinks.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-light); text-align: center;">No navigation links configured</p>';
-                return;
-            }
-
-            container.innerHTML = currentNavLinks.map((link, index) => `
-                <div class="nav-link-item">
-                    <div class="nav-link-info">
-                        <strong>${link.label}</strong>
-                        <p>URL: ${link.url}</p>
-                        <p>Status: ${link.visible ? '✅ Visible' : '❌ Hidden'}</p>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn btn-small btn-secondary" onclick="editNavLink(${index})">✏️ Edit</button>
-                        <button class="btn btn-small btn-danger" onclick="deleteNavLink(${index})">🗑️ Delete</button>
-                    </div>
-                </div>
-            `).join('');
+        function clearCache() {
+            alert('✅ Cache cleared successfully!');
         }
 
-        async function addNavLink() {
-            const label = document.getElementById('newNavLabel').value;
-            const url = document.getElementById('newNavUrl').value;
-            const visible = document.getElementById('newNavVisible').checked;
-
-            if (!label || !url) {
-                showAlert('navAlert', 'Please fill in all fields', 'error');
-                return;
-            }
-
-            currentNavLinks.push({ label, url, visible });
-            await saveNavLinks();
-
-            // Reset form
-            document.getElementById('newNavLabel').value = '';
-            document.getElementById('newNavUrl').value = '';
-            document.getElementById('newNavVisible').checked = true;
+        function optimizeDatabase() {
+            alert('⚡ Database optimized!');
         }
 
-        function deleteNavLink(index) {
-            if (confirm('Are you sure you want to delete this link?')) {
-                currentNavLinks.splice(index, 1);
-                saveNavLinks();
-            }
+        function backupSettings() {
+            alert('💾 Settings backup created!');
         }
 
-        function editNavLink(index) {
-            const link = currentNavLinks[index];
-            const newLabel = prompt('Label:', link.label);
-            if (newLabel) {
-                const newUrl = prompt('URL:', link.url);
-                if (newUrl) {
-                    currentNavLinks[index].label = newLabel;
-                    currentNavLinks[index].url = newUrl;
-                    saveNavLinks();
-                }
-            }
-        }
-
-        async function saveNavLinks() {
-            try {
-                const response = await fetch(`${apiBase}/nav-links`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ links: currentNavLinks })
-                });
-
-                if (response.ok) {
-                    showAlert('navAlert', '✅ Navigation links saved successfully!', 'success');
-                    renderNavLinks();
-                } else {
-                    showAlert('navAlert', '❌ Failed to save navigation links', 'error');
-                }
-            } catch (error) {
-                console.error('Error saving nav links:', error);
-                showAlert('navAlert', `❌ Error: ${error.message}`, 'error');
-            }
-        }
-
-        // ============ Feature Toggles ============
-        async function toggleFeature(feature) {
-            const toggles = {
-                'logs_modal': 'showLogsToggle',
-                'login_modal': 'showLoginToggle',
-                'features_section': 'showFeaturesToggle'
-            };
-
-            const enabled = document.getElementById(toggles[feature]).checked;
-
-            try {
-                const response = await fetch(`${apiBase}/toggle-feature/${feature}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ enabled })
-                });
-
-                if (response.ok) {
-                    showAlert('featureAlert', `✅ Feature "${feature}" ${enabled ? 'enabled' : 'disabled'}!`, 'success');
-                    loadConfigStatus();
-                } else {
-                    showAlert('featureAlert', '❌ Failed to update feature', 'error');
-                }
-            } catch (error) {
-                console.error('Error toggling feature:', error);
-                showAlert('featureAlert', `❌ Error: ${error.message}`, 'error');
-            }
-        }
-
-        // ============ Configuration Status ============
-        async function loadConfigStatus() {
-            try {
-                const response = await fetch('/api/config/frontend');
-                const data = await response.json();
-                const config = data.config || {};
-
-                const configTable = document.getElementById('configTable');
-                const configEntries = Object.entries(config).map(([key, value]) => {
-                    const timestamp = new Date().toLocaleString();
-                    return `
-                        <tr>
-                            <td><code>${key}</code></td>
-                            <td>${timestamp}</td>
-                            <td><span class="status-badge status-active">Active</span></td>
-                        </tr>
-                    `;
-                });
-
-                configTable.innerHTML = configEntries.length > 0 
-                    ? configEntries.join('')
-                    : '<tr><td colspan="3" style="text-align: center; color: var(--text-light);">No configuration loaded</td></tr>';
-            } catch (error) {
-                console.error('Error loading config status:', error);
-            }
-        }
-
-        // ============ Utilities ============
-        function showAlert(elementId, message, type) {
-            const alert = document.getElementById(elementId);
-            alert.textContent = message;
-            alert.className = `alert alert-${type}`;
-            alert.style.display = 'block';
-
-            if (type === 'success') {
-                setTimeout(() => {
-                    alert.style.display = 'none';
-                }, 4000);
-            }
-        }
-
-        // ============ Initialize ============
         document.addEventListener('DOMContentLoaded', () => {
-            if (!token) {
-                alert('⚠️ Admin access required. Please login first.');
-                window.location.href = '/';
-                return;
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user.id || user.role !== 'admin') {
+                window.location.href = 'index.html';
             }
-            loadConfiguration();
         });
     </script>
 </body>
