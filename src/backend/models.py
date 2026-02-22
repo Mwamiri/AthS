@@ -564,7 +564,8 @@ class MenuItem(Base):
     
     # Relationships
     menu = relationship('Menu', back_populates='items')
-    children = relationship('MenuItem', backref='parent', remote_side=[id], cascade='all, delete-orphan')
+    parent = relationship('MenuItem', remote_side=[id], back_populates='children')
+    children = relationship('MenuItem', back_populates='parent', cascade='all, delete-orphan')
     
     def to_dict(self):
         return {

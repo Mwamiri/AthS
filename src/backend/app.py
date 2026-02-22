@@ -10,6 +10,7 @@ import os
 import time
 from datetime import datetime
 from functools import wraps
+from sqlalchemy import text
 try:
     from flasgger import Swagger
 except ImportError:
@@ -343,7 +344,7 @@ def health():
     try:
         db = next(get_db())
         # Quick database connectivity test
-        db.execute('SELECT 1')
+        db.execute(text('SELECT 1'))
     except Exception as e:
         db_status = 'offline'
         print(f"Database health check failed: {e}")
