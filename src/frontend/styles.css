@@ -1168,3 +1168,107 @@ th.sort-desc .sort-icon {
 .toggle-switch-spaced {
     margin: 1rem 0;
 }
+
+/* ============================================
+   Settings Bottom Area  
+   ============================================ */
+.settings-bottom {
+    margin-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* ============================================
+   User Navigation Styles
+   ============================================ */
+.user-name-nav {
+    color: #666;
+}
+
+/* ============================================
+   Plugin Admin Styles
+   ============================================ */
+.icon-large {
+    font-size: 1.5rem;
+}
+
+.stat-card-green {
+    background: linear-gradient(135deg, #06d6a0 0%, #04a785 100%);
+}
+
+.stat-card-orange {
+    background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+}
+
+.stat-card-blue {
+    background: linear-gradient(135deg, #4a90e2 0%, #2c5aa0 100%);
+}
+
+.btn-full-width {
+    width: 100%;
+}
+
+.btn-primary-border {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-export {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.toggle-description {
+    color: var(--text-light);
+}
+
+.grid-full-center {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-light);
+}
+
+.search-container {
+    margin-bottom: 2rem;
+}
+
+.search-input-full {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.code-textarea {
+    font-family: 'Courier New', monospace;
+    height: 150px;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.file-input-dashed {
+    padding: 1rem;
+    border: 2px dashed var(--border);
+    cursor: pointer;
+    width: 100%;
+}
+
+/* ============================================
+   Page Builder Styles
+   ============================================ */
+.hidden-tab {
+    display: none;
+}
+
+.btn-add-section {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.empty-properties {
+    color: var(--text-light);
+    text-align: center;
+}

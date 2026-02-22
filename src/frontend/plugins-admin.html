@@ -559,7 +559,7 @@
         <header>
             <div>
                 <h1>🔌 Plugin Manager</h1>
-                <p style="color: var(--text-light); margin-top: 0.5rem;">Manage and configure system plugins and extensions</p>
+                <p class="header-description">Manage and configure system plugins and extensions</p>
             </div>
             <div class="header-actions">
                 <a href="admin.html" class="btn btn-secondary">← Dashboard</a>
@@ -580,7 +580,7 @@
                 <!-- Overview Tab -->
                 <div id="overview" class="tab-panel active">
                     <div class="alert alert-info">
-                        <span style="font-size: 1.5rem;">📊</span>
+                        <span class="icon-large">📊</span>
                         <div>System status and plugin statistics. All plugins are isolated sandboxes for security.</div>
                     </div>
 
@@ -589,15 +589,15 @@
                             <h3>Total Plugins</h3>
                             <div class="stat-value" id="totalPlugins">0</div>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #06d6a0 0%, #04a785 100%);">
+                        <div class="stat-card stat-card-green">
                             <h3>Active</h3>
                             <div class="stat-value" id="activePlugins">0</div>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);">
+                        <div class="stat-card stat-card-orange">
                             <h3>Inactive</h3>
                             <div class="stat-value" id="inactivePlugins">0</div>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #4a90e2 0%, #2c5aa0 100%);">
+                        <div class="stat-card stat-card-blue">
                             <h3>Updates Available</h3>
                             <div class="stat-value" id="updatesAvailable">0</div>
                         </div>
@@ -608,15 +608,15 @@
                         <div class="control-group">
                             <div class="control-card">
                                 <h4>🔄 Plugin Cache</h4>
-                                <button onclick="clearPluginCache()" class="btn btn-secondary" style="width: 100%;">Clear Cache</button>
+                                <button onclick="clearPluginCache()" class="btn btn-secondary btn-full-width">Clear Cache</button>
                             </div>
                             <div class="control-card">
                                 <h4>📋 Dependencies</h4>
-                                <button onclick="checkDependencies()" class="btn btn-secondary" style="width: 100%;">Check Status</button>
+                                <button onclick="checkDependencies()" class="btn btn-secondary btn-full-width">Check Status</button>
                             </div>
                             <div class="control-card">
                                 <h4>🔒 Security Scan</h4>
-                                <button onclick="runSecurityScan()" class="btn btn-secondary" style="width: 100%;">Run Scan</button>
+                                <button onclick="runSecurityScan()" class="btn btn-secondary btn-full-width">Run Scan</button>
                             </div>
                         </div>
                     </div>
@@ -628,30 +628,30 @@
                                 <h4>Enable Auto-Updates</h4>
                                 <label class="toggle-switch">
                                     <label class="switch">
-                                        <input type="checkbox" id="autoUpdates">
+                                        <input type="checkbox" id="autoUpdates" title="Enable automatic plugin updates">
                                         <span class="slider"></span>
                                     </label>
-                                    <span style="color: var(--text-light);">Automatically update plugins</span>
+                                    <span class="toggle-description">Automatically update plugins</span>
                                 </label>
                             </div>
                             <div class="control-card">
                                 <h4>Enable Plugin Sandbox</h4>
                                 <label class="toggle-switch">
                                     <label class="switch">
-                                        <input type="checkbox" id="sandbox" checked>
+                                        <input type="checkbox" id="sandbox" checked title="Isolate plugin execution in sandbox">
                                         <span class="slider"></span>
                                     </label>
-                                    <span style="color: var(--text-light);">Isolate plugin execution</span>
+                                    <span class="toggle-description">Isolate plugin execution</span>
                                 </label>
                             </div>
                             <div class="control-card">
                                 <h4>Enable Plugin Monitoring</h4>
                                 <label class="toggle-switch">
                                     <label class="switch">
-                                        <input type="checkbox" id="monitoring" checked>
+                                        <input type="checkbox" id="monitoring" checked title="Monitor plugin performance">
                                         <span class="slider"></span>
                                     </label>
-                                    <span style="color: var(--text-light);">Monitor plugin performance</span>
+                                    <span class="toggle-description">Monitor plugin performance</span>
                                 </label>
                             </div>
                         </div>
@@ -661,7 +661,7 @@
                 <!-- Installed Plugins Tab -->
                 <div id="installed" class="tab-panel">
                     <div class="alert alert-info">
-                        <span style="font-size: 1.5rem;">✅</span>
+                        <span class="icon-large">✅</span>
                         <div>Your installed plugins. Click settings to configure each plugin.</div>
                     </div>
 
@@ -675,11 +675,11 @@
                 <!-- Marketplace Tab -->
                 <div id="marketplace" class="tab-panel">
                     <div class="alert alert-info">
-                        <span style="font-size: 1.5rem;">🏪</span>
+                        <span class="icon-large">🏪</span>
                         <div>Discover and install new plugins from the official marketplace.</div>
                     </div>
 
-                    <div style="margin-bottom: 2rem;">
+                    <div class="search-container">
                         <input type="text" placeholder="🔍 Search plugins..." id="searchPlugins" style="width: 100%; max-width: 400px; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem;">
                     </div>
 
@@ -693,7 +693,7 @@
                 <!-- Advanced Tab -->
                 <div id="advanced" class="tab-panel">
                     <div class="alert alert-warning">
-                        <span style="font-size: 1.5rem;">⚠️</span>
+                        <span class="icon-large">⚠️</span>
                         <div>Advanced controls for experienced administrators. Use with caution.</div>
                     </div>
 
@@ -701,7 +701,7 @@
                         <h3>🔧 Plugin Configuration</h3>
                         <div class="form-group">
                             <label>Plugin Load Order (JSON)</label>
-                            <textarea id="loadOrder" placeholder='{"plugins": ["plugin1", "plugin2"]}' style="font-family: 'Courier New', monospace; height: 150px;"></textarea>
+                            <textarea id="loadOrder" placeholder='{"plugins": ["plugin1", "plugin2"]}' class="code-textarea"></textarea>
                         </div>
 
                         <div class="form-group">
@@ -715,15 +715,15 @@
                         <div class="control-group">
                             <div class="control-card">
                                 <h4>Disable All Plugins</h4>
-                                <button onclick="disableAllPlugins()" class="btn btn-danger" style="width: 100%;">🔴 Disable All</button>
+                                <button onclick="disableAllPlugins()" class="btn btn-danger btn-full-width">🔴 Disable All</button>
                             </div>
                             <div class="control-card">
                                 <h4>Enable All Plugins</h4>
-                                <button onclick="enableAllPlugins()" class="btn btn-secondary" style="width: 100%; color: var(--primary); border-color: var(--primary);">🟢 Enable All</button>
+                                <button onclick="enableAllPlugins()" class="btn btn-secondary btn-primary-border btn-full-width">🟢 Enable All</button>
                             </div>
                             <div class="control-card">
                                 <h4>Reset All Configs</h4>
-                                <button onclick="resetAllConfigs()" class="btn btn-secondary" style="width: 100%; color: var(--primary); border-color: var(--primary);">🔄 Reset</button>
+                                <button onclick="resetAllConfigs()" class="btn btn-secondary btn-primary-border btn-full-width">🔄 Reset</button>
                             </div>
                         </div>
                     </div>
@@ -732,10 +732,10 @@
                         <h3>📦 Import/Export</h3>
                         <div class="form-group">
                             <label>Import Plugin Configuration</label>
-                            <input type="file" id="importFile" accept=".json" style="padding: 1rem; border: 2px dashed var(--border); cursor: pointer;">
+                            <input type="file" id="importFile" accept=".json" class="file-input-dashed">
                         </div>
                         <div>
-                            <button onclick="exportConfig()" class="btn" style="width: 100%; margin-top: 1rem;">📥 Export Current Config</button>
+                            <button onclick="exportConfig()" class="btn btn-export">📥 Export Current Config</button>
                         </div>
                     </div>
 
@@ -746,10 +746,10 @@
                                 <h4>Debug Mode</h4>
                                 <label class="toggle-switch">
                                     <label class="switch">
-                                        <input type="checkbox" id="debugMode">
+                                        <input type="checkbox" id="debugMode" title="Enable debugging mode">
                                         <span class="slider"></span>
                                     </label>
-                                    <span style="color: var(--text-light);">Enable debugging</span>
+                                    <span class="toggle-description">Enable debugging</span>
                                 </label>
                             </div>
                             <div class="control-card">
@@ -759,7 +759,7 @@
                                         <input type="checkbox" id="profiler">
                                         <span class="slider"></span>
                                     </label>
-                                    <span style="color: var(--text-light);">Profile plugins</span>
+                                    <span class="toggle-description">Profile plugins</span>
                                 </label>
                             </div>
                             <div class="control-card">
@@ -769,7 +769,7 @@
                                         <input type="checkbox" id="verboseLog">
                                         <span class="slider"></span>
                                     </label>
-                                    <span style="color: var(--text-light);">Log details</span>
+                                    <span class="toggle-description">Log details</span>
                                 </label>
                             </div>
                         </div>

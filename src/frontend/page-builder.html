@@ -618,7 +618,7 @@
                 <div id="componentsTab">
                     <!-- Components will be loaded here -->
                 </div>
-                <div id="sectionsTab" style="display:none;">
+                <div id="sectionsTab" class="hidden-tab">
                     <div class="component-item" onclick="addSection('Hero', 'hero')">
                         <div class="component-name">🎯 Hero Section</div>
                         <div class="component-category">Layout</div>
@@ -659,7 +659,7 @@
                 <!-- Sections will be rendered here -->
             </div>
 
-            <button class="btn" onclick="addSection('New Section', 'content')" style="width: 100%; margin-top: 1rem;">+ Add Section</button>
+            <button class="btn btn-add-section" onclick="addSection('New Section', 'content')">+ Add Section</button>
         </div>
 
         <!-- Right Sidebar - Properties -->
@@ -667,7 +667,7 @@
             <div class="properties-header">⚙️ Properties</div>
             <div class="properties-content">
                 <div id="propertiesContent">
-                    <p style="color: var(--text-light); text-align: center;">Select a block to edit properties</p>
+                    <p class="empty-properties">Select a block to edit properties</p>
                 </div>
             </div>
         </div>
