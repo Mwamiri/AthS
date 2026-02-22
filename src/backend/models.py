@@ -291,6 +291,9 @@ class PluginConfig(Base):
     last_modified = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
     
+    # Relationships
+    enabler = relationship('User', foreign_keys=[enabled_by])
+    
     def to_dict(self):
         import json
         return {
@@ -321,6 +324,9 @@ class FrontendConfig(Base):
     updated_by = Column(Integer, ForeignKey('users.id'), nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    updater = relationship('User', foreign_keys=[updated_by])
     
     def to_dict(self):
         import json
@@ -360,6 +366,8 @@ class PageBuilder(Base):
     sections = relationship('PageSection', back_populates='page', cascade='all, delete-orphan')
     versions = relationship('PageVersion', back_populates='page', cascade='all, delete-orphan')
     creator = relationship('User', foreign_keys=[created_by])
+    updater = relationship('User', foreign_keys=[updated_by])
+    menu = relationship('Menu', foreign_keys=[menu_id])
     
     def to_dict(self):
         import json
@@ -372,7 +380,7 @@ class PageBuilder(Base):
             'themeId': self.theme_id,
             'menuId': self.menu_id,
             'layoutData': json.loads(self.layout_data) if self.layout_data else {},
-            'metadata': json.loads(self.metadata) if self.metadata else {},
+            'metadata': json.loads(self.page_metadata) if self.page_metadata else {},
             'publishedAt': self.published_at.isoformat() if self.published_at else None,
             'createdBy': self.created_by,
             'updatedBy': self.updated_by,
@@ -480,6 +488,7 @@ class Theme(Base):
     
     # Relationships
     creator = relationship('User', foreign_keys=[created_by])
+    updater = relationship('User', foreign_keys=[updated_by])
     pages = relationship('PageBuilder', backref='theme')
     
     def to_dict(self):
@@ -518,6 +527,8 @@ class Menu(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    creator = relationship('User', foreign_keys=[created_by])
+    updater = relationship('User', foreign_keys=[updated_by])
     items = relationship('MenuItem', back_populates='menu', cascade='all, delete-orphan')
     
     def to_dict(self):
@@ -592,6 +603,7 @@ class ComponentLibraryItem(Base):
     
     # Relationships
     creator = relationship('User', foreign_keys=[created_by])
+    updater = relationship('User', foreign_keys=[updated_by])
     
     def to_dict(self):
         import json

@@ -66,13 +66,13 @@ WORKDIR /app/backend
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
+    CMD curl -f http://localhost:5000/livez || exit 1
 
 # Expose port
 EXPOSE 5000
 
-# Run application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "2", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
+# Run application with increased timeout and graceful shutdown
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--threads", "2", "--timeout", "120", "--graceful-timeout", "30", "--keep-alive", "5", "--access-logfile", "-", "--error-logfile", "-", "app:app"]
 COPY --from=backend-builder /usr/local/bin /usr/local/bin
 
 # Copy backend application
