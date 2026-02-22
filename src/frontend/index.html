@@ -1207,11 +1207,33 @@
     <footer>
         <div class="container">
             <p>© 2026 <strong>AthSys v2.2</strong> - Elite Athletics Management System</p>
-            <p>Developed with ❤️ by <strong>Mwamiri</strong> | <a href="https://appstore.co.ke" target="_blank" rel="noopener">appstore.co.ke</a> | <a href="status.html" style="text-decoration: none;">🏥 System Status</a> | <a href="logs.html" style="text-decoration: none;">📋 System Logs</a></p>
+            <p>Developed with ❤️ by <strong>Mwamiri</strong> | <a href="https://appstore.co.ke" target="_blank" rel="noopener">appstore.co.ke</a> | <a href="status.html" style="text-decoration: none;">🏥 System Status</a> | <a href="#" onclick="openLogsModal()" style="text-decoration: none; cursor: pointer;">📋 System Logs</a></p>
         </div>
     </footer>
 
     <script src="app.js"></script>
+
+    <!-- Logs Modal -->
+    <div id="logsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: linear-gradient(135deg, rgba(30, 30, 46, 0.98) 0%, rgba(22, 33, 62, 0.98) 100%); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); padding: 40px; max-width: 700px; width: 95%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 28px; color: #fff; margin: 0;">📋 System Logs</h2>
+                <button onclick="closeLogsModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px;">✕</button>
+            </div>
+
+            <div id="logsContainer" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 20px; max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; color: #0f0; line-height: 1.5;">
+                <p style="color: #aaa;">Loading logs...</p>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button onclick="refreshLogs()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; text-transform: uppercase;">🔄 Refresh</button>
+                <button onclick="closeLogsModal()" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); color: #aaa; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; font-weight: 600; cursor: pointer; text-transform: uppercase;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div id="logsBackdrop" class="modal-backdrop" onclick="closeLogsModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 998; backdrop-filter: blur(4px);"></div>
 
     <!-- Login Modal -->
     <div id="loginModal" class="modal" style="display: none;">
@@ -1317,7 +1339,107 @@
     </style>
 
     <script>
-        // Login Modal Management
+        // ============ CMS - Load Frontend Config from Backend ============
+        let frontendConfig = {};
+
+        async function loadFrontendConfig() {
+            try {
+                const response = await fetch('/api/config/frontend');
+                const data = await response.json();
+                frontendConfig = data.config || {};
+                
+                // Build dynamic navigation
+                if (frontendConfig.nav_links) {
+                    buildDynamicNavigation(frontendConfig.nav_links);
+                }
+                
+                // Show/hide logs modal based on backend config
+                const logsButton = document.querySelector('a[onclick="openLogsModal()"]');
+                if (logsButton && !frontendConfig.show_logs_modal) {
+                    logsButton.style.display = 'none';
+                }
+            } catch (error) {
+                console.warn('Failed to load frontend config:', error);
+                // Use defaults if backend unavailable
+            }
+        }
+
+        function buildDynamicNavigation(navLinks) {
+            const navLinksContainer = document.querySelector('.nav-links');
+            if (!navLinksContainer) return;
+
+            // Clear existing links (except login button)
+            navLinksContainer.innerHTML = '';
+
+            // Add links from backend config
+            navLinks.forEach(link => {
+                if (link.visible) {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.textContent = link.label;
+                    
+                    // Handle special modal links
+                    if (link.url === '#logs') {
+                        a.href = '#';
+                        a.onclick = (e) => {
+                            e.preventDefault();
+                            openLogsModal();
+                        };
+                    }
+                    
+                    li.appendChild(a);
+                    navLinksContainer.appendChild(li);
+                }
+            });
+        }
+
+        // ============ Logs Modal Management ============
+        function openLogsModal() {
+            document.getElementById('logsModal').style.display = 'flex';
+            document.getElementById('logsBackdrop').style.display = 'block';
+            refreshLogs();
+        }
+
+        function closeLogsModal() {
+            document.getElementById('logsModal').style.display = 'none';
+            document.getElementById('logsBackdrop').style.display = 'none';
+        }
+
+        async function refreshLogs() {
+            const logsContainer = document.getElementById('logsContainer');
+            logsContainer.innerHTML = '<p style="color: #aaa;">Loading logs...</p>';
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/admin/logs', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+
+                if (!response.ok) {
+                    logsContainer.innerHTML = `<p style="color: #ff6b6b;">⚠️ Unable to load logs. Status: ${response.status}</p>`;
+                    return;
+                }
+
+                const data = await response.json();
+                const logs = data.logs || [];
+
+                if (logs.length === 0) {
+                    logsContainer.innerHTML = '<p style="color: #aaa;">No logs available</p>';
+                    return;
+                }
+
+                logsContainer.innerHTML = logs
+                    .slice(0, 100)
+                    .map(log => `<div>${log}</div>`)
+                    .join('');
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                logsContainer.innerHTML = `<p style="color: #ff6b6b;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        // ============ Login Modal Management ============
         function openLoginModal() {
             document.getElementById('loginModal').style.display = 'flex';
             document.getElementById('loginBackdrop').style.display = 'block';
@@ -1356,7 +1478,6 @@
             const spinner = document.getElementById('loginSpinner');
 
             try {
-                // Show loading state
                 btn.disabled = true;
                 btnText.style.display = 'none';
                 spinner.style.display = 'inline';
@@ -1364,25 +1485,19 @@
 
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
 
                 if (response.ok && data.user) {
-                    // Success
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    // Redirect to dashboard
                     setTimeout(() => {
                         window.location.href = '/admin.html';
                     }, 800);
                 } else {
-                    // Error
                     errorDiv.textContent = data.message || 'Login failed. Please try again.';
                     errorDiv.style.display = 'block';
                 }
@@ -1391,7 +1506,6 @@
                 errorDiv.textContent = 'Connection error. Please check your internet connection.';
                 errorDiv.style.display = 'block';
             } finally {
-                // Reset button state
                 btn.disabled = false;
                 btnText.style.display = 'inline';
                 spinner.style.display = 'none';
@@ -1410,7 +1524,6 @@
             const spinner = document.getElementById('regSpinner');
 
             try {
-                // Show loading state
                 btn.disabled = true;
                 btnText.style.display = 'none';
                 spinner.style.display = 'inline';
@@ -1418,9 +1531,7 @@
 
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         name, 
                         email, 
@@ -1432,15 +1543,12 @@
                 const data = await response.json();
 
                 if (response.ok && data.user) {
-                    // Success - auto login
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    
                     setTimeout(() => {
                         window.location.href = '/athlete.html';
                     }, 800);
                 } else {
-                    // Error
                     errorDiv.textContent = data.message || 'Registration failed. Please try again.';
                     errorDiv.style.display = 'block';
                 }
@@ -1449,7 +1557,6 @@
                 errorDiv.textContent = 'Connection error. Please check your internet connection.';
                 errorDiv.style.display = 'block';
             } finally {
-                // Reset button state
                 btn.disabled = false;
                 btnText.style.display = 'inline';
                 spinner.style.display = 'none';
@@ -1458,7 +1565,15 @@
 
         // Close modal on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeLoginModal();
+            if (e.key === 'Escape') {
+                closeLoginModal();
+                closeLogsModal();
+            }
+        });
+
+        // ============ Initialize on Page Load ============
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFrontendConfig();
         });
     </script>
 </body>

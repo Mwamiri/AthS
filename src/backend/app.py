@@ -18,7 +18,7 @@ except ImportError:
 # Import database models and Redis config
 from models import (
     get_db, init_db, 
-    User, Athlete, Race, Event, Registration, Result, AuditLog, PluginConfig
+    User, Athlete, Race, Event, Registration, Result, AuditLog, PluginConfig, FrontendConfig
 )
 from redis_config import (
     RedisCache, RateLimiter, SessionManager, 
@@ -1743,6 +1743,194 @@ def get_plugin_stats():
     except Exception as e:
         return jsonify({
             'error': 'Failed to retrieve plugin statistics',
+            'message': str(e)
+        }), 500
+
+
+# ==================== FRONTEND CONFIGURATION ENDPOINTS ====================
+# Control frontend display and navigation from backend
+
+@app.route('/api/config/frontend', methods=['GET'])
+def get_frontend_config():
+    """Get frontend configuration (public endpoint - no auth required)"""
+    try:
+        db = next(get_db())
+        
+        # Get all frontend configs
+        configs = db.query(FrontendConfig).all()
+        config_dict = {config.key: json.loads(config.value) if config.value else {} for config in configs}
+        
+        # Default config if none exist
+        if not config_dict:
+            config_dict = {
+                'nav_links': [
+                    {'label': 'Home', 'url': '/', 'visible': True},
+                    {'label': 'Features', 'url': '#features', 'visible': True},
+                    {'label': 'About', 'url': '#stats', 'visible': True}
+                ],
+                'show_logs_modal': False,
+                'show_login_modal': True
+            }
+        
+        return jsonify(add_metadata({
+            'config': config_dict,
+            'message': '✅ Frontend configuration retrieved'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve frontend config',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/config/frontend/<key>', methods=['GET'])
+@require_auth(roles=['admin'])
+def get_frontend_config_key(key):
+    """Get specific frontend configuration key"""
+    try:
+        db = next(get_db())
+        config = db.query(FrontendConfig).filter(FrontendConfig.key == key).first()
+        
+        if not config:
+            return jsonify({'error': 'Configuration key not found'}), 404
+        
+        return jsonify(add_metadata({
+            'key': config.key,
+            'value': json.loads(config.value) if config.value else {},
+            'message': f'✅ Configuration "{key}" retrieved'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve configuration',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/config/frontend/<key>', methods=['PUT'])
+@require_auth(roles=['admin'])
+def update_frontend_config(key):
+    """Update frontend configuration from admin panel"""
+    try:
+        db = next(get_db())
+        data = request.get_json()
+        value = data.get('value')
+        description = data.get('description', '')
+        
+        if not value:
+            return jsonify({'error': 'Configuration value required'}), 400
+        
+        # Find or create config
+        config = db.query(FrontendConfig).filter(FrontendConfig.key == key).first()
+        
+        if not config:
+            config = FrontendConfig(
+                key=key,
+                value=json.dumps(value),
+                description=description,
+                updated_by=getattr(request, 'user', {}).get('id')
+            )
+            db.add(config)
+        else:
+            config.value = json.dumps(value)
+            config.description = description
+            config.updated_by = getattr(request, 'user', {}).get('id')
+        
+        db.commit()
+        log_audit('UPDATE_CONFIG', 'FrontendConfig', key, {'new_value': value})
+        
+        return jsonify(add_metadata({
+            'key': config.key,
+            'value': json.loads(config.value),
+            'message': f'✅ Configuration "{key}" updated successfully'
+        })), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            'error': 'Failed to update configuration',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/config/frontend/nav-links', methods=['PUT'])
+@require_auth(roles=['admin'])
+def update_nav_links():
+    """Update navigation links configuration"""
+    try:
+        db = next(get_db())
+        data = request.get_json()
+        links = data.get('links', [])
+        
+        # Validate links structure
+        for link in links:
+            if not all(k in link for k in ['label', 'url', 'visible']):
+                return jsonify({'error': 'Invalid link structure. Required: label, url, visible'}), 400
+        
+        # Save configuration
+        config = db.query(FrontendConfig).filter(FrontendConfig.key == 'nav_links').first()
+        
+        if not config:
+            config = FrontendConfig(
+                key='nav_links',
+                value=json.dumps(links),
+                description='Navigation links visible on frontend',
+                updated_by=getattr(request, 'user', {}).get('id')
+            )
+            db.add(config)
+        else:
+            config.value = json.dumps(links)
+            config.updated_by = getattr(request, 'user', {}).get('id')
+        
+        db.commit()
+        log_audit('UPDATE_NAV_LINKS', 'FrontendConfig', None, {'links_count': len(links)})
+        
+        return jsonify(add_metadata({
+            'links': links,
+            'message': '✅ Navigation links updated successfully'
+        })), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            'error': 'Failed to update navigation links',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/config/frontend/toggle-feature/<feature_name>', methods=['POST'])
+@require_auth(roles=['admin'])
+def toggle_frontend_feature(feature_name):
+    """Toggle frontend feature visibility (e.g., show_logs_modal, show_login_modal)"""
+    try:
+        db = next(get_db())
+        data = request.get_json()
+        enabled = data.get('enabled', False)
+        
+        config_key = f'show_{feature_name}'
+        config = db.query(FrontendConfig).filter(FrontendConfig.key == config_key).first()
+        
+        if not config:
+            config = FrontendConfig(
+                key=config_key,
+                value=json.dumps(enabled),
+                description=f'Toggle {feature_name} feature visibility',
+                updated_by=getattr(request, 'user', {}).get('id')
+            )
+            db.add(config)
+        else:
+            config.value = json.dumps(enabled)
+            config.updated_by = getattr(request, 'user', {}).get('id')
+        
+        db.commit()
+        log_audit('TOGGLE_FEATURE', 'FrontendConfig', feature_name, {'enabled': enabled})
+        
+        return jsonify(add_metadata({
+            'feature': feature_name,
+            'enabled': enabled,
+            'message': f'✅ Feature "{feature_name}" {"enabled" if enabled else "disabled"}'
+        })), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({
+            'error': 'Failed to toggle feature',
             'message': str(e)
         }), 500
 

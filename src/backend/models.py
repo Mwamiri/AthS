@@ -310,6 +310,31 @@ class PluginConfig(Base):
         }
 
 
+class FrontendConfig(Base):
+    """Frontend navigation and display configuration - control from backend"""
+    __tablename__ = 'frontend_configs'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String(100), unique=True, nullable=False, index=True)  # e.g., 'nav_links', 'features', 'show_logs'
+    value = Column(Text, nullable=False)  # JSON string with configuration
+    description = Column(String(255), nullable=True)
+    updated_by = Column(Integer, ForeignKey('users.id'), nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        import json
+        return {
+            'id': self.id,
+            'key': self.key,
+            'value': json.loads(self.value) if self.value else {},
+            'description': self.description,
+            'updatedBy': self.updated_by,
+            'updatedAt': self.updated_at.isoformat() if self.updated_at else None,
+            'createdAt': self.created_at.isoformat() if self.created_at else None
+        }
+
+
 # Create all tables
 def init_db():
     """Initialize database tables"""
