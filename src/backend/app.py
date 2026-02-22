@@ -27,6 +27,22 @@ from redis_config import (
 from security import SecurityManager
 from log_system import get_log_manager, get_logger
 
+# Import page builder blueprint
+try:
+    from routes.builder import builder_bp
+    BUILDER_AVAILABLE = True
+except ImportError:
+    BUILDER_AVAILABLE = False
+    print("[WARNING] Page builder module not available")
+
+# Import records & standards blueprint
+try:
+    from routes.records import records_bp
+    RECORDS_AVAILABLE = True
+except ImportError:
+    RECORDS_AVAILABLE = False
+    print("[WARNING] Records module not available")
+
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
@@ -89,7 +105,7 @@ if Swagger:
         "consumes": ["application/json"],
         "produces": ["application/json"]
     })
-    print("📚 Swagger API documentation available at /apidocs")
+    print("Swagger API documentation available at /apidocs")
 
 # Configuration
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
@@ -103,9 +119,9 @@ def initialize():
     """Initialize database and test connections"""
     try:
         # Database is already initialized by docker-entrypoint.sh
-        print("✅ Database connection ready")
+        print("[OK] Database connection ready")
     except Exception as e:
-        print(f"⚠️  Database connection warning: {e}")
+        print(f"[WARNING] Database connection warning: {e}")
     
     if test_redis_connection():
         print("✅ Redis connected")
@@ -114,6 +130,15 @@ def initialize():
 
 # Run initialization immediately
 initialize()
+
+# Register blueprints
+if BUILDER_AVAILABLE:
+    app.register_blueprint(builder_bp)
+    print("[OK] Page builder API mounted at /api/builder")
+
+if RECORDS_AVAILABLE:
+    app.register_blueprint(records_bp)
+    print("[OK] Records & Standards API mounted at /api/records")
 
 # Store version and metadata
 APP_VERSION = '2.2'
@@ -2269,6 +2294,12 @@ def redirect_register():
     """Redirect register.html to home page - register embedded in modal"""
     from flask import redirect
     return redirect('/', code=301)
+
+
+@app.route('/builder')
+def builder_dashboard():
+    """Serve builder dashboard"""
+    return send_from_directory(FRONTEND_DIR, 'builder-dashboard.html')
 
 
 # 4. Error handlers - lowest priority

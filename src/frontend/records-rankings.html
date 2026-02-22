@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Records & Rankings - World Athletics Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #f0f0ff 100%);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            overflow-x: auto;
+            padding: 0 1rem;
+        }
+
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Rankings Table */
+        .rankings-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            transition: all 0.3s;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        /* Rank styling */
+        .rank {
+            font-weight: 700;
+            font-size: 1.2rem;
+            min-width: 40px;
+        }
+
+        .rank-1 { color: var(--gold); }
+        .rank-2 { color: var(--silver); }
+        .rank-3 { color: var(--bronze); }
+
+        .medal {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .medal-gold { background: rgba(255, 215, 0, 0.2); color: var(--gold); }
+        .medal-silver { background: rgba(192, 192, 192, 0.2); color: var(--silver); }
+        .medal-bronze { background: rgba(205, 127, 50, 0.2); color: var(--bronze); }
+
+        /* Time display */
+        .time {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .time-improvement {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* Filters */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        /* Record cards */
+        .records-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .record-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .record-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .record-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .big-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 0.5rem;
+        }
+
+        .record-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .record-detail-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Standards qualification */
+        .standard-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, var(--secondary) 0%, #00d084 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .not-qualified {
+            background: #f0f0f0;
+            color: var(--text-light);
+        }
+
+        /* Comparison */
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-bottom: 2rem;
+        }
+
+        .athlete-col {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .vs-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .athlete-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+
+            .vs-badge {
+                display: none;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .tabs {
+                padding: 0 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏃 Records & Rankings</h1>
+            <p class="subtitle">Track Personal Bests, National Records, and World Standards</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('rankings')">🏆 Rankings</button>
+            <button class="tab-btn" onclick="switchTab('personal-bests')">⭐ Personal Bests</button>
+            <button class="tab-btn" onclick="switchTab('country-records')">🇰🇪 Country Records</button>
+            <button class="tab-btn" onclick="switchTab('standards')">📋 Standards</button>
+            <button class="tab-btn" onclick="switchTab('compare')">🤝 Compare Athletes</button>
+        </div>
+
+        <!-- RANKINGS TAB -->
+        <div id="rankings" class="tab-content active">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Event</label>
+                    <select id="event-filter" onchange="loadRankings()">
+                        <option value="">Select Event</option>
+                        <option value="100m">100m</option>
+                        <option value="200m">200m</option>
+                        <option value="400m">400m</option>
+                        <option value="800m">800m</option>
+                        <option value="1500m">1500m</option>
+                        <option value="5K">5K</option>
+                        <option value="10K">10K</option>
+                        <option value="Marathon">Marathon</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Ranking Type</label>
+                    <select id="ranking-type" onchange="loadRankings()">
+                        <option value="national">National</option>
+                        <option value="season">Season</option>
+                        <option value="all-time">All-Time</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Season</label>
+                    <input type="number" id="season-filter" value="2025" onchange="loadRankings()">
+                </div>
+                <div class="filter-group">
+                    <label>Country</label>
+                    <select id="country-filter" onchange="loadRankings()">
+                        <option value="">All Countries</option>
+                        <option value="KEN">Kenya</option>
+                        <option value="USA">USA</option>
+                        <option value="GBR">UK</option>
+                        <option value="ETH">Ethiopia</option>
+                        <option value="UGA">Uganda</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="rankings-container" class="rankings-table">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading rankings...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERSONAL BESTS TAB -->
+        <div id="personal-bests" class="tab-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Athlete</label>
+                    <input type="text" id="athlete-name" placeholder="Search athlete...">
+                </div>
+                <div class="filter-group">
+                    <label>Event</label>
+                    <select id="pb-event-filter">
+                        <option value="">All Events</option>
+                        <option value="100m">100m</option>
+                        <option value="200m">200m</option>
+                        <option value="1500m">1500m</option>
+                        <option value="5K">5K</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="pbs-container" class="records-grid">
+                <div class="empty-state">
+                    <div class="empty-icon">⭐</div>
+                    <p>Select filters to view personal bests</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- COUNTRY RECORDS TAB -->
+        <div id="country-records" class="tab-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Country</label>
+                    <select id="cr-country-filter" onchange="loadCountryRecords()">
+                        <option value="KEN">Kenya</option>
+                        <option value="USA">USA</option>
+                        <option value="GBR">UK</option>
+                        <option value="ETH">Ethiopia</option>
+                        <option value="UGA">Uganda</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="country-records-container" class="records-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading country records...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STANDARDS TAB -->
+        <div id="standards" class="tab-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Championship</label>
+                    <select id="championship-filter" onchange="loadStandards()">
+                        <option value="Olympic Games">Olympic Games 2024</option>
+                        <option value="World Championships">World Championships</option>
+                        <option value="African Championships">African Championships</option>
+                        <option value="National Championships">National Championships</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="standards-container" class="rankings-table">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading standards...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPARE TAB -->
+        <div id="compare" class="tab-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Athlete 1</label>
+                    <input type="text" id="athlete1" placeholder="Enter athlete name...">
+                </div>
+                <div class="filter-group">
+                    <label>Athlete 2</label>
+                    <input type="text" id="athlete2" placeholder="Enter athlete name...">
+                </div>
+                <div class="filter-group">
+                    <label>Event</label>
+                    <select id="compare-event">
+                        <option value="100m">100m</option>
+                        <option value="200m">200m</option>
+                        <option value="1500m">1500m</option>
+                        <option value="5K">5K</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button onclick="compareAthletes()" style="padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; align-self: flex-end;">Compare</button>
+                </div>
+            </div>
+
+            <div id="comparison-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Activate selected button
+            event.target.classList.add('active');
+
+            // Load data based on tab
+            if (tabName === 'rankings') loadRankings();
+            if (tabName === 'country-records') loadCountryRecords();
+            if (tabName === 'standards') loadStandards();
+        }
+
+        // Load Rankings
+        async function loadRankings() {
+            const event = document.getElementById('event-filter').value;
+            const rankType = document.getElementById('ranking-type').value;
+            const season = document.getElementById('season-filter').value;
+            const country = document.getElementById('country-filter').value;
+
+            if (!event) {
+                document.getElementById('rankings-container').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <p>Select an event to view rankings</p>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const url = rankType === 'season'
+                    ? `${API_BASE}/records/rankings/season/${season}/${country || 'KEN'}/${event}`
+                    : rankType === 'all-time'
+                    ? `${API_BASE}/records/rankings/all-time/${event}`
+                    : `${API_BASE}/records/rankings/national/${country || 'KEN'}/${event}`;
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (!result.success || !result.data || result.data.length === 0) {
+                    document.getElementById('rankings-container').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📊</div>
+                            <p>No rankings available for this selection</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Athlete</th>
+                                <th>Country</th>
+                                <th style="text-align: right;">Time</th>
+                                <th style="text-align: right;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${result.data.map((row, idx) => `
+                                <tr>
+                                    <td class="rank rank-${row.position <= 3 ? row.position : ''}">${row.position}</td>
+                                    <td><strong>${row.athlete_name}</strong></td>
+                                    <td>${row.country || 'N/A'}</td>
+                                    <td style="text-align: right;" class="time">${row.time.toFixed(2)}</td>
+                                    <td style="text-align: right;">${new Date(row.date_achieved).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('rankings-container').innerHTML = tableHTML;
+            } catch (error) {
+                console.error('Error loading rankings:', error);
+                document.getElementById('rankings-container').innerHTML = `
+                    <div class="empty-state">
+                        <p>Error loading rankings</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load Country Records
+        async function loadCountryRecords() {
+            const country = document.getElementById('cr-country-filter').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/records/country-records/${country}`);
+                const result = await response.json();
+
+                if (!result.data || result.data.length === 0) {
+                    document.getElementById('country-records-container').innerHTML = `
+                        <div class="empty-state">
+                            <p>No country records found</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const html = result.data.map(record => `
+                    <div class="record-card">
+                        <div class="record-title">National Record</div>
+                        <h3>${record.event_name}</h3>
+                        <div class="big-number">${record.time.toFixed(2)}</div>
+                        <div class="record-details">
+                            <div class="record-detail-item">
+                                <span>Athlete:</span>
+                                <strong>${record.athlete_name}</strong>
+                            </div>
+                            <div class="record-detail-item">
+                                <span>Date:</span>
+                                <span>${new Date(record.date_set).toLocaleDateString()}</span>
+                            </div>
+                            <div class="record-detail-item">
+                                <span>Location:</span>
+                                <span>${record.location}</span>
+                            </div>
+                            ${record.improvement ? `
+                                <div class="record-detail-item">
+                                    <span>Improvement:</span>
+                                    <span class="time-improvement">-${record.improvement.toFixed(2)}s</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('country-records-container').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading country records:', error);
+            }
+        }
+
+        // Load Standards
+        async function loadStandards() {
+            const championship = document.getElementById('championship-filter').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/records/standards/${championship}`);
+                const result = await response.json();
+
+                if (!result.data || result.data.length === 0) {
+                    document.getElementById('standards-container').innerHTML = `
+                        <div class="empty-state">
+                            <p>No standards found</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Category</th>
+                                <th style="text-align: right;">Standard Time</th>
+                                <th style="text-align: center;">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${result.data.map(std => `
+                                <tr>
+                                    <td><strong>${std.event_name}</strong></td>
+                                    <td>${std.category}</td>
+                                    <td style="text-align: right;" class="time">${std.standard_time.toFixed(2)}</td>
+                                    <td style="text-align: center;">
+                                        <span class="medal ${std.type === 'A' ? 'medal-gold' : 'medal-silver'}">
+                                            ${std.type === 'A' ? 'Auto ✓' : 'Consideration'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                document.getElementById('standards-container').innerHTML = tableHTML;
+            } catch (error) {
+                console.error('Error loading standards:', error);
+            }
+        }
+
+        // Compare Athletes
+        async function compareAthletes() {
+            const athlete1 = document.getElementById('athlete1').value;
+            const athlete2 = document.getElementById('athlete2').value;
+            const event = document.getElementById('compare-event').value;
+
+            if (!athlete1 || !athlete2) {
+                alert('Please enter both athlete names');
+                return;
+            }
+
+            // This would fetch and compare real athlete data
+            document.getElementById('comparison-container').innerHTML = `
+                <div class="comparison-container">
+                    <div class="athlete-col">
+                        <div class="athlete-name">${athlete1}</div>
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <div class="stat-label">PB</div>
+                                <div class="stat-value">45.32</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Ranking</div>
+                                <div class="stat-value">#1</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Wins</div>
+                                <div class="stat-value">12</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="athlete-col">
+                        <div class="athlete-name">${athlete2}</div>
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <div class="stat-label">PB</div>
+                                <div class="stat-value">46.21</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Ranking</div>
+                                <div class="stat-value">#2</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Wins</div>
+                                <div class="stat-value">8</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load initial data
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCountryRecords();
+        });
+    </script>
+</body>
+</html>

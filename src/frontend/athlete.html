@@ -851,11 +851,151 @@
         }
 
         function downloadCertificate() {
-            alert('📜 Certificate download feature coming soon!');
+            // Generate a simple certificate based on athlete results
+            const athleteName = document.getElementById('athleteName')?.textContent || 'Athlete';
+            const athleteResults = document.getElementById('resultsContainer');
+            
+            if (!athleteResults || athleteResults.textContent.includes('No results')) {
+                alert('⚠️ No results available to generate certificate');
+                return;
+            }
+
+            // Create certificate content
+            let certificateHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: 'Georgia', serif;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin: 0;
+                            background: #f0f0f0;
+                        }
+                        .certificate {
+                            width: 900px;
+                            height: 600px;
+                            background: linear-gradient(135deg, #fff9e6 0%, #fffaf0 100%);
+                            border: 3px solid #d4af37;
+                            padding: 40px;
+                            box-sizing: border-box;
+                            text-align: center;
+                            position: relative;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                        }
+                        .certificate::before,
+                        .certificate::after {
+                            content: '✦';
+                            position: absolute;
+                            font-size: 30px;
+                            color: #d4af37;
+                        }
+                        .certificate::before {
+                            top: 20px;
+                            left: 30px;
+                        }
+                        .certificate::after {
+                            bottom: 20px;
+                            right: 30px;
+                        }
+                        h1 {
+                            color: #d4af37;
+                            font-size: 48px;
+                            margin: 30px 0 20px 0;
+                        }
+                        .subtitle {
+                            color: #666;
+                            font-size: 18px;
+                            margin-bottom: 30px;
+                        }
+                        .athlete-name {
+                            font-size: 36px;
+                            font-weight: bold;
+                            color: #333;
+                            margin: 30px 0;
+                        }
+                        .achievement {
+                            font-size: 16px;
+                            color: #666;
+                            margin: 20px 0;
+                        }
+                        .date {
+                            color: #999;
+                            font-size: 14px;
+                            margin-top: 40px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="certificate">
+                        <h1>CERTIFICATE OF ACHIEVEMENT</h1>
+                        <p class="subtitle">AthSys Athletics Management System</p>
+                        
+                        <p style="font-size: 16px; margin: 20px 0;">This is proudly presented to</p>
+                        <p class="athlete-name">${athleteName}</p>
+                        
+                        <p class="achievement">
+                            For outstanding performance and participation in athletic competitions
+                        </p>
+                        
+                        <p style="margin-top: 50px;">Presented on: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        
+                        <p style="margin-top: 20px; font-style: italic; color: #999;">
+                            <em>Certified by AthSys - Elite Athletics Management</em>
+                        </p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // Create and download
+            const blob = new Blob([certificateHTML], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Certificate_${athleteName.replace(/\s/g, '_')}_${new Date().getFullYear()}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            console.log('✅ Certificate downloaded');
         }
 
         function shareResults() {
-            alert('📤 Share results feature coming soon!');
+            const athleteName = document.getElementById('athleteName')?.textContent || 'My';
+            const resultsTable = document.getElementById('resultsContainer');
+            
+            if (!resultsTable) {
+                alert('⚠️ No results to share');
+                return;
+            }
+
+            const shareText = `Check out ${athleteName} athletic results on AthSys! 🏃‍♂️⚡`;
+            const shareUrl = window.location.href;
+
+            // Use Web Share API if available
+            if (navigator.share) {
+                navigator.share({
+                    title: 'AthSys Results',
+                    text: shareText,
+                    url: shareUrl
+                }).then(() => {
+                    console.log('✅ Results shared successfully');
+                }).catch(err => {
+                    console.error('Share failed:', err);
+                });
+            } else {
+                // Fallback: Copy to clipboard
+                const shareData = `${shareText}\n${shareUrl}`;
+                navigator.clipboard.writeText(shareData).then(() => {
+                    alert('✅ Results link copied to clipboard! You can share it anywhere.');
+                }).catch(() => {
+                    alert(`Share this link:\n${shareUrl}`);
+                });
+            }
         }
 
         function logout() {

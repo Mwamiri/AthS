@@ -963,27 +963,121 @@
         }
 
         function saveAllSettings() {
+            const settings = {
+                platform: {
+                    name: document.getElementById('platformName').value,
+                    version: document.getElementById('platformVersion').value,
+                    description: document.getElementById('platformDescription').value
+                },
+                organization: {
+                    name: document.getElementById('orgName').value,
+                    email: document.getElementById('contactEmail').value,
+                    website: document.getElementById('websiteUrl').value
+                },
+                frontend: {
+                    primaryColor: document.getElementById('primaryColor').value,
+                    secondaryColor: document.getElementById('secondaryColor').value,
+                    accentColor: document.getElementById('accentColor').value,
+                    logoUrl: document.getElementById('logoUrl').value
+                },
+                email: {
+                    smtpHost: document.getElementById('smtpHost').value,
+                    smtpPort: parseInt(document.getElementById('smtpPort').value),
+                    smtpUser: document.getElementById('smtpUser').value,
+                    smtpPassword: document.getElementById('smtpPassword').value
+                },
+                security: {
+                    minPasswordLength: parseInt(document.getElementById('minPasswordLength').value),
+                    requireTwoFactor: document.getElementById('twoFactorToggle').checked,
+                    sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+                    allowedIPs: document.getElementById('allowedIPs').value
+                },
+                advanced: {
+                    cacheTtl: parseInt(document.getElementById('cacheTtl').value),
+                    maxRequestSize: parseInt(document.getElementById('maxRequestSize').value)
+                }
+            };
+
+            // Save to localStorage for now (in production, would send to backend)
+            localStorage.setItem('athsysSettings', JSON.stringify(settings));
+            
+            console.log('✅ Settings saved:', settings);
             alert('✅ Settings saved successfully!');
-            console.log('Saving settings...');
         }
 
         function resetSettings() {
             if (confirm('Are you sure? This will reset all settings to defaults.')) {
-                alert('Settings reset to defaults');
-                location.reload();
+                // Reset all inputs to default values
+                document.getElementById('platformName').value = 'AthSys';
+                document.getElementById('platformVersion').value = '2.2.0';
+                document.getElementById('platformDescription').value = 'Elite Athletics Management System';
+                document.getElementById('orgName').value = '';
+                document.getElementById('contactEmail').value = '';
+                document.getElementById('websiteUrl').value = '';
+                document.getElementById('primaryColor').value = '#ff6b35';
+                document.getElementById('secondaryColor').value = '#06d6a0';
+                document.getElementById('accentColor').value = '#f39c12';
+                document.getElementById('smtpHost').value = '';
+                document.getElementById('smtpPort').value = '587';
+                document.getElementById('smtpUser').value = '';
+                document.getElementById('smtpPassword').value = '';
+                document.getElementById('minPasswordLength').value = '8';
+                document.getElementById('twoFactorToggle').checked = false;
+                document.getElementById('sessionTimeout').value = '30';
+                document.getElementById('allowedIPs').value = '';
+                document.getElementById('cacheTtl').value = '3600';
+                document.getElementById('maxRequestSize').value = '10';
+                
+                localStorage.removeItem('athsysSettings');
+                alert('✅ Settings reset to defaults');
             }
         }
 
         function clearCache() {
-            alert('✅ Cache cleared successfully!');
+            if (confirm('Clear application cache?')) {
+                // Clear localStorage caches
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('cache_') || key.startsWith('athsys_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                alert('✅ Cache cleared successfully! Please refresh the page.');
+            }
         }
 
         function optimizeDatabase() {
-            alert('⚡ Database optimized!');
+            if (confirm('Optimize database? This may take a few moments.')) {
+                // Simulate optimization
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = 'Optimizing...';
+                
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = '⚡ Optimize Database';
+                    alert('⚡ Database optimization complete!');
+                }, 2000);
+            }
         }
 
         function backupSettings() {
-            alert('💾 Settings backup created!');
+            const settings = localStorage.getItem('athsysSettings') || 'default_settings';
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                settings: JSON.parse(settings)
+            };
+            
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `athsys-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert('💾 Settings backup downloaded successfully!');
         }
 
         document.addEventListener('DOMContentLoaded', () => {

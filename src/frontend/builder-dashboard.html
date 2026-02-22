@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Builder Dashboard - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        /* Tools Grid */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+            border: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            cursor: pointer;
+        }
+
+        .tool-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 12px 40px rgba(255, 107, 53, 0.15);
+            transform: translateY(-8px);
+        }
+
+        .tool-icon {
+            font-size: 3rem;
+        }
+
+        .tool-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .tool-description {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            flex: 1;
+        }
+
+        .tool-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        /* Recent Pages */
+        .recent-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .pages-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .page-item {
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-item:hover {
+            border-color: var(--primary);
+            background: rgba(255, 107, 53, 0.03);
+        }
+
+        .page-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .page-title {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .page-slug {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-family: 'Courier New', monospace;
+        }
+
+        .page-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-draft {
+            background: rgba(200, 200, 200, 0.2);
+            color: var(--text-light);
+        }
+
+        .status-published {
+            background: rgba(0, 208, 132, 0.2);
+            color: var(--success);
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Builder Dashboard</h1>
+            <p class="subtitle">Manage pages, themes, menus, and components</p>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="pagesCount">0</div>
+                <div class="stat-label">Pages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="themesCount">0</div>
+                <div class="stat-label">Themes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="menusCount">0</div>
+                <div class="stat-label">Menus</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="componentsCount">0</div>
+                <div class="stat-label">Components</div>
+            </div>
+        </div>
+
+        <!-- Tools -->
+        <div class="tools-grid">
+            <a href="page-builder.html" class="tool-card">
+                <div class="tool-icon">🎯</div>
+                <div class="tool-name">Page Builder</div>
+                <div class="tool-description">Create and edit pages with drag-and-drop sections and blocks</div>
+                <div class="tool-features">
+                    <div class="feature">Drag-drop canvas</div>
+                    <div class="feature">Responsive design</div>
+                    <div class="feature">Version control</div>
+                </div>
+            </a>
+
+            <a href="theme-customizer.html" class="tool-card">
+                <div class="tool-icon">🎨</div>
+                <div class="tool-name">Theme Customizer</div>
+                <div class="tool-description">Design custom color schemes, fonts, and style presets</div>
+                <div class="tool-features">
+                    <div class="feature">Live preview</div>
+                    <div class="feature">Color management</div>
+                    <div class="feature">Typography control</div>
+                </div>
+            </a>
+
+            <a href="menu-builder.html" class="tool-card">
+                <div class="tool-icon">☰</div>
+                <div class="tool-name">Menu Builder</div>
+                <div class="tool-description">Build and manage navigation menus for header, footer, and sidebar</div>
+                <div class="tool-features">
+                    <div class="feature">Multiple menus</div>
+                    <div class="feature">Nested items</div>
+                    <div class="feature">Custom icons</div>
+                </div>
+            </a>
+
+            <a href="component-library.html" class="tool-card">
+                <div class="tool-icon">📚</div>
+                <div class="tool-name">Component Library</div>
+                <div class="tool-description">Create, manage, and reuse UI components across your pages</div>
+                <div class="tool-features">
+                    <div class="feature">Reusable blocks</div>
+                    <div class="feature">Template system</div>
+                    <div class="feature">Featured items</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Recent Pages -->
+        <div class="recent-section">
+            <h2 class="section-title">📄 Recent Pages</h2>
+            <div class="pages-list" id="recentPages">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>No pages created yet. Start by creating a new page.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn" onclick="openCreatePageModal()">+ Create New Page</button>
+            <a href="page-builder.html" class="btn btn-secondary">→ Go to Page Builder</a>
+        </div>
+    </div>
+
+    <!-- Create Page Modal -->
+    <div id="createPageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Page</h2>
+                <button class="close-btn" onclick="closeCreatePageModal()">×</button>
+            </div>
+
+            <div class="form-group">
+                <label>Page Title</label>
+                <input type="text" id="pageTitle" placeholder="e.g., About Us">
+            </div>
+
+            <div class="form-group">
+                <label>Page Slug (URL)</label>
+                <input type="text" id="pageSlug" placeholder="e.g., about-us">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="pageDescription" placeholder="Brief description of the page"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Initial Status</label>
+                <select id="pageStatus">
+                    <option value="draft">Draft (Not published)</option>
+                    <option value="published">Published (Live)</option>
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" onclick="createPage()">Create Page</button>
+                <button class="btn btn-secondary" onclick="closeCreatePageModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load data on initialization
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadStats();
+            await loadRecentPages();
+        });
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const [pages, themes, menus, components] = await Promise.all([
+                    fetch('/api/builder/pages').then(r => r.json()).then(d => d.data || []),
+                    fetch('/api/builder/themes').then(r => r.json()).then(d => d.data || []),
+                    fetch('/api/builder/menus').then(r => r.json()).then(d => d.data || []),
+                    fetch('/api/builder/components').then(r => r.json()).then(d => d.data || [])
+                ]);
+
+                document.getElementById('pagesCount').textContent = pages.length;
+                document.getElementById('themesCount').textContent = themes.length;
+                document.getElementById('menusCount').textContent = menus.length;
+                document.getElementById('componentsCount').textContent = components.length;
+                document.getElementById('statsGrid').style.display = 'grid';
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        // Load recent pages
+        async function loadRecentPages() {
+            try {
+                const response = await fetch('/api/builder/pages');
+                const result = await response.json();
+                const pages = (result.data || []).slice(0, 6);
+
+                if (pages.length === 0) {
+                    document.getElementById('recentPages').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <p>No pages created yet. Start by creating a new page.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                document.getElementById('recentPages').innerHTML = pages.map(page => `
+                    <a href="page-builder.html?id=${page.id}" class="page-item">
+                        <div class="page-meta">
+                            <div class="page-title">${page.title}</div>
+                            <div class="page-slug">/${page.slug}</div>
+                        </div>
+                        <span class="page-status ${page.status === 'published' ? 'status-published' : 'status-draft'}">
+                            ${page.status}
+                        </span>
+                    </a>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to load pages:', e);
+            }
+        }
+
+        // Create page modal
+        function openCreatePageModal() {
+            document.getElementById('createPageModal').classList.add('active');
+        }
+
+        function closeCreatePageModal() {
+            document.getElementById('createPageModal').classList.remove('active');
+        }
+
+        async function createPage() {
+            const title = document.getElementById('pageTitle').value;
+            const slug = document.getElementById('pageSlug').value;
+            const description = document.getElementById('pageDescription').value;
+            const status = document.getElementById('pageStatus').value;
+
+            if (!title || !slug) {
+                alert('Please fill in title and slug');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/builder/pages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        slug,
+                        description,
+                        status
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Redirect to page builder
+                    window.location.href = `page-builder.html?id=${result.data.id}`;
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (e) {
+                alert('Failed to create page: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

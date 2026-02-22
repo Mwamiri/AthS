@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Customizer - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Layout */
+        .theme-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Editor Panel */
+        .editor-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .color-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .color-display {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .color-display:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .color-code {
+            flex: 1;
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .preview-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .color-squares {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .color-square {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .color-box {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .color-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* Typography Preview */
+        .typography-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .typography-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .typography-preview h1 {
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .typography-preview h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .typography-preview h3 {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .typography-preview p {
+            font-size: 1rem;
+            margin: 0;
+            color: var(--text-light);
+        }
+
+        /* Component Preview */
+        .component-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn-preview {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .card-preview {
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* Theme List */
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .theme-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .theme-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .theme-card.active {
+            border-color: var(--primary);
+            background: rgba(255, 107, 53, 0.03);
+        }
+
+        .theme-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .theme-description {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .theme-colors {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .theme-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .theme-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .theme-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .theme-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+            z-index: 2000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Theme Customizer</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.history.back()">← Back</button>
+                <button class="btn" onclick="saveTheme()">💾 Save Theme</button>
+            </div>
+        </header>
+
+        <div class="theme-layout">
+            <!-- Editor Panel -->
+            <div class="editor-panel">
+                <h2 class="panel-title">Create New Theme</h2>
+                <div class="form-group">
+                    <label>Theme Name</label>
+                    <input type="text" id="themeName" placeholder="e.g., Ocean Blue">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="themeDescription" placeholder="Describe your theme..."></textarea>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">Colors</h3>
+                <div class="color-group">
+                    <div class="form-group">
+                        <label>Primary Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="colorPrimary" value="#ff6b35" onchange="updatePreview()">
+                            <input type="text" id="colorPrimaryCode" class="color-code" value="#ff6b35" placeholder="#000000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Secondary Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="colorSecondary" value="#06d6a0" onchange="updatePreview()">
+                            <input type="text" id="colorSecondaryCode" class="color-code" value="#06d6a0" placeholder="#000000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Text Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="colorText" value="#2d2d2d" onchange="updatePreview()">
+                            <input type="text" id="colorTextCode" class="color-code" value="#2d2d2d" placeholder="#000000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Background Color</label>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="colorBg" value="#ffffff" onchange="updatePreview()">
+                            <input type="text" id="colorBgCode" class="color-code" value="#ffffff" placeholder="#000000">
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">Typography</h3>
+                <div class="form-group">
+                    <label>Body Font</label>
+                    <select id="fontBody" onchange="updatePreview()">
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                        <option value="'Open Sans', sans-serif">Open Sans</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Heading Font</label>
+                    <select id="fontHeading" onchange="updatePreview()">
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                        <option value="'Poppins', sans-serif">Poppins</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                    </select>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary);">Other</h3>
+                <div class="form-group">
+                    <label>Border Radius (px)</label>
+                    <input type="number" id="borderRadius" value="6" onchange="updatePreview()" min="0" max="50">
+                </div>
+
+                <div class="form-group">
+                    <label>Custom CSS</label>
+                    <textarea id="customCss" placeholder="/* Add custom CSS rules */" style="font-family: 'Courier New', monospace;"></textarea>
+                </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="preview-panel">
+                <!-- Color Preview -->
+                <div class="preview-card">
+                    <div class="preview-title">Color Palette</div>
+                    <div class="color-squares" id="colorPreview">
+                        <div class="color-square">
+                            <div class="color-box" id="colorBoxPrimary"></div>
+                            <div class="color-label">Primary</div>
+                        </div>
+                        <div class="color-square">
+                            <div class="color-box" id="colorBoxSecondary"></div>
+                            <div class="color-label">Secondary</div>
+                        </div>
+                        <div class="color-square">
+                            <div class="color-box" id="colorBoxText"></div>
+                            <div class="color-label">Text</div>
+                        </div>
+                        <div class="color-square">
+                            <div class="color-box" id="colorBoxBg"></div>
+                            <div class="color-label">Background</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typography Preview -->
+                <div class="preview-card">
+                    <div class="preview-title">Typography</div>
+                    <div id="typographyPreview" class="typography-preview">
+                        <h1>Heading 1</h1>
+                        <h2>Heading 2</h2>
+                        <h3>Heading 3</h3>
+                        <p>This is body text. The quick brown fox jumps over the lazy dog.</p>
+                    </div>
+                </div>
+
+                <!-- Component Preview -->
+                <div class="preview-card">
+                    <div class="preview-title">Components</div>
+                    <div class="component-preview">
+                        <button class="btn-preview" id="btnPreview">Primary Button</button>
+                        <button class="btn-preview" id="btnSecondaryPreview" style="background: var(--secondary); color: white;">Secondary Button</button>
+                        <div class="card-preview" id="cardPreview">
+                            <h4 style="margin: 0 0 0.5rem 0;">Card Title</h4>
+                            <p style="margin: 0; color: var(--text-light);">This is a card component example</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Themes -->
+        <div style="margin-top: 2rem;">
+            <h2 style="color: var(--primary); margin-bottom: 1.5rem;">Manage Existing Themes</h2>
+            <div class="themes-grid" id="themesGrid">
+                <!-- Themes will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let themes = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadThemes();
+            updatePreview();
+        });
+
+        // Load themes
+        async function loadThemes() {
+            try {
+                const response = await fetch('/api/builder/themes');
+                const result = await response.json();
+                themes = result.data || [];
+                renderThemes();
+            } catch (e) {
+                console.error('Failed to load themes:', e);
+            }
+        }
+
+        // Render existing themes
+        function renderThemes() {
+            const grid = document.getElementById('themesGrid');
+            grid.innerHTML = themes.map(theme => `
+                <div class="theme-card">
+                    <div class="theme-name">${theme.name}</div>
+                    <div class="theme-description">${theme.description}</div>
+                    <div class="theme-colors">
+                        ${Object.entries(JSON.parse(theme.colors || '{}')).slice(0, 4).map(([_, color]) => `
+                            <div class="theme-color" style="background-color: ${color}; border-color: ${color};"></div>
+                        `).join('')}
+                    </div>
+                    <div class="theme-actions">
+                        <button class="btn btn-secondary" onclick="editTheme(${theme.id})">Edit</button>
+                        <button class="btn btn-secondary" onclick="activateTheme(${theme.id})">Apply</button>
+                        <button class="btn btn-secondary" onclick="deleteTheme(${theme.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Save theme
+        async function saveTheme() {
+            const colors = {
+                primary: document.getElementById('colorPrimary').value,
+                secondary: document.getElementById('colorSecondary').value,
+                text: document.getElementById('colorText').value,
+                bg: document.getElementById('colorBg').value
+            };
+
+            const fonts = {
+                body: document.getElementById('fontBody').value,
+                heading: document.getElementById('fontHeading').value
+            };
+
+            const spacing = {
+                small: '0.5rem',
+                medium: '1rem',
+                large: '2rem'
+            };
+
+            const themeData = {
+                name: document.getElementById('themeName').value,
+                description: document.getElementById('themeDescription').value,
+                colors,
+                fonts,
+                spacing,
+                borderRadius: document.getElementById('borderRadius').value + 'px',
+                customCss: document.getElementById('customCss').value
+            };
+
+            if (!themeData.name) {
+                alert('Please enter a theme name');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/builder/themes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(themeData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Theme created successfully!');
+                    themes.push(result.data);
+                    renderThemes();
+                    // Clear form
+                    document.getElementById('themeName').value = '';
+                    document.getElementById('themeDescription').value = '';
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (e) {
+                alert('Failed to save theme: ' + e.message);
+            }
+        }
+
+        // Activate theme
+        async function activateTheme(themeId) {
+            try {
+                const response = await fetch(`/api/builder/themes/${themeId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isActive: true })
+                });
+
+                if (response.ok) {
+                    themes = themes.map(t => ({ ...t, isActive: t.id === themeId }));
+                    renderThemes();
+                    showToast('Theme activated');
+                }
+            } catch (e) {
+                alert('Failed to activate theme: ' + e.message);
+            }
+        }
+
+        // Delete theme
+        async function deleteTheme(themeId) {
+            if (!confirm('Delete this theme?')) return;
+
+            try {
+                const response = await fetch(`/api/builder/themes/${themeId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    themes = themes.filter(t => t.id !== themeId);
+                    renderThemes();
+                    showToast('Theme deleted');
+                }
+            } catch (e) {
+                alert('Failed to delete theme: ' + e.message);
+            }
+        }
+
+        // Update preview
+        function updatePreview() {
+            const primary = document.getElementById('colorPrimary').value;
+            const secondary = document.getElementById('colorSecondary').value;
+            const text = document.getElementById('colorText').value;
+            const bg = document.getElementById('colorBg').value;
+            const bodyFont = document.getElementById('fontBody').value;
+            const headingFont = document.getElementById('fontHeading').value;
+            const borderRadius = document.getElementById('borderRadius').value;
+
+            // Update color codes
+            document.getElementById('colorPrimaryCode').value = primary;
+            document.getElementById('colorSecondaryCode').value = secondary;
+            document.getElementById('colorTextCode').value = text;
+            document.getElementById('colorBgCode').value = bg;
+
+            // Update color boxes
+            document.getElementById('colorBoxPrimary').style.backgroundColor = primary;
+            document.getElementById('colorBoxSecondary').style.backgroundColor = secondary;
+            document.getElementById('colorBoxText').style.backgroundColor = text;
+            document.getElementById('colorBoxBg').style.backgroundColor = bg;
+
+            // Update typography
+            const typography = document.getElementById('typographyPreview');
+            typography.style.fontFamily = bodyFont;
+            typography.querySelectorAll('h1, h2, h3').forEach(el => {
+                el.style.fontFamily = headingFont;
+            });
+
+            // Update buttons
+            document.getElementById('btnPreview').style.background = primary;
+            document.getElementById('btnSecondaryPreview').style.background = secondary;
+            document.getElementById('btnPreview').style.borderRadius = borderRadius + 'px';
+            document.getElementById('btnSecondaryPreview').style.borderRadius = borderRadius + 'px';
+
+            // Update card
+            const card = document.getElementById('cardPreview');
+            card.style.borderRadius = borderRadius + 'px';
+            card.style.color = text;
+            card.style.backgroundColor = bg;
+            card.style.borderColor = '#e0e0e0';
+        }
+
+        // Utility
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

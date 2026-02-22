@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Builder - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon {
+            width: 32px !important;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Layout */
+        .menu-builder {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        /* Menu List */
+        .menus-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .panel-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .menu-item-btn {
+            padding: 0.75rem 1rem;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .menu-item-btn:hover,
+        .menu-item-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Menu Editor */
+        .menu-editor {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .editor-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .editor-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .editor-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        /* Menu Items List */
+        .menu-items-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .menu-items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .menu-item-row {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: 6px;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .menu-item-row:hover {
+            background: rgba(255, 107, 53, 0.05);
+            border: 1px solid var(--primary);
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .menu-item-info {
+            flex: 1;
+        }
+
+        .menu-item-label {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .menu-item-url {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-family: 'Courier New', monospace;
+        }
+
+        .menu-item-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-input {
+            width: 80px;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        /* Add Item Form */
+        .add-item-form {
+            background: rgba(6, 214, 160, 0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px dashed var(--secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+            z-index: 2000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .menu-builder {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-item-row {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☰ Menu Builder</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.history.back()">← Back</button>
+                <button class="btn" onclick="createNewMenu()">+ New Menu</button>
+            </div>
+        </header>
+
+        <div class="menu-builder">
+            <!-- Menu List -->
+            <div class="menus-panel">
+                <div class="panel-title">
+                    Menus
+                    <span id="menuCount" style="font-size: 0.8rem; color: var(--text-light);">0</span>
+                </div>
+                <div class="menu-item-list" id="menusList">
+                    <!-- Menus will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Menu Editor -->
+            <div class="menu-editor">
+                <div id="editorContent">
+                    <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                        <p>Select a menu or create a new one to start editing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Menu Modal -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Menu</h2>
+                <button class="close-btn" onclick="closeMenuModal()">×</button>
+            </div>
+            <div class="form-group">
+                <label>Menu Name</label>
+                <input type="text" id="newMenuName" placeholder="e.g., Main Navigation">
+            </div>
+            <div class="form-group">
+                <label>Location</label>
+                <select id="newMenuLocation">
+                    <option value="header">Header</option>
+                    <option value="footer">Footer</option>
+                    <option value="sidebar">Sidebar</option>
+                    <option value="mobile">Mobile Menu</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Display Type</label>
+                <select id="newMenuDisplay">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                    <option value="dropdown">Dropdown</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="saveNewMenu()">Create</button>
+                <button class="btn btn-secondary" onclick="closeMenuModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let menus = [];
+        let currentMenuId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadMenus();
+        });
+
+        // Load menus
+        async function loadMenus() {
+            try {
+                const response = await fetch('/api/builder/menus');
+                const result = await response.json();
+                menus = result.data || [];
+                renderMenusList();
+            } catch (e) {
+                console.error('Failed to load menus:', e);
+            }
+        }
+
+        // Render menus list
+        function renderMenusList() {
+            const listContainer = document.getElementById('menusList');
+            document.getElementById('menuCount').textContent = menus.length;
+
+            if (menus.length === 0) {
+                listContainer.innerHTML = '<p style="color: var(--text-light); text-align: center;">No menus yet</p>';
+                return;
+            }
+
+            listContainer.innerHTML = menus.map(menu => `
+                <button class="menu-item-btn ${currentMenuId === menu.id ? 'active' : ''}" 
+                        onclick="selectMenu(${menu.id})">
+                    ☰ ${menu.name}
+                    <small style="display: block; font-size: 0.75rem; font-weight: 400; margin-top: 0.25rem;">${menu.location}</small>
+                </button>
+            `).join('');
+        }
+
+        // Select menu
+        function selectMenu(menuId) {
+            currentMenuId = menuId;
+            renderMenusList();
+            renderMenuEditor();
+        }
+
+        // Render menu editor
+        function renderMenuEditor() {
+            if (!currentMenuId) return;
+
+            const menu = menus.find(m => m.id === currentMenuId);
+            if (!menu) return;
+
+            const editor = document.getElementById('editorContent');
+            editor.innerHTML = `
+                <div class="editor-header">
+                    <div class="editor-title">${menu.name}</div>
+                    <div class="editor-subtitle">${menu.location} • ${menu.displayType}</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Menu Name</label>
+                    <input type="text" value="${menu.name}" onchange="updateMenu('name', this.value)">
+                </div>
+
+                <div class="form-group">
+                    <label>Location</label>
+                    <select onchange="updateMenu('location', this.value)">
+                        <option value="header" ${menu.location === 'header' ? 'selected' : ''}>Header</option>
+                        <option value="footer" ${menu.location === 'footer' ? 'selected' : ''}>Footer</option>
+                        <option value="sidebar" ${menu.location === 'sidebar' ? 'selected' : ''}>Sidebar</option>
+                        <option value="mobile" ${menu.location === 'mobile' ? 'selected' : ''}>Mobile</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Display Type</label>
+                    <select onchange="updateMenu('displayType', this.value)">
+                        <option value="horizontal" ${menu.displayType === 'horizontal' ? 'selected' : ''}>Horizontal</option>
+                        <option value="vertical" ${menu.displayType === 'vertical' ? 'selected' : ''}>Vertical</option>
+                        <option value="dropdown" ${menu.displayType === 'dropdown' ? 'selected' : ''}>Dropdown</option>
+                    </select>
+                </div>
+
+                <div class="menu-items-section">
+                    <div class="section-title">Menu Items</div>
+                    
+                    <div class="add-item-form">
+                        <div class="form-row">
+                            <input type="text" id="itemLabel" placeholder="Label">
+                            <input type="text" id="itemUrl" placeholder="URL">
+                            <input type="text" id="itemIcon" class="icon-input" placeholder="Icon">
+                        </div>
+                        <button class="btn" style="width: 100%; margin-top: 0.75rem;" onclick="addMenuItem()">+ Add Item</button>
+                    </div>
+
+                    <div class="menu-items-container" id="menuItemsList">
+                        ${(menu.items || []).map((item, idx) => `
+                            <div class="menu-item-row">
+                                <span class="drag-handle">⋮⋮</span>
+                                <div class="menu-item-info">
+                                    <div class="menu-item-label">${item.icon || ''} ${item.label}</div>
+                                    <div class="menu-item-url">${item.url || '/'}</div>
+                                </div>
+                                <div class="menu-item-controls">
+                                    <button class="btn btn-secondary btn-small btn-icon" onclick="editMenuItem(${item.id})" title="Edit">✏️</button>
+                                    <button class="btn btn-secondary btn-small btn-icon" style="background: var(--danger); color: white;" onclick="deleteMenuItem(${item.id})" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('') || '<p style="color: var(--text-light); text-align: center;">No items</p>'}
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border); display: flex; gap: 1rem;">
+                    <button class="btn" onclick="saveMenu()" style="flex: 1;">💾 Save Changes</button>
+                    <button class="btn btn-secondary" style="flex: 1; background: var(--danger); color: white; border: none;" onclick="deleteMenu(${menu.id})">🗑️ Delete Menu</button>
+                </div>
+            `;
+        }
+
+        // Add menu item
+        async function addMenuItem() {
+            const label = document.getElementById('itemLabel').value;
+            const url = document.getElementById('itemUrl').value || '/';
+            const icon = document.getElementById('itemIcon').value;
+
+            if (!label) {
+                alert('Please enter item label');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/builder/menus/${currentMenuId}/items`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        label,
+                        url,
+                        icon,
+                        position: menus.find(m => m.id === currentMenuId).items?.length || 0
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    const menu = menus.find(m => m.id === currentMenuId);
+                    if (!menu.items) menu.items = [];
+                    menu.items.push(result.data);
+                    renderMenuEditor();
+                    document.getElementById('itemLabel').value = '';
+                    document.getElementById('itemUrl').value = '';
+                    document.getElementById('itemIcon').value = '';
+                    showToast('Item added');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Delete menu item
+        async function deleteMenuItem(itemId) {
+            if (!confirm('Delete this item?')) return;
+
+            try {
+                const response = await fetch(`/api/builder/menu-items/${itemId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const menu = menus.find(m => m.id === currentMenuId);
+                    menu.items = menu.items.filter(item => item.id !== itemId);
+                    renderMenuEditor();
+                    showToast('Item deleted');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Update menu
+        async function updateMenu(field, value) {
+            if (!currentMenuId) return;
+
+            const menu = menus.find(m => m.id === currentMenuId);
+            try {
+                const response = await fetch(`/api/builder/menus/${currentMenuId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [field]: value })
+                });
+
+                if (response.ok) {
+                    menu[field] = value;
+                    renderMenusList();
+                    showToast('Updated');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Save menu
+        async function saveMenu() {
+            showToast('Menu changes saved!');
+        }
+
+        // Delete menu
+        async function deleteMenu(menuId) {
+            if (!confirm('Delete this menu?')) return;
+
+            try {
+                const response = await fetch(`/api/builder/menus/${menuId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    menus = menus.filter(m => m.id !== menuId);
+                    currentMenuId = null;
+                    renderMenusList();
+                    document.getElementById('editorContent').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-light);"><p>Menu deleted</p></div>';
+                    showToast('Menu deleted');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Create new menu
+        function createNewMenu() {
+            document.getElementById('menuModal').classList.add('active');
+        }
+
+        function closeMenuModal() {
+            document.getElementById('menuModal').classList.remove('active');
+        }
+
+        async function saveNewMenu() {
+            const name = document.getElementById('newMenuName').value;
+            const location = document.getElementById('newMenuLocation').value;
+            const displayType = document.getElementById('newMenuDisplay').value;
+
+            if (!name) {
+                alert('Please enter menu name');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/builder/menus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, location, displayType })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    menus.push(result.data);
+                    renderMenusList();
+                    closeMenuModal();
+                    showToast('Menu created');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Utility
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

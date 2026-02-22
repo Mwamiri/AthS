@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Library - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon {
+            width: 32px !important;
+            height: 32px;
+            padding: 0;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Components Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .component-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .component-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .component-thumbnail {
+            width: 100%;
+            height: 150px;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .component-info {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .component-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .component-category {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.75rem;
+        }
+
+        .component-description {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .component-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-featured {
+            background: rgba(255, 107, 53, 0.15);
+            color: var(--primary);
+        }
+
+        .badge-system {
+            background: rgba(100, 100, 100, 0.15);
+            color: var(--text);
+        }
+
+        .component-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .component-actions button {
+            flex: 1;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .component-actions button:hover {
+            background: var(--bg-light);
+            border-color: var(--primary);
+        }
+
+        .component-actions .btn {
+            border: none;
+            padding: 0.6rem 0.75rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 90%;
+            margin: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease-out;
+            z-index: 2000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .search-box {
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Component Library</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="window.history.back()">← Back</button>
+                <button class="btn" onclick="openCreateModal()">+ New Component</button>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters">
+            <input type="text" id="searchBox" class="search-box" placeholder="Search components..." onkeyup="filterComponents()">
+            <select id="categoryFilter" class="filter-select" onchange="filterComponents()">
+                <option value="">All Categories</option>
+                <option value="hero">Hero</option>
+                <option value="card">Card</option>
+                <option value="form">Form</option>
+                <option value="button">Button</option>
+                <option value="gallery">Gallery</option>
+                <option value="contact">Contact</option>
+            </select>
+            <select id="statusFilter" class="filter-select" onchange="filterComponents()">
+                <option value="">All</option>
+                <option value="featured">Featured</option>
+                <option value="system">System</option>
+            </select>
+        </div>
+
+        <!-- Components Grid -->
+        <div class="components-grid" id="componentsGrid">
+            <!-- Components will be loaded here -->
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📦</div>
+            <p>No components found. Create your first component to get started.</p>
+        </div>
+    </div>
+
+    <!-- Create/Edit Component Modal -->
+    <div id="componentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Component</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+
+            <div class="form-group">
+                <label>Component Name</label>
+                <input type="text" id="compName" placeholder="e.g., Hero Section">
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <select id="compCategory">
+                    <option value="hero">Hero</option>
+                    <option value="card">Card</option>
+                    <option value="form">Form</option>
+                    <option value="button">Button</option>
+                    <option value="gallery">Gallery</option>
+                    <option value="contact">Contact</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="compDescription" placeholder="Describe what this component does..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Template (JSON)</label>
+                <textarea id="compTemplate" placeholder='{"title": "Example", "text": "Component template in JSON format"}'></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="compFeatured"> Mark as Featured
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Default Styles (JSON)</label>
+                <textarea id="compStyles" placeholder='{"padding": "20px", "backgroundColor": "#fff"}'></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" onclick="saveComponent()">Save Component</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let components = [];
+        let allComponents = [];
+        let editingId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadComponents();
+        });
+
+        // Load components
+        async function loadComponents() {
+            try {
+                const response = await fetch('/api/builder/components');
+                const result = await response.json();
+                allComponents = result.data || [];
+                components = [...allComponents];
+                renderComponents();
+            } catch (e) {
+                console.error('Failed to load components:', e);
+            }
+        }
+
+        // Render components
+        function renderComponents() {
+            const grid = document.getElementById('componentsGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (components.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            grid.innerHTML = components.map(comp => `
+                <div class="component-card">
+                    <div class="component-thumbnail">
+                        ${comp.thumbnail ? `<img src="${comp.thumbnail}" style="width: 100%; height: 100%; object-fit: cover;">` : '📦'}
+                    </div>
+                    <div class="component-info">
+                        <div class="component-name">${comp.name}</div>
+                        <div class="component-category">${comp.category}</div>
+                        <div class="component-description">${comp.description || 'No description'}</div>
+                        <div class="component-badges">
+                            ${comp.isFeatured ? '<span class="badge badge-featured">★ Featured</span>' : ''}
+                            ${comp.isSystem ? '<span class="badge badge-system">System</span>' : ''}
+                        </div>
+                        <div class="component-actions">
+                            <button onclick="duplicateComponent(${comp.id})">📋 Duplicate</button>
+                            <button class="btn btn-small" onclick="editComponent(${comp.id})">✏️ Edit</button>
+                            ${!comp.isSystem ? `<button class="btn btn-small" style="background: var(--danger);" onclick="deleteComponent(${comp.id})">🗑️</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter components
+        function filterComponents() {
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            components = allComponents.filter(comp => {
+                const matchesSearch = comp.name.toLowerCase().includes(search) || 
+                                     (comp.description && comp.description.toLowerCase().includes(search));
+                const matchesCategory = !category || comp.category === category;
+                const matchesStatus = !status || 
+                                     (status === 'featured' && comp.isFeatured) ||
+                                     (status === 'system' && comp.isSystem);
+                
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+
+            renderComponents();
+        }
+
+        // Open create modal
+        function openCreateModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Create New Component';
+            document.getElementById('compName').value = '';
+            document.getElementById('compCategory').value = 'card';
+            document.getElementById('compDescription').value = '';
+            document.getElementById('compTemplate').value = '';
+            document.getElementById('compFeatured').checked = false;
+            document.getElementById('compStyles').value = '';
+            document.getElementById('componentModal').classList.add('active');
+        }
+
+        // Edit component
+        async function editComponent(id) {
+            const comp = allComponents.find(c => c.id === id);
+            if (!comp) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Component';
+            document.getElementById('compName').value = comp.name;
+            document.getElementById('compCategory').value = comp.category;
+            document.getElementById('compDescription').value = comp.description || '';
+            document.getElementById('compTemplate').value = JSON.stringify(comp.template, null, 2);
+            document.getElementById('compFeatured').checked = comp.isFeatured;
+            document.getElementById('compStyles').value = JSON.stringify(comp.styles, null, 2);
+            document.getElementById('componentModal').classList.add('active');
+        }
+
+        // Save component
+        async function saveComponent() {
+            const data = {
+                name: document.getElementById('compName').value,
+                category: document.getElementById('compCategory').value,
+                description: document.getElementById('compDescription').value,
+                template: JSON.parse(document.getElementById('compTemplate').value || '{}'),
+                isFeatured: document.getElementById('compFeatured').checked,
+                styles: JSON.parse(document.getElementById('compStyles').value || '{}')
+            };
+
+            if (!data.name) {
+                alert('Please enter component name');
+                return;
+            }
+
+            try {
+                const url = editingId ? `/api/builder/components/${editingId}` : '/api/builder/components';
+                const method = editingId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    if (editingId) {
+                        allComponents = allComponents.map(c => c.id === editingId ? result.data : c);
+                    } else {
+                        allComponents.push(result.data);
+                    }
+                    components = [...allComponents];
+                    renderComponents();
+                    closeModal();
+                    showToast(editingId ? 'Component updated' : 'Component created');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Duplicate component
+        async function duplicateComponent(id) {
+            const comp = allComponents.find(c => c.id === id);
+            if (!comp) return;
+
+            const newComp = {
+                ...comp,
+                name: comp.name + ' (Copy)',
+                id: undefined
+            };
+
+            try {
+                const response = await fetch('/api/builder/components', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newComp)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    allComponents.push(result.data);
+                    components = [...allComponents];
+                    renderComponents();
+                    showToast('Component duplicated');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Delete component
+        async function deleteComponent(id) {
+            if (!confirm('Delete this component?')) return;
+
+            try {
+                const response = await fetch(`/api/builder/components/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    allComponents = allComponents.filter(c => c.id !== id);
+                    components = allComponents.filter(c => {
+                        const search = document.getElementById('searchBox').value.toLowerCase();
+                        const category = document.getElementById('categoryFilter').value;
+                        return c.name.toLowerCase().includes(search) && 
+                               (!category || c.category === category);
+                    });
+                    renderComponents();
+                    showToast('Component deleted');
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Modal functions
+        function closeModal() {
+            document.getElementById('componentModal').classList.remove('active');
+            editingId = null;
+        }
+
+        // Utility
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
