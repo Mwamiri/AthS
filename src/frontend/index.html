@@ -420,7 +420,7 @@
                         <li><a href="races-results.html">🏁 Races & Results</a></li>
                         <li><a href="#cta">About</a></li>
                     </ul>
-                    <a href="login.html" class="btn-login">Login</a>
+                    <a href="#" onclick="openLoginModal(); return false;" class="btn-login">Login</a>
                 </div>
             </div>
         </div>
@@ -433,8 +433,8 @@
                 <h1>Track Excellence, Deliver Results</h1>
                 <p>The modern platform for managing professional athletics competitions. Register athletes, manage races, and track performance all in one place.</p>
                 <div class="hero-buttons">
-                    <a href="login.html" class="btn-primary">Login / Admin</a>
-                    <a href="login.html#register" onclick="setTimeout(() => document.querySelector('[data-tab=\'register\']')?.click(), 100)" class="btn-secondary">🏃 Athletes Register</a>
+                    <a href="#" onclick="openLoginModal(); return false;" class="btn-primary">Login / Admin</a>
+                    <a href="#" onclick="openLoginModal(); switchToRegister(); return false;" class="btn-secondary">🏃 Athletes Register</a>
                 </div>
             </div>
             <div class="hero-visual">
@@ -514,7 +514,7 @@
                 <p>Join professional event organizers using AthSys for seamless competition management</p>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <a href="races-results.html" class="cta-button" style="background: linear-gradient(135deg, #06d6a0, #00b884); border: none;">🏁 View Races & Results</a>
-                    <a href="login.html" class="cta-button">Login Now</a>
+                    <a href="#" onclick="openLoginModal(); return false;" class="cta-button">Login Now</a>
                 </div>
                 <div style="margin-top: 2rem;">
                     <span class="status-indicator"></span>
@@ -1113,7 +1113,7 @@
                     <p class="tagline">⚡ Elite Athletics Management Platform ⚡</p>
                 </div>
                 <div style="display: flex; gap: 1rem;">
-                    <a href="login.html" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: transform 0.3s;">
+                    <a href="#" onclick="openLoginModal(); return false;" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: transform 0.3s;">
                         🔐 Login
                     </a>
                 </div>
@@ -1125,7 +1125,7 @@
         <section class="landing-hero">
             <h2>🏆 Track Excellence, Deliver Results 🏆</h2>
             <p>Comprehensive athletics competition management platform powered by cutting-edge technology</p>
-            <a href="login.html" class="cta-button">
+            <a href="#" onclick="openLoginModal(); return false;" class="cta-button" style="cursor: pointer;">
                 🚀 Get Started - Login Now
             </a>
             <div style="margin-top: 2rem;">
@@ -1196,7 +1196,7 @@
                     Contact your administrator for credentials to access the platform.
                 </p>
                 <div style="margin-top: 1.5rem;">
-                    <a href="login.html" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                    <a href="#" onclick="openLoginModal(); return false;" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; cursor: pointer;">
                         → Proceed to Login
                     </a>
                 </div>
@@ -1212,5 +1212,254 @@
     </footer>
 
     <script src="app.js"></script>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: linear-gradient(135deg, rgba(30, 30, 46, 0.98) 0%, rgba(22, 33, 62, 0.98) 100%); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); padding: 40px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 28px; color: #fff; margin: 0;">🔐 Login</h2>
+                <button onclick="closeLoginModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px;">✕</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; color: #aaa; font-size: 12px; text-transform: uppercase; font-weight: 600;">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="admin@athsys.com" required style="width: 100%; padding: 12px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 14px;">
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 8px; color: #aaa; font-size: 12px; text-transform: uppercase; font-weight: 600;">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required style="width: 100%; padding: 12px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 14px;">
+                </div>
+
+                <div id="loginError" style="background: rgba(231, 76, 60, 0.1); border-left: 3px solid #e74c3c; padding: 12px; margin-bottom: 20px; color: #e74c3c; font-size: 13px; border-radius: 4px; display: none;"></div>
+
+                <button type="submit" id="loginBtn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s;">
+                    <span id="loginBtnText">🔓 Sign In</span>
+                    <span id="loginSpinner" style="display: none;">⏳ Signing in...</span>
+                </button>
+
+                <p style="text-align: center; margin-top: 20px; color: #888; font-size: 13px;">
+                    Don't have an account? <a href="#" onclick="switchToRegister()" style="color: #2d9cdb; text-decoration: none; font-weight: 600;">Create one</a>
+                </p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 6px; color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: 600;">Full Name</label>
+                    <input type="text" id="regName" placeholder="Your full name" required style="width: 100%; padding: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 13px;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 6px; color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: 600;">Email Address</label>
+                    <input type="email" id="regEmail" placeholder="your@email.com" required style="width: 100%; padding: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 13px;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 6px; color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: 600;">Password</label>
+                    <input type="password" id="regPassword" placeholder="Min 8 chars, 1 uppercase, 1 digit, 1 special" required style="width: 100%; padding: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 13px;">
+                    <small style="color: #666; display: block; margin-top: 6px;">Password must contain: uppercase, lowercase, number, special character (@#$%)</small>
+                </div>
+
+                <div id="registerError" style="background: rgba(231, 76, 60, 0.1); border-left: 3px solid #e74c3c; padding: 12px; margin-bottom: 15px; color: #e74c3c; font-size: 12px; border-radius: 4px; display: none;"></div>
+
+                <button type="submit" id="regBtn" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s;">
+                    <span id="regBtnText">✓ Create Account</span>
+                    <span id="regSpinner" style="display: none;">⏳ Creating...</span>
+                </button>
+
+                <p style="text-align: center; margin-top: 15px; color: #888; font-size: 12px;">
+                    Already have an account? <a href="#" onclick="switchToLogin()" style="color: #2d9cdb; text-decoration: none; font-weight: 600;">Sign in</a>
+                </p>
+            </form>
+
+            <!-- Default Message -->
+            <div id="loginMessage" style="text-align: center; color: #aaa;">
+                <p style="margin-bottom: 20px;">Choose an option below to get started:</p>
+                <button onclick="switchToLogin()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 10px; text-transform: uppercase;">🔓 Sign In</button>
+                <button onclick="switchToRegister()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; text-transform: uppercase;">👤 Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Backdrop -->
+    <div id="loginBackdrop" class="modal-backdrop" onclick="closeLoginModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 998; backdrop-filter: blur(4px);"></div>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+
+    <script>
+        // Login Modal Management
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+            document.getElementById('loginBackdrop').style.display = 'block';
+            document.getElementById('loginMessage').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('loginBackdrop').style.display = 'none';
+        }
+
+        function switchToLogin() {
+            document.getElementById('loginMessage').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginEmail').focus();
+        }
+
+        function switchToRegister() {
+            document.getElementById('loginMessage').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('regName').focus();
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('loginBtnText');
+            const spinner = document.getElementById('loginSpinner');
+
+            try {
+                // Show loading state
+                btn.disabled = true;
+                btnText.style.display = 'none';
+                spinner.style.display = 'inline';
+                errorDiv.style.display = 'none';
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.user) {
+                    // Success
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Redirect to dashboard
+                    setTimeout(() => {
+                        window.location.href = '/admin.html';
+                    }, 800);
+                } else {
+                    // Error
+                    errorDiv.textContent = data.message || 'Login failed. Please try again.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Connection error. Please check your internet connection.';
+                errorDiv.style.display = 'block';
+            } finally {
+                // Reset button state
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const errorDiv = document.getElementById('registerError');
+            const btn = document.getElementById('regBtn');
+            const btnText = document.getElementById('regBtnText');
+            const spinner = document.getElementById('regSpinner');
+
+            try {
+                // Show loading state
+                btn.disabled = true;
+                btnText.style.display = 'none';
+                spinner.style.display = 'inline';
+                errorDiv.style.display = 'none';
+
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        name, 
+                        email, 
+                        password,
+                        user_type: 'athlete'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.user) {
+                    // Success - auto login
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    setTimeout(() => {
+                        window.location.href = '/athlete.html';
+                    }, 800);
+                } else {
+                    // Error
+                    errorDiv.textContent = data.message || 'Registration failed. Please try again.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                errorDiv.textContent = 'Connection error. Please check your internet connection.';
+                errorDiv.style.display = 'block';
+            } finally {
+                // Reset button state
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLoginModal();
+        });
+    </script>
 </body>
 </html>
