@@ -1787,7 +1787,25 @@ def bad_request(error):
 # Routes in order of Flask matching:
 # 1. All @app.route() decorators (api, health, etc) - highest priority
 # 2. Flask static_folder auto-handling - second priority  
-# 3. Error handlers - lowest priority
+# 3. Security redirects - prevent credential exposure in URLs
+
+@app.route('/login.html')
+@app.route('/login.html', methods=['GET', 'POST'])
+def redirect_login():
+    """Redirect login.html to home page - login embedded in modal"""
+    from flask import redirect
+    return redirect('/', code=301)
+
+
+@app.route('/register.html')
+@app.route('/register.html', methods=['GET', 'POST'])
+def redirect_register():
+    """Redirect register.html to home page - register embedded in modal"""
+    from flask import redirect
+    return redirect('/', code=301)
+
+
+# 4. Error handlers - lowest priority
 
 @app.route('/')
 def root():

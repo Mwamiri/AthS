@@ -1,0 +1,35 @@
+# Security: Block direct access to login.html and register.html
+<FilesMatch "^(login|register)\.html$">
+    Deny from all
+</FilesMatch>
+
+# Redirect attempts to access login.html or register.html to home
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Permanently redirect login.html and register.html
+    RewriteRule ^login\.html$ / [R=301,L]
+    RewriteRule ^register\.html$ / [R=301,L]
+    
+    # Prevent query parameters with credentials
+    RewriteCond %{QUERY_STRING} (password|email|token|auth) [NC]
+    RewriteRule ^login\.html$ / [R=301,L]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Block access to sensitive files
+<FilesMatch "\.env|\.git|\.htaccess|package.json|composer.json">
+    Deny from all
+</FilesMatch>
