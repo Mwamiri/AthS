@@ -19,7 +19,7 @@ class DataImportExportService {
     // ==================== DATABASE HEALTH CHECK ====================
     
     async checkDatabaseHealth() {
-        """Check database connectivity and health status"""
+        // Check database connectivity and health status
         try {
             const response = await fetch(`${this.baseURL}/api/admin/database/health`, {
                 headers: this.headers
@@ -36,7 +36,7 @@ class DataImportExportService {
     }
 
     async validateDatabase() {
-        """Validate database schema and connectivity"""
+        // Validate database schema and connectivity
         try {
             const response = await fetch(`${this.baseURL}/api/admin/database/validate`, {
                 method: 'POST',
@@ -50,7 +50,7 @@ class DataImportExportService {
     }
 
     async initializeDatabase() {
-        """Initialize database tables if not exists"""
+        // Initialize database tables if not exists
         try {
             const response = await fetch(`${this.baseURL}/api/admin/database/initialize`, {
                 method: 'POST',
@@ -66,7 +66,7 @@ class DataImportExportService {
     // ==================== IMPORT OPERATIONS ====================
     
     async importAthletesCsv(csvContent, onProgress = null) {
-        """Import athletes from CSV content"""
+        // Import athletes from CSV content
         try {
             this.importInProgress = true;
             
@@ -105,7 +105,7 @@ class DataImportExportService {
     }
 
     async importRacesJson(racesData, onProgress = null) {
-        """Import races from JSON"""
+        // Import races from JSON
         try {
             this.importInProgress = true;
             
@@ -138,7 +138,7 @@ class DataImportExportService {
     }
 
     async importBulkJson(bulkData, onProgress = null) {
-        """Bulk import multiple data types"""
+        // Bulk import multiple data types
         try {
             this.importInProgress = true;
             
@@ -174,7 +174,7 @@ class DataImportExportService {
     // ==================== EXPORT OPERATIONS ====================
     
     async exportAthletesCsv() {
-        """Export all athletes as CSV"""
+        // Export all athletes as CSV
         try {
             const response = await fetch(`${this.baseURL}/api/admin/export/athletes-csv`, {
                 headers: this.headers
@@ -193,7 +193,7 @@ class DataImportExportService {
     }
 
     async exportRacesCsv() {
-        """Export all races as CSV"""
+        // Export all races as CSV
         try {
             const response = await fetch(`${this.baseURL}/api/admin/export/races-csv`, {
                 headers: this.headers
@@ -212,7 +212,7 @@ class DataImportExportService {
     }
 
     async exportAllJson() {
-        """Export all data as JSON"""
+        // Export all data as JSON
         try {
             const response = await fetch(`${this.baseURL}/api/admin/export/all-json`, {
                 headers: this.headers
@@ -234,7 +234,7 @@ class DataImportExportService {
     // ==================== IMPORT TEMPLATES ====================
     
     async getAthletesImportTemplate() {
-        """Get CSV template for athletes import"""
+        // Get CSV template for athletes import
         try {
             const response = await fetch(`${this.baseURL}/api/admin/import/athletes-template`, {
                 headers: this.headers
@@ -247,7 +247,7 @@ class DataImportExportService {
     }
 
     async getRacesImportTemplate() {
-        """Get JSON template for races import"""
+        // Get JSON template for races import
         try {
             const response = await fetch(`${this.baseURL}/api/admin/import/races-template`, {
                 headers: this.headers
@@ -260,7 +260,7 @@ class DataImportExportService {
     }
 
     async getBulkImportTemplate() {
-        """Get JSON template for bulk import"""
+        // Get JSON template for bulk import
         try {
             const response = await fetch(`${this.baseURL}/api/admin/import/bulk-template`, {
                 headers: this.headers
@@ -275,7 +275,7 @@ class DataImportExportService {
     // ==================== HELPER METHODS ====================
     
     downloadFile(blob, filename) {
-        """Download blob as file"""
+        // Download blob as file
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -287,7 +287,7 @@ class DataImportExportService {
     }
 
     csvToJson(csvContent) {
-        """Convert CSV content to JSON array"""
+        // Convert CSV content to JSON array
         const lines = csvContent.trim().split('\n');
         const headers = lines[0].split(',').map(h => h.trim());
         
@@ -307,7 +307,7 @@ class DataImportExportService {
     }
 
     jsonToCsv(jsonArray, headers = null) {
-        """Convert JSON array to CSV content"""
+        // Convert JSON array to CSV content
         if (!jsonArray || jsonArray.length === 0) {
             return '';
         }
@@ -336,7 +336,7 @@ class DataImportExportService {
     // ==================== VALIDATION ====================
     
     validateAthleteData(athlete) {
-        """Validate athlete object"""
+        // Validate athlete object
         const errors = [];
         
         if (!athlete.name || athlete.name.trim() === '') {
@@ -353,7 +353,7 @@ class DataImportExportService {
     }
 
     validateRaceData(race) {
-        """Validate race object"""
+        // Validate race object
         const errors = [];
         
         if (!race.name || race.name.trim() === '') {
@@ -370,7 +370,7 @@ class DataImportExportService {
     }
 
     isValidEmail(email) {
-        """Validate email format"""
+        // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
@@ -378,7 +378,7 @@ class DataImportExportService {
     // ==================== FILE HANDLING ====================
     
     readFileAsText(file) {
-        """Read uploaded file as text"""
+        // Read uploaded file as text
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target.result);
@@ -388,7 +388,7 @@ class DataImportExportService {
     }
 
     readFileAsJson(file) {
-        """Read uploaded JSON file"""
+        // Read uploaded JSON file
         return new Promise((resolve, reject) => {
             this.readFileAsText(file)
                 .then(content => {
@@ -405,7 +405,7 @@ class DataImportExportService {
     // ==================== SYNC & STATUS ====================
     
     async getSyncStatus() {
-        """Get data synchronization status"""
+        // Get data synchronization status
         try {
             const response = await fetch(`${this.baseURL}/api/admin/sync/status`, {
                 headers: this.headers

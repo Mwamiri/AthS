@@ -369,15 +369,15 @@
                 <div class="modal-header">
                     <h2>Welcome</h2>
                 </div>
-                <p style="color: var(--text-light); margin-bottom: 1.5rem; text-align: center;">Choose to login or create a new account</p>
+                <p class="welcome-text">Choose to login or create a new account</p>
                 <div class="welcome-buttons">
-                    <button onclick="switchToLogin()" class="btn" style="background: var(--primary);">🔐 Login</button>
-                    <button onclick="switchToRegister()" class="btn" style="background: var(--secondary);">✍️ Register</button>
+                    <button onclick="switchToLogin()" class="btn btn-primary">🔐 Login</button>
+                    <button onclick="switchToRegister()" class="btn btn-secondary">✍️ Register</button>
                 </div>
             </div>
 
             <!-- Login Form -->
-            <form id="loginForm" onsubmit="handleLogin(event)" style="display: none;">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="hidden-form">
                 <div class="modal-header">
                     <h2>Login</h2>
                 </div>
@@ -402,7 +402,7 @@
             </form>
 
             <!-- Register Form -->
-            <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
+            <form id="registerForm" onsubmit="handleRegister(event)" class="hidden-form">
                 <div class="modal-header">
                     <h2>Register</h2>
                 </div>

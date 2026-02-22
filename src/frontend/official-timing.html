@@ -30,6 +30,7 @@
             padding: 1.5rem;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -410,7 +411,7 @@
 
                 <!-- Timer Display -->
                 <div class="timer-display">
-                    <div style="font-size: 1.1rem; font-weight: 600; opacity: 0.8; margin-bottom: 0.5rem;">
+                    <div class="timing-label">
                         <span id="current-event">No event selected</span>
                     </div>
                     <div class="timer-time" id="timer-display">00:00.00</div>
@@ -436,7 +437,7 @@
             <!-- Results Section -->
             <div class="results-section">
                 <h2>🏆 Race Results</h2>
-                <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.5rem;">
+                <p class="timing-hint">
                     Enter bib numbers in finishing order (1st → Last)
                 </p>
 

@@ -743,6 +743,7 @@ footer a:hover {
    ============================================ */
 th[data-sort] {
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
     position: relative;
 }
@@ -865,4 +866,127 @@ th.sort-desc .sort-icon {
     font-family: monospace;
     color: var(--text-secondary);
     margin-left: 0.5rem;
+}
+
+/* ============================================
+   Helper Classes for HTML Refactoring
+   ============================================ */
+.welcome-text {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--primary);
+}
+
+.btn-secondary {
+    background: var(--secondary);
+}
+
+.hidden-form {
+    display: none;
+}
+
+.container-spacious {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+}
+
+.info-text {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   Public Register Page Styles
+   ============================================ */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    margin-bottom: 1.5rem;
+}
+
+.form-help-text {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.form-submit-center {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.btn-large {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+}
+
+.success-title {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.success-message {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.success-summary {
+    background: var(--background-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.summary-title {
+    margin-bottom: 1rem;
+}
+
+.error-container {
+    text-align: center;
+    background: rgba(230, 57, 70, 0.1);
+    border: 2px solid var(--danger-color);
+}
+
+.error-title {
+    color: var(--danger-color);
+}
+
+.error-message-text {
+    color: var(--text-secondary);
+    margin-top: 1rem;
+}
+
+.error-action {
+    margin-top: 1rem;
+}
+
+.hidden-element {
+    display: none;
+}
+
+/* ============================================
+   Official Timing Page Styles
+   ============================================ */
+.timing-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+.timing-hint {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
 }
