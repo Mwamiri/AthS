@@ -1,71 +1,140 @@
 # AthSys v2.2 🏃‍♂️
 
-**Enterprise Athletics Management System**
+**Enterprise Athletics Management System | Production Ready**
 
+[![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=github)](https://github.com/features/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0+-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 
-**Domain:** [appstore.co.ke](https://appstore.co.ke)  
+**Repository:** [Mwamiri/AthS](https://github.com/Mwamiri/AthS)  
 **Developer:** Mwamiri  
-**Version:** 2.2.0
+**Version:** 2.2.0  
+**Status:** ✅ Production Ready
 
 ## 📋 Overview
 
-AthSys is a comprehensive, enterprise-grade athletics management system designed for organizing and managing track and field competitions. Built for federation compliance and scalability, it handles everything from athlete registration to real-time results processing and export.
+AthSys v2.2 is a comprehensive, enterprise-grade athletics management system designed for organizing track and field competitions at scale. Built for federation compliance, security, and performance, it handles athlete registration, real-time results processing, and comprehensive reporting.
 
-**NEW in v2.2:**
-- ✅ **Modular Plugin System**: 20+ configurable plugins (core, enterprise, features, security, infrastructure)
-- ✅ **Official Timing System**: Professional timer interface for chiefs/officials with START/STOP buttons (world athletics standard)
-- ✅ **Public Races & Results Portal**: No login required - view races, schedules, and live results
-- ✅ **Plugin Admin Dashboard**: Real-time plugin management interface
-- ✅ **Advanced Search & Filtering**: Filter races by status, location, events, and more
-- ✅ **Public API Endpoints**: /api/races, /api/events, /api/events/results
+**✨ Latest Release (v2.2.0):**
+- ✅ **Modern Embedded Login**: Users log in directly on homepage via modal (no page redirect)
+- ✅ **Beautiful Error Pages**: Modern graphical 404 page with suggestions and actions
+- ✅ **Comprehensive Logging**: 5 log files with structured JSON output (athsys.log, errors, security, api)
+- ✅ **CI/CD Pipeline**: Full GitHub Actions workflow for testing & deployment
+- ✅ **PDF Report Generator**: Professional race, results, and statistics PDF exports
+- ✅ **65+ Security Improvements**: Account lockout, rate limiting, CSRF protection, audit logs
+- ✅ **8 Specialized Modules**: Search, export, async tasks, email, versioning, deduplication
+- ✅ **41 API Endpoints**: Complete REST API for all operations
+- ✅ **PostgreSQL + Redis**: Enterprise-grade database and caching
 
-**Previous in v2.1:**
-- ✅ PostgreSQL database integration with SQLAlchemy ORM
-- ✅ Redis caching and session management
-- ✅ Bcrypt password hashing for enhanced security
-- ✅ Production-ready Docker Compose configuration
-- ✅ Rate limiting on API endpoints
-- ✅ Audit logging for all critical operations
-- ✅ Real-time leaderboards with Redis sorted sets
-- ✅ Enhanced security with obfuscated view filenames
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.11+
+- PostgreSQL 16+
+- Redis 7+ (optional but recommended)
+- Docker & Docker Compose (for containerized deployment)
+
+### Local Development
+```bash
+# Clone repository
+git clone https://github.com/Mwamiri/AthS.git
+cd AthSys_ver1
+
+# Install dependencies
+cd src/backend
+pip install -r requirements.txt
+
+# Set environment variables
+export DATABASE_URL=postgresql://athsys_user:athsys_pass@localhost:5432/athsys_db
+export REDIS_URL=redis://localhost:6379/0
+
+# Run development server
+python app.py
+```
+
+Then visit: **http://localhost:5000**
+
+### Docker Deployment
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Logs
+docker-compose logs -f web
+```
+
+### Production Deployment
+```bash
+# Install production WSGI server
+pip install gunicorn
+
+# Run with Gunicorn (4 workers)
+gunicorn --workers 4 --bind 0.0.0.0:5000 app:app
+
+# Or via Docker (recommended)
+docker-compose -f docker-compose.yml up -d
+```
+
+## 🔐 Security Features
+
+✅ **Authentication & Authorization**
+- bcrypt password hashing with salt
+- Account lockout (5 failed attempts → 30 min suspension)
+- Session-based authentication with Redis
+- Role-based access control (7 roles: admin, coach, official, athlete, registrar, chief_registrar, viewer)
+- Token-based API authorization
+
+✅ **Data Protection**
+- CSRF token validation
+- SQL injection prevention via SQLAlchemy ORM
+- Input sanitization and validation
+- XSS protection headers
+- Password strength requirements (8+ chars, uppercase, lowercase, numbers, special)
+
+✅ **Monitoring & Audit**
+- Complete audit logging of all user actions
+- Failed login tracking
+- Security event monitoring
+- Request ID tracking for debugging
+- Rate limiting (configurable per endpoint)
+
+✅ **Infrastructure Security**
+- Security headers (X-Frame-Options, X-Content-Type-Options, CSP, HSTS)
+- CORS configuration
+- Referrer Policy enforcement
+- Permissions Policy headers
 
 ## ✨ Key Features
 
-### 🎯 Competition Management
-- **Athlete Registration**: Complete athlete profiles with optional World Athletics codes
-- **Bib Assignment**: Automated bib number allocation and conflict resolution
-- **Event Management**: Multi-event competition support with scheduling
-- **Race Dashboard**: Role-based dashboards for athletes, coaches, starters, and officials
+### 🎯 Core Functionality
+- **Athlete Management**: Profiles, contact info, club associations
+- **Race Organization**: Event scheduling, bib allocation, registration
+- **Results Tracking**: Multiple timing methods, final standings
+- **Real-time Updates**: Redis-powered live data streaming
+- **Data Export**: CSV/Excel exports for athletes, results, registrations
 
-### 📊 Results Processing
-- **Multiple Input Methods**: 
-  - Official timing system with manual timer
-  - Real-time timing mat integration
-  - Manual entry interface
-  - Bulk import capabilities
-- **Performance Tracking**:
-  - Personal Bests (PB) calculation
-  - Season Bests (SB) tracking
-  - Team scoring and rankings
-- **Real-time Leaderboards**: Redis-powered live ranking updates
-- **Public Results Portal**: View race results without login
+### 🔍 Advanced Features
+- **Full-Text Search**: Search athletes, races, events by name or location
+- **Faceted Filtering**: Filter by status, category, date range, distance
+- **Autocomplete**: Smart suggestions while typing
+- **Asynchronous Tasks**: Background job queue for email, exports, reports
+- **Email Notifications**: SendGrid/SMTP integration with templates
 
-### 🔒 Security & Authentication
-- **Role-Based Access Control (RBAC)**: 7 distinct user roles
-- **Bcrypt Password Hashing**: Industry-standard password security
-- **Session Management**: Redis-backed sessions with configurable expiry
-- **Rate Limiting**: Protection against abuse and DDoS
-- **Audit Logging**: Complete activity trail for compliance
-- **Optional 2FA**: TOTP with QR codes and backup codes
+### 📊 Reporting
+- **Professional PDFs**: Race reports, results, statistics
+- **Structured Logging**: JSON + text output with rotation
+- **Real-time Logs Viewer**: Filter and search logs in browser
+- **System Health Dashboard**: Monitor all components
 
-### 🧩 Modular Architecture
-- **Plugin System**: Enable/disable features at runtime without code changes
-- **20+ Built-in Plugins**:
+### 🧩 Extensibility
+- **Plugin System**: Enable/disable plugins without code changes
+- **API Versioning**: v1/v2 support with deprecation headers
+- **Webhook Support**: External system integration
+- **Custom Fields**: Add fields per organization needs
   - Core: Authentication, User Management, Race Management
   - Enterprise: Audit Logging, Email, Health Monitoring, Feature Flags, Request Deduplication
   - Features: Official Timing, Athlete Registration, Analytics, Leaderboard, Reports
@@ -145,6 +214,66 @@ docker-compose up -d
 http://localhost
 ```
 
+## � API Endpoints
+
+AthSys provides 41 RESTful API endpoints organized by feature:
+
+### Authentication Endpoints
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `POST /api/auth/refresh` - Token refresh
+- `GET /api/auth/verify` - Verify current user
+- `POST /api/auth/2fa/setup` - Enable 2FA
+- `POST /api/auth/2fa/verify` - Verify 2FA code
+- `POST /api/auth/password-reset` - Request password reset
+- `POST /api/auth/password-reset/confirm` - Confirm password reset
+
+### Athlete Management
+- `GET /api/athletes` - List athletes
+- `GET /api/athletes/<id>` - Get athlete details
+- `POST /api/athletes` - Create athlete
+- `PUT /api/athletes/<id>` - Update athlete
+- `DELETE /api/athletes/<id>` - Delete athlete
+- `GET /api/athletes/<id>/races` - Get athlete's races
+- `GET /api/athletes/<id>/results` - Get athlete's results
+- `POST /api/athletes/<id>/export` - Export athlete data
+
+### Race Management
+- `GET /api/races` - List races
+- `GET /api/races/<id>` - Get race details
+- `POST /api/races` - Create race
+- `PUT /api/races/<id>` - Update race
+- `DELETE /api/races/<id>` - Delete race
+- `POST /api/races/<id>/publish` - Publish race
+- `POST /api/races/<id>/archive` - Archive race
+- `GET /api/races/<id>/events` - Get race events
+
+### Results Management
+- `GET /api/results` - List results
+- `GET /api/results/<id>` - Get result details
+- `POST /api/results` - Record result
+- `PUT /api/results/<id>` - Update result
+- `DELETE /api/results/<id>` - Delete result
+- `POST /api/results/bulk` - Bulk import results
+- `GET /api/results/export` - Export results
+
+### Admin Operations
+- `GET /api/admin/dashboard` - System dashboard
+- `GET /api/admin/logs` - View system logs
+- `POST /api/admin/backup` - Trigger database backup
+- `POST /api/admin/plugins/<name>/toggle` - Toggle plugin
+- `GET /api/admin/users` - List all users
+- `POST /api/admin/users/<id>/ban` - Ban user
+
+### Statistics & Analytics
+- `GET /api/stats/system` - System statistics
+- `GET /api/stats/races` - Race statistics
+- `GET /api/stats/athletes` - Athlete statistics
+- `POST /api/reports/pdf` - Generate PDF report
+
+All endpoints require authentication (JWT token) unless otherwise specified.
+
 ## 📖 Documentation
 
 Detailed documentation is available in the `/docs` directory:
@@ -152,6 +281,7 @@ Detailed documentation is available in the `/docs` directory:
 - User Manual
 - API Reference
 - Plugin Development Guide
+- See also: [COMPLETION_REPORT.md](COMPLETION_REPORT.md) for comprehensive implementation details
 
 ## 🤝 Contributing
 
