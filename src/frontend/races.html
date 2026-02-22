@@ -14,22 +14,22 @@
 
     <nav class="nav">
         <div class="nav-brand">🏃 AthSys v2.1</div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <span id="userName" style="color: #666;"></span>
+        <div class="nav-user">
+            <span id="userName" class="user-name"></span>
             <a href="dashboard.html" class="btn btn-secondary">📊 Dashboard</a>
             <a href="index.html" class="btn btn-secondary">Home</a>
             <button onclick="logout()" class="btn btn-danger">Logout</button>
         </div>
     </nav>
 
-    <div class="container" style="margin-top: 2rem;">
+    <div class="container container-spaced">
         <div class="dashboard-header">
             <h1>🏁 Race Management</h1>
             <p>Create, manage, and configure athletic races and events</p>
         </div>
 
         <!-- Action Buttons -->
-        <div class="actions-bar" style="display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap;">
+        <div class="actions-bar">
             <button id="createRaceBtn" class="btn btn-primary" onclick="showCreateRaceModal()">
                 ➕ Create New Race
             </button>
@@ -40,7 +40,7 @@
                 📥 Export CSV
             </button>
             <input type="text" id="searchInput" placeholder="🔍 Search races... (Ctrl+K)" 
-                   style="flex: 1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;"
+                   class="search-input"
                    onkeyup="debouncedFilterRaces()">
         </div>
 
@@ -51,8 +51,8 @@
     </div>
 
     <!-- Create/Edit Race Modal -->
-    <div id="raceModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+    <div id="raceModal" class="modal hidden-element">
+        <div class="modal-content modal-medium">
             <div class="modal-header">
                 <h2 id="modalTitle">Create New Race</h2>
                 <button class="btn-close" onclick="closeRaceModal()">×</button>
@@ -109,8 +109,8 @@
     </div>
 
     <!-- Race Details Modal -->
-    <div id="raceDetailsModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 800px;">
+    <div id="raceDetailsModal" class="modal hidden-element">
+        <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="detailsTitle">Race Details</h2>
                 <button class="btn-close" onclick="closeDetailsModal()">×</button>

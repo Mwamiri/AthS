@@ -14,22 +14,22 @@
 
     <nav class="nav">
         <div class="nav-brand">🏃 AthSys v2.1</div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <span id="userName" style="color: #666;"></span>
+        <div class="nav-user">
+            <span id="userName" class="user-name"></span>
             <a href="dashboard.html" class="btn btn-secondary">📊 Dashboard</a>
             <a href="index.html" class="btn btn-secondary">Home</a>
             <button onclick="logout()" class="btn btn-danger">Logout</button>
         </div>
     </nav>
 
-    <div class="container" style="margin-top: 2rem;">
+    <div class="container container-spaced">
         <div class="dashboard-header">
             <h1>🏆 Results Management</h1>
             <p>View and manage race results</p>
         </div>
 
         <!-- Filters and Actions -->
-        <div class="actions-bar" style="display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; align-items: center;">
+        <div class="actions-bar">
             <button id="addResultBtn" class="btn btn-primary" onclick="showAddResultModal()">
                 ➕ Add Result
             </button>
@@ -39,23 +39,23 @@
             <button class="export-btn" onclick="exportResults()" title="Export results to CSV">
                 📥 Export
             </button>
-            <select id="raceFilter" onchange="filterResults()" style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;">
+            <select id="raceFilter" onchange="filterResults()" class="form-select" title="Filter results by race">
                 <option value="">All Races</option>
             </select>
-            <input type="text" id="searchInput" placeholder="🔍 Search by athlete... (Ctrl+K)" 
-                   style="flex: 1; min-width: 200px; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;"
+            <input type="text" id="searchInput" placeholder="🔍 Search by athlete... (Ctrl+K)"
+                   class="search-input"
                    onkeyup="debouncedFilterResults()">
         </div>
 
         <!-- Results Table -->
-        <div id="resultsContainer" style="background: var(--background-dark); border-radius: 12px; overflow: hidden;">
-            <div class="loading" style="padding: 2rem; text-align: center;">Loading results...</div>
+        <div id="resultsContainer" class="results-table">
+            <div class="loading">Loading results...</div>
         </div>
     </div>
 
     <!-- Add Result Modal -->
-    <div id="resultModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+    <div id="resultModal" class="modal hidden-element">
+        <div class="modal-content modal-medium">
             <div class="modal-header">
                 <h2>Add Race Result</h2>
                 <button class="btn-close" onclick="closeResultModal()">×</button>

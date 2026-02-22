@@ -160,8 +160,8 @@
     
     <nav class="nav">
         <div class="nav-brand">🏃 AthSys v2.1</div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <span id="userName" style="color: #666;"></span>
+        <div class="nav-user">
+            <span id="userName" class="user-name"></span>
             <a href="index.html" class="btn btn-secondary">Home</a>
             <button onclick="logout()" class="btn btn-danger">Logout</button>
         </div>
@@ -170,7 +170,7 @@
     <div class="container">
         <div class="dashboard-header">
             <h1>Welcome back, <span id="userWelcome">User</span>! 👋</h1>
-            <p style="margin: 0; opacity: 0.95; font-size: 1.1rem;">
+            <p class="welcome-subtitle">
                 <span id="userRole" class="role-badge">User</span>
             </p>
         </div>
