@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health - AthSys v2.2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-card.healthy {
+            border-color: #06d6a0;
+            background: #f0fdf4;
+        }
+        
+        .status-card.warning {
+            border-color: #f7931e;
+            background: #fffbf0;
+        }
+        
+        .status-card.error {
+            border-color: #e63946;
+            background: #ffe0e6;
+        }
+        
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .status-card h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-card.healthy .status-indicator {
+            background: #06d6a0;
+        }
+        
+        .status-card.warning .status-indicator {
+            background: #f7931e;
+        }
+        
+        .status-card.error .status-indicator {
+            background: #e63946;
+        }
+        
+        .status-details {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .version-info {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .version-info h3 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .version-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .version-row:last-child {
+            border-bottom: none;
+        }
+        
+        .version-row strong {
+            color: #333;
+        }
+        
+        .version-row span {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .timestamp {
+            color: #999;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .auto-refresh {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .auto-refresh label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏃‍♂️ AthSys Health Check</h1>
+            <p>System Status & Performance Monitoring</p>
+        </div>
+        
+        <div class="status-grid" id="statusGrid">
+            <div class="status-card" style="grid-column: 1/-1;">
+                <div class="loading"></div> Loading system status...
+            </div>
+        </div>
+        
+        <div class="version-info">
+            <h3>System Information</h3>
+            <div id="systemInfo">
+                <div class="version-row">
+                    <span>Loading...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timestamp" id="timestamp"></div>
+        
+        <div class="auto-refresh">
+            <label>
+                <input type="checkbox" id="autoRefresh" checked>
+                <span>Auto-refresh every 10 seconds</span>
+            </label>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+        let autoRefreshInterval;
+        
+        async function fetchHealthStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                renderStatus(data);
+            } catch (error) {
+                console.error('Error fetching health status:', error);
+                renderError('Failed to fetch system status. Please check your connection.');
+            }
+        }
+        
+        function renderStatus(data) {
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.innerHTML = '';
+            
+            const checks = data.checks || {};
+            
+            // Main status
+            const mainCard = createStatusCard(
+                'System Status',
+                data.status || 'unknown',
+                data.status === 'healthy' ? 'healthy' : 'error',
+                `Service: ${data.service}<br>Version: ${data.version}`
+            );
+            statusGrid.appendChild(mainCard);
+            
+            // Component status
+            for (const [component, status] of Object.entries(checks)) {
+                const statusClass = status === 'operational' || status === 'healthy' ? 'healthy' : 
+                                   status === 'degraded' ? 'warning' : 'error';
+                const card = createStatusCard(
+                    component.charAt(0).toUpperCase() + component.slice(1),
+                    status,
+                    statusClass,
+                    `Component is ${status}`
+                );
+                statusGrid.appendChild(card);
+            }
+            
+            // Update system info
+            updateSystemInfo(data);
+            updateTimestamp();
+        }
+        
+        function createStatusCard(title, status, statusClass, details) {
+            const card = document.createElement('div');
+            card.className = `status-card ${statusClass}`;
+            card.innerHTML = `
+                <h3>
+                    <span class="status-indicator"></span>
+                    ${title}
+                </h3>
+                <div class="status-details">
+                    <strong>${status}</strong><br>
+                    ${details}
+                </div>
+            `;
+            return card;
+        }
+        
+        function updateSystemInfo(data) {
+            const info = document.getElementById('systemInfo');
+            const timestamp = data.timestamp || new Date().toISOString();
+            
+            info.innerHTML = `
+                <div class="version-row">
+                    <strong>Service Name</strong>
+                    <span>${data.service || 'AthSys Backend'}</span>
+                </div>
+                <div class="version-row">
+                    <strong>Version</strong>
+                    <span>${data.version || 'Unknown'}</span>
+                </div>
+                <div class="version-row">
+                    <strong>Status</strong>
+                    <span style="color: ${data.status === 'healthy' ? '#06d6a0' : '#e63946'};">
+                        ${data.status || 'Unknown'}
+                    </span>
+                </div>
+                <div class="version-row">
+                    <strong>Last Check</strong>
+                    <span>${new Date(timestamp).toLocaleString()}</span>
+                </div>
+                <div class="version-row">
+                    <strong>Uptime</strong>
+                    <span>Running</span>
+                </div>
+            `;
+        }
+        
+        function updateTimestamp() {
+            const timestamp = document.getElementById('timestamp');
+            timestamp.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+        
+        function renderError(message) {
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.innerHTML = `
+                <div class="status-card error" style="grid-column: 1/-1;">
+                    <h3>❌ Connection Error</h3>
+                    <div class="status-details">${message}</div>
+                </div>
+            `;
+        }
+        
+        function toggleAutoRefresh(checked) {
+            if (checked) {
+                fetchHealthStatus();
+                autoRefreshInterval = setInterval(fetchHealthStatus, 10000);
+            } else {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+        
+        // Setup auto-refresh
+        document.getElementById('autoRefresh').addEventListener('change', (e) => {
+            toggleAutoRefresh(e.target.checked);
+        });
+        
+        // Initial fetch
+        fetchHealthStatus();
+        
+        // Setup refresh on focus
+        window.addEventListener('focus', fetchHealthStatus);
+        
+        console.log('🏥 Health check page initialized');
+    </script>
+</body>
+</html>

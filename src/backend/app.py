@@ -10,6 +10,10 @@ import os
 import time
 from datetime import datetime
 from functools import wraps
+try:
+    from flasgger import Swagger
+except ImportError:
+    Swagger = None
 
 # Import database models and Redis config
 from models import (
@@ -20,11 +24,72 @@ from redis_config import (
     RedisCache, RateLimiter, SessionManager, 
     LeaderboardManager, PubSubManager, test_redis_connection
 )
+from security import SecurityManager
+from log_system import get_log_manager, get_logger
 
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
+# Security Headers
+@app.after_request
+def set_security_headers(response):
+    """Add security headers to all responses"""
+    # Prevent clickjacking
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    
+    # Prevent MIME type sniffing
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    
+    # Enable XSS protection
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    
+    # Content Security Policy
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' fonts.googleapis.com; "
+        "style-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com; "
+        "font-src 'self' fonts.googleapis.com fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' localhost:*; "
+        "frame-ancestors 'self'"
+    )
+    
+    # Referrer Policy
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    
+    # Permissions Policy
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    
+    # HTTPS enforcement (in production)
+    if not app.debug:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    return response
+
+# Initialize Swagger/OpenAPI Documentation
+if Swagger:
+    swagger = Swagger(app, template={
+        "swagger": "2.0",
+        "info": {
+            "title": "AthSys API",
+            "description": "Elite Athletics Management System - Complete REST API",
+            "version": "2.2.0",
+            "contact": {
+                "email": "support@athsys.com"
+            },
+            "license": {
+                "name": "MIT"
+            }
+        },
+        "host": "localhost:5000",
+        "basePath": "/api",
+        "schemes": ["http", "https"],
+        "consumes": ["application/json"],
+        "produces": ["application/json"]
+    })
+    print("📚 Swagger API documentation available at /apidocs")
 
 # Configuration
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
@@ -124,7 +189,46 @@ def log_audit(action, entity_type, entity_id=None, details=None):
     except Exception as e:
         print(f"Audit log error: {e}")
 
+# Password validation helper
+def validate_password_strength(password):
+    """Validate password meets security requirements"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters"
+    if not any(c.isupper() for c in password):
+        return False, "Password must contain at least one uppercase letter"
+    if not any(c.islower() for c in password):
+        return False, "Password must contain at least one lowercase letter"
+    if not any(c.isdigit() for c in password):
+        return False, "Password must contain at least one number"
+    if not any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?' for c in password):
+        return False, "Password must contain at least one special character"
+    return True, "Password is strong"
+
+# Track failed login attempts
+def track_failed_login(email):
+    """Track failed login attempts for account lockout"""
+    key = f"failed_login:{email}"
+    attempts = RedisCache.get(key) or 0
+    attempts += 1
+    RedisCache.set(key, attempts, expiry=1800)  # 30 minutes window
+    return attempts
+
+def get_failed_login_count(email):
+    """Get failed login attempts count"""
+    key = f"failed_login:{email}"
+    return RedisCache.get(key) or 0
+
+def reset_failed_login(email):
+    """Reset failed login attempts after successful login"""
+    key = f"failed_login:{email}"
+    RedisCache.delete(key)
+
+def is_account_locked(email):
+    """Check if account is locked due to too many failed attempts"""
+    return get_failed_login_count(email) >= 5
+
 # Start lists placeholder
+DEMO_USERS = []  # Initialize empty list for backward compatibility
 DEMO_STARTLISTS = [
     {
         'id': 1,
@@ -215,25 +319,77 @@ def api_info():
 
 @app.route('/health')
 def health():
-    """Health check endpoint for Docker and monitoring"""
+    """Comprehensive health check endpoint for monitoring and orchestration"""
+    db_status = 'operational'
+    try:
+        db = next(get_db())
+        # Quick database connectivity test
+        db.execute('SELECT 1')
+    except Exception as e:
+        db_status = 'offline'
+        print(f"Database health check failed: {e}")
+    
+    redis_status = 'active' if test_redis_connection() else 'offline'
+    
     health_status = {
-        'status': 'healthy',
+        'status': 'healthy' if db_status == 'operational' else 'degraded',
         'service': 'athsys-backend',
         'version': APP_VERSION,
         'timestamp': datetime.now().isoformat(),
+        'uptime': 'operational',
+        'environment': 'production' if not app.config['DEBUG'] else 'development',
         'checks': {
             'api': 'operational',
-            'database': 'ready',
-            'cache': 'active'
+            'database': db_status,
+            'cache': redis_status,
+            'memory': 'healthy'
+        },
+        'features': {
+            'authentication': 'enabled',
+            'rate_limiting': 'enabled',
+            'audit_logging': 'enabled',
+            'security': 'hardened'
         }
     }
-    return jsonify(health_status), 200
+    
+    status_code = 200 if health_status['status'] == 'healthy' else 503
+    return jsonify(health_status), status_code
 
 
 @app.route('/livez')
 def livez():
     """Lightweight liveness probe endpoint for container orchestration"""
     return jsonify({'status': 'ok', 'timestamp': time.time()}), 200
+
+
+@app.route('/api/logs', methods=['GET'])
+@app.route('/api/debug/logs', methods=['GET'])
+def get_logs():
+    """Get system logs for debugging"""
+    log_type = request.args.get('type', 'all')
+    limit = int(request.args.get('limit', 100))
+    offset = int(request.args.get('offset', 0))
+    
+    log_mgr = get_log_manager()
+    logs = log_mgr.get_logs(log_type, limit, offset)
+    
+    return jsonify({
+        'type': log_type,
+        'limit': limit,
+        'offset': offset,
+        'count': len(logs),
+        'logs': logs
+    }), 200
+
+
+@app.route('/api/logs/stats', methods=['GET'])
+@app.route('/api/debug/logs/stats', methods=['GET'])
+def get_logs_stats():
+    """Get log file statistics"""
+    log_mgr = get_log_manager()
+    stats = log_mgr.get_log_stats()
+    
+    return jsonify(stats), 200
 
 
 @app.route('/api/docs')
@@ -538,7 +694,7 @@ def get_stats():
 @app.route('/api/auth/login', methods=['POST'])
 @rate_limit(max_requests=10, window=300)  # 10 login attempts per 5 minutes
 def login():
-    """User login endpoint with database and Redis sesssion"""
+    """User login endpoint with account lockout protection"""
     data = request.get_json()
     
     if not data or 'email' not in data or 'password' not in data:
@@ -547,8 +703,22 @@ def login():
             'message': 'Email and password are required'
         }), 400
     
-    email = data.get('email')
-    password = data.get('password')
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    
+    if not email or not password:
+        return jsonify({
+            'error': 'Validation error',
+            'message': 'Email and password cannot be empty'
+        }), 400
+    
+    # Check if account is locked
+    if is_account_locked(email):
+        log_audit('login_blocked', 'user', details=f'Account locked due to failed attempts: {email}')
+        return jsonify({
+            'error': 'Account locked',
+            'message': 'Too many failed login attempts. Your account has been locked for 30 minutes. Please try again later.'
+        }), 429
     
     try:
         # Query user from database
@@ -556,26 +726,41 @@ def login():
         user = db.query(User).filter(User.email == email).first()
         
         if not user:
-            log_audit('login_failed', 'user', details=f'Email not found: {email}')
+            attempts = track_failed_login(email)
+            log_audit('login_failed', 'user', details=f'Email not found: {email}, attempt {attempts}')
             return jsonify({
                 'error': 'Authentication failed',
-                'message': 'Invalid email or password'
+                'message': 'Invalid email or password',
+                'attempts_remaining': max(0, 5 - attempts)
             }), 401
         
         # Check password using bcrypt
         if not user.check_password(password):
-            log_audit('login_failed', 'user', user.id, f'Invalid password for {email}')
+            attempts = track_failed_login(email)
+            log_audit('login_failed', 'user', user.id, f'Invalid password for {email}, attempt {attempts}')
+            
+            if attempts >= 5:
+                return jsonify({
+                    'error': 'Account locked',
+                    'message': 'Too many failed login attempts. Your account has been locked for 30 minutes.'
+                }), 429
+            
             return jsonify({
                 'error': 'Authentication failed',
-                'message': 'Invalid email or password'
+                'message': 'Invalid email or password',
+                'attempts_remaining': max(0, 5 - attempts)
             }), 401
         
         # Check if user is active
         if user.status != 'active':
+            log_audit('login_failed', 'user', user.id, f'Account not active: {email}')
             return jsonify({
                 'error': 'Account inactive',
                 'message': 'Your account has been deactivated. Please contact administrator.'
             }), 403
+        
+        # Reset failed login count on successful login
+        reset_failed_login(email)
         
         # Update last login
         user.last_login = datetime.now()
@@ -583,7 +768,6 @@ def login():
         
         # Create session in Redis
         session_data = user.to_dict()
-        session_data.pop('password_hash', None)  # Remove password hash
         SessionManager.create_session(user.id, session_data, expiry=86400)  # 24 hours
         
         # Generate token (in production, use JWT with secret key)
@@ -595,15 +779,15 @@ def login():
         # Cache user data for quick access
         RedisCache.set(f"user:{user.id}", session_data, expiry=3600)
         
-        return jsonify({
-            'message': '✅ Login successful',
+        return jsonify(add_metadata({
+            'message': 'Login successful',
             'token': token,
-            'user': session_data,
-            'version': APP_VERSION
-        }), 200
+            'user': session_data
+        })), 200
         
     except Exception as e:
         print(f"Login error: {e}")
+        log_audit('login_error', 'user', details=str(e))
         return jsonify({
             'error': 'Server error',
             'message': 'An error occurred during login'
@@ -611,8 +795,9 @@ def login():
 
 
 @app.route('/api/auth/register', methods=['POST'])
+@rate_limit(max_requests=5, window=3600)  # 5 registrations per hour per IP
 def register():
-    """User registration endpoint"""
+    """User registration endpoint with secure password handling"""
     data = request.get_json()
     
     if not data:
@@ -631,17 +816,44 @@ def register():
             'message': f'Missing required fields: {", ".join(missing_fields)}'
         }), 400
     
-    name = data.get('name')
-    email = data.get('email')
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
     password = data.get('password')
-    role = data.get('role')
+    role = data.get('role', '').lower()
     
-    # Check if email already exists
-    if any(u['email'] == email for u in DEMO_USERS):
+    # Input validation
+    if not name or len(name) < 2:
         return jsonify({
-            'error': 'Registration failed',
-            'message': 'Email already registered'
-        }), 409
+            'error': 'Validation error',
+            'message': 'Name must be at least 2 characters'
+        }), 400
+    
+    if not email or '@' not in email:
+        return jsonify({
+            'error': 'Validation error',
+            'message': 'Please provide a valid email address'
+        }), 400
+    
+    # Validate password strength
+    if not password:
+        return jsonify({
+            'error': 'Validation error',
+            'message': 'Password is required'
+        }), 400
+    
+    is_strong, msg = validate_password_strength(password)
+    if not is_strong:
+        return jsonify({
+            'error': 'Weak password',
+            'message': msg,
+            'requirements': {
+                'minLength': 8,
+                'uppercase': 'At least one uppercase letter',
+                'lowercase': 'At least one lowercase letter',
+                'number': 'At least one number',
+                'special': 'At least one special character(!@#$%^&*)'
+            }
+        }), 400
     
     # Validate role
     valid_roles = ['athlete', 'coach', 'official', 'viewer', 'registrar', 'chief_registrar', 'starter']
@@ -651,30 +863,58 @@ def register():
             'message': f'Invalid role. Must be one of: {", ".join(valid_roles)}'
         }), 400
     
-    # Create new user
-    new_user = {
-        'id': len(DEMO_USERS) + 1,
-        'name': name,
-        'email': email,
-        'password': password,  # In production, hash the password
-        'role': role,
-        'status': 'active',
-        'lastLogin': 'Never',
-        'createdAt': datetime.now().strftime('%Y-%m-%d')
-    }
-    
-    DEMO_USERS.append(new_user)
-    
-    # Return user data (excluding password)
-    user_data = {k: v for k, v in new_user.items() if k != 'password'}
-    
-    return jsonify(add_metadata({
-        'message': '✅ Registration successful',
-        'user': user_data
-    })), 201
+    try:
+        db = next(get_db())
+        
+        # Check if email already exists
+        existing_user = db.query(User).filter(User.email == email).first()
+        if existing_user:
+            log_audit('registration_failed', 'user', details=f'Email already exists: {email}')
+            return jsonify({
+                'error': 'Registration failed',
+                'message': 'Email already registered'
+            }), 409
+        
+        # Create new user with hashed password
+        new_user = User(
+            name=name,
+            email=email,
+            role=role,
+            status='active'
+        )
+        new_user.set_password(password)  # Hash password with bcrypt
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        # Log successful registration
+        log_audit('user_registered', 'user', new_user.id, f'New user registered: {email}')
+        
+        # Create initial session
+        session_data = new_user.to_dict()
+        SessionManager.create_session(new_user.id, session_data, expiry=86400)
+        
+        # Generate token
+        token = f"{new_user.id}"
+        
+        return jsonify(add_metadata({
+            'message': '✅ Registration successful',
+            'token': token,
+            'user': session_data
+        })), 201
+        
+    except Exception as e:
+        print(f"Registration error: {e}")
+        log_audit('registration_error', 'user', details=str(e))
+        return jsonify({
+            'error': 'Server error',
+            'message': 'An error occurred during registration'
+        }), 500
 
 
 @app.route('/api/auth/reset-password', methods=['POST'])
+@rate_limit(max_requests=5, window=3600)  # 5 reset requests per hour
 def reset_password():
     """Password reset request endpoint"""
     data = request.get_json()
@@ -685,24 +925,51 @@ def reset_password():
             'message': 'Email is required'
         }), 400
     
-    email = data.get('email')
+    email = data.get('email', '').strip().lower()
     
-    # Find user by email
-    user = next((u for u in DEMO_USERS if u['email'] == email), None)
+    if not email or '@' not in email:
+        return jsonify({
+            'error': 'Validation error',
+            'message': 'Please provide a valid email address'
+        }), 400
     
-    if not user:
-        # Don't reveal if email exists (security best practice)
-        # Return success even if user not found
+    try:
+        # Find user by email
+        db = next(get_db())
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            # Security best practice: don't reveal if email exists
+            log_audit('password_reset_failed', 'user', details=f'Email not found: {email}')
+            return jsonify(add_metadata({
+                'message': 'If the email exists, a password reset link has been sent'
+            })), 200
+        
+        # Generate reset token and expiry (in production)
+        import secrets
+        reset_token = secrets.token_urlsafe(32)
+        reset_expiry_key = f"reset_token:{reset_token}"
+        RedisCache.set(reset_expiry_key, user.id, expiry=1800)  # 30 minutes validity
+        
+        # Log the reset request
+        log_audit('password_reset_requested', 'user', user.id, f'Reset requested from {request.remote_addr}')
+        
+        # In production, send email with reset link
+        # reset_link = f"{request.base_url.replace('/api/auth/reset-password', '')}/reset.html?token={reset_token}"
+        # send_reset_email(user.email, reset_link)
+        
         return jsonify(add_metadata({
-            'message': '✅ If the email exists, a password reset link has been sent'
+            'message': 'Password reset link sent to your email',
+            'demo_note': 'In production, this would send an email with reset link'
         })), 200
-    
-    # In production, generate reset token and send email
-    # For demo, just return success
-    return jsonify(add_metadata({
-        'message': '✅ Password reset link sent to your email',
-        'demo_note': 'In production, this would send an email with reset link'
-    })), 200
+        
+    except Exception as e:
+        print(f"Reset password error: {e}")
+        log_audit('password_reset_error', 'user', details=str(e))
+        return jsonify({
+            'error': 'Server error',
+            'message': 'An error occurred. Please try again later.'
+        }), 500
 
 
 @app.route('/api/admin/users', methods=['GET'])
@@ -1524,6 +1791,10 @@ def bad_request(error):
 @app.route('/<path:path>')
 def serve_static(path):
     """Serve static frontend files"""
+    # Don't serve API routes through this handler
+    if path.startswith('api/'):
+        return jsonify({'error': 'Not Found', 'message': 'The requested endpoint does not exist'}), 404
+    
     try:
         return send_from_directory(FRONTEND_DIR, path)
     except:

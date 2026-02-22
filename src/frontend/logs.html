@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthSys - System Logs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%);
+            padding: 30px;
+            border-bottom: 2px solid #2d9cdb;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(30, 30, 46, 0.5);
+            border-bottom: 1px solid #333;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+        }
+
+        select, input, button {
+            padding: 10px 12px;
+            border: 1px solid #444;
+            background: #2a2a3e;
+            color: #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:hover, input:hover {
+            border-color: #2d9cdb;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #2d9cdb;
+            box-shadow: 0 0 10px rgba(45, 156, 219, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%);
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 156, 219, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: rgba(45, 156, 219, 0.05);
+            border-bottom: 1px solid #333;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(45, 156, 219, 0.1) 0%, rgba(31, 71, 136, 0.1) 100%);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #2d9cdb;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d9cdb;
+        }
+
+        .logs-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            background: #1a1a2e;
+        }
+
+        .log-entry {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #666;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+
+        .log-entry:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: #2d9cdb;
+        }
+
+        .log-entry.error {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        .log-entry.warning {
+            border-left-color: #f39c12;
+            background: rgba(243, 156, 18, 0.05);
+        }
+
+        .log-entry.security {
+            border-left-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.08);
+        }
+
+        .log-entry.api {
+            border-left-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .log-entry.info {
+            border-left-color: #27ae60;
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .log-timestamp {
+            color: #2d9cdb;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .log-level {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 10px;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        .log-level.error {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .log-level.warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .log-level.security {
+            background: #c0392b;
+            color: white;
+        }
+
+        .log-level.api {
+            background: #3498db;
+            color: white;
+        }
+
+        .log-level.info {
+            background: #27ae60;
+            color: white;
+        }
+
+        .log-level.debug {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .log-message {
+            color: #e0e0e0;
+            word-break: break-all;
+        }
+
+        .log-details {
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #2d9cdb;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(30, 30, 46, 0.5);
+            border-top: 1px solid #333;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .pagination .info {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .footer {
+            padding: 15px;
+            background: rgba(30, 30, 46, 0.5);
+            border-top: 1px solid #333;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2d9cdb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Scrollbar styling */
+        .logs-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .logs-container::-webkit-scrollbar-track {
+            background: #2a2a3e;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb {
+            background: #2d9cdb;
+            border-radius: 4px;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb:hover {
+            background: #1f4788;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 System Logs & Debugging</h1>
+            <p>Real-time monitoring of all system events, errors, and API calls</p>
+        </div>
+
+        <a href="/" class="back-link" style="padding: 20px 20px 0;">← Back to Dashboard</a>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Log Type</label>
+                <select id="logType" onchange="loadLogs()">
+                    <option value="all">All Logs</option>
+                    <option value="errors">Errors Only</option>
+                    <option value="security">Security Events</option>
+                    <option value="api">API Calls</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Limit</label>
+                <select id="logLimit" onchange="loadLogs()">
+                    <option value="50">Last 50</option>
+                    <option value="100" selected>Last 100</option>
+                    <option value="200">Last 200</option>
+                    <option value="500">Last 500</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Auto Refresh</label>
+                <select id="autoRefresh" onchange="setupAutoRefresh()">
+                    <option value="0">Off</option>
+                    <option value="5">5 seconds</option>
+                    <option value="10" selected>10 seconds</option>
+                    <option value="30">30 seconds</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button onclick="loadLogs()">🔄 Refresh</button>
+            </div>
+
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button onclick="downloadLogs()" style="background: #27ae60;">⬇️ Download</button>
+            </div>
+        </div>
+
+        <div class="stats" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Total Logs</div>
+                <div class="stat-value" id="statTotal">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Errors</div>
+                <div class="stat-value" id="statErrors">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Security Events</div>
+                <div class="stat-value" id="statSecurity">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Disk Usage</div>
+                <div class="stat-value" id="statDiskUsage">-</div>
+            </div>
+        </div>
+
+        <div class="logs-container" id="logsContainer">
+            <div class="empty-state">Loading logs...</div>
+        </div>
+
+        <div class="footer">
+            Last updated: <span id="lastUpdated">-</span>
+            | Auto-refresh every <span id="refreshInterval">10s</span>
+        </div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+
+        async function loadLogs() {
+            const logType = document.getElementById('logType').value;
+            const limit = document.getElementById('logLimit').value;
+
+            try {
+                const response = await fetch(`/api/logs?type=${logType}&limit=${limit}`);
+                const data = await response.json();
+
+                displayLogs(data.logs);
+                updateTimestamp();
+                loadStats();
+            } catch (error) {
+                document.getElementById('logsContainer').innerHTML =
+                    `<div class="empty-state" style="color: #e74c3c;">Error loading logs: ${error.message}</div>`;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/logs/stats');
+                const stats = await response.json();
+
+                document.getElementById('statTotal').textContent = stats.total_logs || '0';
+                document.getElementById('statErrors').textContent = stats.error_count || '0';
+                document.getElementById('statSecurity').textContent = stats.security_events || '0';
+                document.getElementById('statDiskUsage').textContent = stats.disk_usage_mb + ' MB';
+                document.getElementById('statsContainer').style.display = 'grid';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function displayLogs(logs) {
+            const container = document.getElementById('logsContainer');
+
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="empty-state">No logs found</div>';
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                const level = (log.level || 'INFO').toLowerCase();
+                const timestamp = log.timestamp || new Date().toISOString();
+                const message = log.message || log.raw || JSON.stringify(log);
+
+                let levelClass = 'info';
+                if (level.includes('error')) levelClass = 'error';
+                else if (level.includes('warning')) levelClass = 'warning';
+                else if (level.includes('critical')) levelClass = 'error';
+
+                html += `
+                    <div class="log-entry ${levelClass}">
+                        <span class="log-timestamp">${new Date(timestamp).toLocaleTimeString()}</span>
+                        <span class="log-level ${levelClass}">${level}</span>
+                        <span class="log-message">${escapeHtml(message)}</span>
+                        ${log.extra ? `<div class="log-details">${escapeHtml(JSON.stringify(log.extra))}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function setupAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+
+            const interval = parseInt(document.getElementById('autoRefresh').value) * 1000;
+            document.getElementById('refreshInterval').textContent = document.getElementById('autoRefresh').value + 's';
+
+            if (interval > 0) {
+                autoRefreshInterval = setInterval(loadLogs, interval);
+            }
+        }
+
+        function updateTimestamp() {
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        }
+
+        function downloadLogs() {
+            const logType = document.getElementById('logType').value;
+            window.open(`/api/logs?type=${logType}&limit=1000&download=true`, '_blank');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Load logs on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLogs();
+            loadStats();
+            setupAutoRefresh();
+        });
+    </script>
+</body>
+</html>
