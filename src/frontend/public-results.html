@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Results - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        nav a.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.25rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-login {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-register {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: #05b887;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        h1 {
+            color: var(--text);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        /* Results Table */
+        .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .export-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .export-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: var(--bg-light);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: rgba(255, 107, 53, 0.02);
+        }
+
+        .position-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            font-weight: 700;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .position-1 {
+            background: #FFD700;
+            color: #333;
+        }
+
+        .position-2 {
+            background: #C0C0C0;
+            color: #333;
+        }
+
+        .position-3 {
+            background: #CD7F32;
+        }
+
+        .position-other {
+            background: var(--text-light);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-disqualified {
+            background: var(--danger);
+            color: white;
+        }
+
+        .status-did-not-finish {
+            background: var(--warning);
+            color: white;
+        }
+
+        .record-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .no-results h3 {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .export-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" class="logo">🏃 AthSys</a>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="public-races.html">Races</a></li>
+            <li><a href="public-results.html" class="active">Results</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <button class="btn btn-login" onclick="window.location.href='index.html#login-modal'">Login</button>
+            <button class="btn btn-register" onclick="window.location.href='public-register.html'">Register</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>📊 Race Results</h1>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="raceFilter">Filter by Race</label>
+                <select id="raceFilter" onchange="filterResults()">
+                    <option value="">All Races</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="eventFilter">Filter by Event</label>
+                <select id="eventFilter" onchange="filterResults()">
+                    <option value="">All Events</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="searchResults">Search Athlete</label>
+                <input type="text" id="searchResults" placeholder="Enter athlete name..." onkeyup="filterResults()">
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section">
+            <div class="results-header">
+                <h2>Recent Results</h2>
+                <button class="export-btn" onclick="exportResults()">📥 Export CSV</button>
+            </div>
+
+            <div id="resultsTable">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading results...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : window.location.origin;
+
+        let allResults = [];
+        let allRaces = [];
+        let allEvents = [];
+
+        async function init() {
+            await loadRaces();
+            await loadResults();
+        }
+
+        async function loadRaces() {
+            try {
+                const response = await fetch(`${API_BASE}/api/races`);
+                const data = await response.json();
+                allRaces = data.races || [];
+                populateRaceFilter();
+            } catch (error) {
+                console.error('Failed to load races:', error);
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const response = await fetch(`${API_BASE}/api/events/results`);
+                const data = await response.json();
+                allResults = data.results || [];
+                
+                // Extract unique events
+                const eventSet = new Set(allResults.map(r => r.eventName));
+                allEvents = Array.from(eventSet);
+                populateEventFilter();
+                
+                displayResults(allResults);
+            } catch (error) {
+                console.error('Failed to load results:', error);
+                document.getElementById('resultsTable').innerHTML = `
+                    <div class="no-results">
+                        <h3>Unable to load results</h3>
+                        <p>Please try again later</p>
+                    </div>
+                `;
+            }
+        }
+
+        function populateRaceFilter() {
+            const select = document.getElementById('raceFilter');
+            allRaces.forEach(race => {
+                const option = document.createElement('option');
+                option.value = race.id;
+                option.textContent = race.name;
+                select.appendChild(option);
+            });
+        }
+
+        function populateEventFilter() {
+            const select = document.getElementById('eventFilter');
+            allEvents.forEach(event => {
+                const option = document.createElement('option');
+                option.value = event;
+                option.textContent = event;
+                select.appendChild(option);
+            });
+        }
+
+        function filterResults() {
+            const raceId = document.getElementById('raceFilter').value;
+            const event = document.getElementById('eventFilter').value;
+            const search = document.getElementById('searchResults').value.toLowerCase();
+
+            let filtered = allResults;
+
+            if (raceId) {
+                filtered = filtered.filter(r => r.raceId == raceId);
+            }
+
+            if (event) {
+                filtered = filtered.filter(r => r.eventName === event);
+            }
+
+            if (search) {
+                filtered = filtered.filter(r => 
+                    r.athleteName.toLowerCase().includes(search)
+                );
+            }
+
+            displayResults(filtered);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsTable');
+
+            if (!results || results.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h3>No results found</h3>
+                        <p>Try adjusting your filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Athlete</th>
+                            <th>Country</th>
+                            <th>Event</th>
+                            <th>Category</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            results.forEach(result => {
+                const positionClass = result.position === 1 ? 'position-1' : 
+                                    result.position === 2 ? 'position-2' : 
+                                    result.position === 3 ? 'position-3' : 'position-other';
+                
+                const statusText = result.status || 'Completed';
+                const statusClass = `status-${statusText.toLowerCase().replace(' ', '-')}`;
+
+                html += `
+                    <tr onclick="viewResultDetail('${result.id}')">
+                        <td><span class="position-badge ${positionClass}">${result.position || '-'}</span></td>
+                        <td><strong>${result.athleteName}</strong></td>
+                        <td>${result.country || '-'}</td>
+                        <td>${result.eventName}</td>
+                        <td>${result.gender || result.category || '-'}</td>
+                        <td><strong>${formatTime(result.timeSeconds)}</strong>${result.isRecord ? '<span class="record-badge">NEW RECORD</span>' : ''}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function formatTime(seconds) {
+            if (!seconds) return '-';
+            
+            const mins = Math.floor(seconds / 60);
+            const secs = (seconds % 60).toFixed(2);
+            
+            if (mins > 0) {
+                return `${mins}:${secs.padStart(5, '0')}`;
+            }
+            return `${secs}s`;
+        }
+
+        function viewResultDetail(resultId) {
+            // Could expand to show more details
+            console.log('View result:', resultId);
+        }
+
+        function exportResults() {
+            const raceId = document.getElementById('raceFilter').value;
+            let filtered = allResults;
+
+            if (raceId) {
+                filtered = filtered.filter(r => r.raceId == raceId);
+            }
+
+            if (filtered.length === 0) {
+                alert('No results to export');
+                return;
+            }
+
+            // Create CSV
+            let csv = 'Position,Athlete,Country,Event,Category,Time (MM:SS),Status\n';
+            filtered.forEach(result => {
+                csv += `${result.position || '-'},${result.athleteName},"${result.country || '-'}",${result.eventName},"${result.gender || result.category || '-'}",${formatTime(result.timeSeconds)},"${result.status || 'Completed'}"\n`;
+            });
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `race-results-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>

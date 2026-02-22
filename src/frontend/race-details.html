@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Details - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff6b35;
+            --primary-dark: #d45528;
+            --secondary: #06d6a0;
+            --text: #2d2d2d;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8f9ff;
+            --border: #e0e0e0;
+            --success: #00d084;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: gap 0.3s;
+        }
+
+        .back-link:hover {
+            gap: 1rem;
+        }
+
+        /* Race Header */
+        .race-header {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .race-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .race-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .meta-icon {
+            font-size: 1.5rem;
+        }
+
+        .meta-content h3 {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-content p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .status-upcoming {
+            background: var(--warning);
+            color: white;
+        }
+
+        .status-ongoing {
+            background: var(--danger);
+            color: white;
+        }
+
+        .status-completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .race-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Description */
+        .description {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .description h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .description p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+            background: white;
+            padding: 0 2rem;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        /* Tab Content */
+        .tabs-container {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Events Grid */
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .event-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Results Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--bg-light);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: rgba(255, 107, 53, 0.02);
+        }
+
+        .position-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            font-weight: 700;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .position-1 {
+            background: #FFD700;
+            color: #333;
+        }
+
+        .position-2 {
+            background: #C0C0C0;
+            color: #333;
+        }
+
+        .position-3 {
+            background: #CD7F32;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        /* Loading */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .race-header {
+                padding: 1.5rem;
+            }
+
+            .race-title {
+                font-size: 1.5rem;
+            }
+
+            .race-meta {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .tabs {
+                padding: 0 1rem;
+                overflow-x: auto;
+            }
+
+            .tabs-container {
+                padding: 1.5rem;
+            }
+
+            .race-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <a href="index.html" class="logo">🏃 AthSys</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="public-races.html">Races</a></li>
+            <li><a href="public-results.html">Results</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <a href="public-races.html" class="back-link">← Back to Races</a>
+
+        <!-- Race Header -->
+        <div class="race-header">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                <div>
+                    <h1 class="race-title" id="raceName">Loading...</h1>
+                    <span class="status-badge" id="raceStatus">Loading...</span>
+                </div>
+            </div>
+
+            <div class="race-meta">
+                <div class="meta-item">
+                    <div class="meta-icon">📅</div>
+                    <div class="meta-content">
+                        <h3>Date</h3>
+                        <p id="raceDate">--</p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-icon">📍</div>
+                    <div class="meta-content">
+                        <h3>Location</h3>
+                        <p id="raceLocation">--</p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-icon">👥</div>
+                    <div class="meta-content">
+                        <h3>Participants</h3>
+                        <p id="raceParticipants">--</p>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-icon">🏁</div>
+                    <div class="meta-content">
+                        <h3>Events</h3>
+                        <p id="raceEvents">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="race-actions">
+                <button class="btn btn-primary" onclick="registerForRace()">📝 Register</button>
+                <button class="btn btn-secondary" onclick="viewRaceResults()">📊 View Results</button>
+                <button class="btn btn-secondary" onclick="shareRace()">📤 Share</button>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="description" id="descriptionSection" style="display: none;">
+            <h2>About This Race</h2>
+            <p id="raceDescription">--</p>
+        </div>
+
+        <!-- Tabs -->
+        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('events')">🏃 Events</button>
+                <button class="tab-btn" onclick="switchTab('registrations')">📋 Registrations</button>
+                <button class="tab-btn" onclick="switchTab('results')">🏆 Results</button>
+            </div>
+
+            <div class="tabs-container">
+                <!-- Events Tab -->
+                <div id="events" class="tab-content active">
+                    <h2 style="margin-bottom: 1.5rem;">Events in This Race</h2>
+                    <div class="events-grid" id="eventsGrid">
+                        <div class="no-data">
+                            <div class="spinner"></div>
+                            <p>Loading events...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registrations Tab -->
+                <div id="registrations" class="tab-content">
+                    <h2 style="margin-bottom: 1.5rem;">Registered Athletes</h2>
+                    <div id="registrationsContent">
+                        <div class="no-data">
+                            <div class="spinner"></div>
+                            <p>Loading registrations...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Tab -->
+                <div id="results" class="tab-content">
+                    <h2 style="margin-bottom: 1.5rem;">Race Results</h2>
+                    <div id="resultsContent">
+                        <div class="no-data">
+                            <div class="spinner"></div>
+                            <p>Loading results...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : window.location.origin;
+
+        let raceId = new URLSearchParams(window.location.search).get('id');
+        let raceData = null;
+        let eventsData = [];
+        let resultsData = [];
+
+        async function init() {
+            if (!raceId) {
+                raceId = new URLSearchParams(window.location.search).get('race_id');
+            }
+
+            if (!raceId) {
+                document.querySelector('.race-header').innerHTML = `
+                    <div class="no-data">
+                        <h2>Race not found</h2>
+                        <p>No race ID provided. <a href="public-races.html">Back to races</a></p>
+                    </div>
+                `;
+                return;
+            }
+
+            await loadRaceData();
+            await loadEvents();
+            await loadRegistrations();
+            await loadResults();
+        }
+
+        async function loadRaceData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/races`);
+                const data = await response.json();
+                const race = data.races.find(r => r.id == raceId);
+
+                if (!race) {
+                    alert('Race not found');
+                    return;
+                }
+
+                raceData = race;
+
+                document.getElementById('raceName').textContent = race.name;
+                document.getElementById('raceDate').textContent = race.date ? new Date(race.date).toLocaleDateString() : '--';
+                document.getElementById('raceLocation').textContent = race.location || '--';
+                document.getElementById('raceEvents').textContent = race.event_count || 0;
+                document.getElementById('raceParticipants').textContent = race.registration_count || '0+ athletes';
+
+                const statusClass = `status-${race.status}`;
+                document.getElementById('raceStatus').textContent = race.status.toUpperCase();
+                document.getElementById('raceStatus').className = `status-badge ${statusClass}`;
+
+                if (race.description) {
+                    document.getElementById('raceDescription').textContent = race.description;
+                    document.getElementById('descriptionSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load race:', error);
+            }
+        }
+
+        async function loadEvents() {
+            try {
+                const response = await fetch(`${API_BASE}/api/races/${raceId}/events`);
+                const data = await response.json();
+                eventsData = data.events || [];
+
+                let html = '';
+                if (eventsData.length === 0) {
+                    html = '<div class="no-data"><p>No events found for this race</p></div>';
+                } else {
+                    eventsData.forEach(event => {
+                        html += `
+                            <div class="event-card">
+                                <h3>${event.name || 'Event'}</h3>
+                                <p><strong>Category:</strong> ${event.category || '-'}</p>
+                                <p><strong>Gender:</strong> ${event.gender || '-'}</p>
+                                <p><strong>Time:</strong> ${event.scheduled_time || '-'}</p>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('eventsGrid').innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load events:', error);
+                document.getElementById('eventsGrid').innerHTML = '<div class="no-data"><p>Failed to load events</p></div>';
+            }
+        }
+
+        async function loadRegistrations() {
+            try {
+                const response = await fetch(`${API_BASE}/api/races/${raceId}/registrations`);
+                const data = await response.json();
+                const registrations = data.registrations || [];
+
+                let html = '';
+                if (registrations.length === 0) {
+                    html = '<div class="no-data"><p>No registrations yet</p></div>';
+                } else {
+                    html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bib</th>
+                                    <th>Athlete</th>
+                                    <th>Country</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    registrations.forEach(reg => {
+                        html += `
+                            <tr>
+                                <td><strong>${reg.bib_number || '-'}</strong></td>
+                                <td>${reg.athlete_name || '-'}</td>
+                                <td>${reg.athlete_country || '-'}</td>
+                                <td>${reg.category || '-'}</td>
+                                <td><span style="color: var(--success);">${reg.status || 'Registered'}</span></td>
+                            </tr>
+                        `;
+                    });
+                    html += `</tbody></table>`;
+                }
+                document.getElementById('registrationsContent').innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load registrations:', error);
+                document.getElementById('registrationsContent').innerHTML = '<div class="no-data"><p>Failed to load registrations</p></div>';
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const response = await fetch(`${API_BASE}/api/events/results?race_id=${raceId}`);
+                const data = await response.json();
+                resultsData = data.results || [];
+
+                let html = '';
+                if (resultsData.length === 0) {
+                    html = '<div class="no-data"><p>Results not yet available</p></div>';
+                } else {
+                    html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Position</th>
+                                    <th>Athlete</th>
+                                    <th>Event</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    resultsData.forEach(result => {
+                        const posClass = result.position === 1 ? 'position-1' : result.position === 2 ? 'position-2' : result.position === 3 ? 'position-3' : '';
+                        html += `
+                            <tr>
+                                <td><span class="position-badge ${posClass}">${result.position || '-'}</span></td>
+                                <td>${result.athleteName}</td>
+                                <td>${result.eventName}</td>
+                                <td><strong>${formatTime(result.timeSeconds)}</strong></td>
+                                <td>${result.status || 'Completed'}</td>
+                            </tr>
+                        `;
+                    });
+                    html += `</tbody></table>`;
+                }
+                document.getElementById('resultsContent').innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load results:', error);
+                document.getElementById('resultsContent').innerHTML = '<div class="no-data"><p>Failed to load results</p></div>';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function formatTime(seconds) {
+            if (!seconds) return '-';
+            const mins = Math.floor(seconds / 60);
+            const secs = (seconds % 60).toFixed(2);
+            if (mins > 0) return `${mins}:${secs.padStart(5, '0')}`;
+            return `${secs}s`;
+        }
+
+        function registerForRace() {
+            window.location.href = `public-register.html?raceId=${raceId}`;
+        }
+
+        function viewRaceResults() {
+            window.location.href = `public-results.html?raceId=${raceId}`;
+        }
+
+        function shareRace() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: raceData?.name || 'Race',
+                    text: `Check out this race: ${raceData?.name}`,
+                    url: url
+                });
+            } else {
+                alert('Share this link: ' + url);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

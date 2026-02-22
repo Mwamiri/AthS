@@ -578,6 +578,284 @@ def create_athlete():
     })), 201
 
 
+# ============ ATHLETE PROFILE ENDPOINTS ============
+
+@app.route('/api/athlete/profile', methods=['GET'])
+@require_auth(roles=['athlete'])
+def get_athlete_profile():
+    """Get current logged-in athlete's profile"""
+    try:
+        current_user_id = request.headers.get('X-User-ID')
+        if not current_user_id:
+            return jsonify({
+                'error': 'Not authenticated',
+                'message': 'User ID not found in request'
+            }), 401
+        
+        db = next(get_db())
+        athlete = db.query(Athlete).filter(Athlete.user_id == int(current_user_id)).first()
+        
+        if not athlete:
+            return jsonify({
+                'error': 'Not found',
+                'message': 'Athlete profile not found'
+            }), 404
+        
+        return jsonify({
+            'athlete': athlete.to_dict(),
+            'message': '✅ Profile retrieved successfully'
+        }), 200
+    except Exception as e:
+        print(f"Get athlete profile error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to retrieve profile'
+        }), 500
+
+
+@app.route('/api/athlete/races', methods=['GET'])
+@require_auth(roles=['athlete'])
+def get_athlete_races():
+    """Get races the currently logged-in athlete is registered for"""
+    try:
+        current_user_id = request.headers.get('X-User-ID')
+        if not current_user_id:
+            return jsonify({
+                'error': 'Not authenticated',
+                'message': 'User ID not found in request'
+            }), 401
+        
+        db = next(get_db())
+        athlete = db.query(Athlete).filter(Athlete.user_id == int(current_user_id)).first()
+        
+        if not athlete:
+            return jsonify({
+                'error': 'Not found',
+                'message': 'Athlete not found'
+            }), 404
+        
+        # Get registrations for this athlete
+        registrations = db.query(Registration).filter(
+            Registration.athlete_id == athlete.id
+        ).all()
+        
+        races_data = []
+        for reg in registrations:
+            race = reg.race
+            races_data.append({
+                'id': race.id,
+                'name': race.name,
+                'date': race.date.isoformat() if race.date else None,
+                'location': race.location,
+                'status': race.status,
+                'registrationId': reg.id,
+                'registrationDate': reg.registration_date.isoformat() if reg.registration_date else None,
+                'bibNumber': reg.bib_number,
+                'category': reg.category
+            })
+        
+        return jsonify({
+            'races': races_data,
+            'count': len(races_data),
+            'message': '✅ Races retrieved successfully'
+        }), 200
+    except Exception as e:
+        print(f"Get athlete races error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to retrieve races'
+        }), 500
+
+
+@app.route('/api/athlete/results', methods=['GET'])
+@require_auth(roles=['athlete'])
+def get_athlete_results():
+    """Get competition results for the currently logged-in athlete"""
+    try:
+        current_user_id = request.headers.get('X-User-ID')
+        if not current_user_id:
+            return jsonify({
+                'error': 'Not authenticated',
+                'message': 'User ID not found in request'
+            }), 401
+        
+        db = next(get_db())
+        athlete = db.query(Athlete).filter(Athlete.user_id == int(current_user_id)).first()
+        
+        if not athlete:
+            return jsonify({
+                'error': 'Not found',
+                'message': 'Athlete not found'
+            }), 404
+        
+        # Get results for this athlete
+        results = db.query(Result).filter(Result.athlete_id == athlete.id).all()
+        
+        results_data = []
+        for result in results:
+            results_data.append({
+                'id': result.id,
+                'eventName': result.event.name if result.event else 'Unknown',
+                'eventId': result.event_id,
+                'raceName': result.event.race.name if result.event and result.event.race else 'Unknown',
+                'raceId': result.event.race_id if result.event else None,
+                'position': result.position,
+                'timeSeconds': result.time_seconds,
+                'status': result.status,
+                'recordType': result.record_type,
+                'isRecord': result.is_record,
+                'date': result.created_at.isoformat() if result.created_at else None
+            })
+        
+        return jsonify({
+            'results': results_data,
+            'count': len(results_data),
+            'message': '✅ Results retrieved successfully'
+        }), 200
+    except Exception as e:
+        print(f"Get athlete results error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to retrieve results'
+        }), 500
+
+
+@app.route('/api/races/available', methods=['GET'])
+@require_auth(roles=['athlete'])
+def get_available_races():
+    """Get races available for registration (not yet closed)"""
+    try:
+        from datetime import datetime
+        db = next(get_db())
+        
+        # Get races that are not closed or cancelled
+        races = db.query(Race).filter(
+            Race.status.in_(['upcoming', 'ongoing'])
+        ).all()
+        
+        current_user_id = request.headers.get('X-User-ID')
+        athlete = db.query(Athlete).filter(Athlete.user_id == int(current_user_id)).first() if current_user_id else None
+        
+        races_data = []
+        for race in races:
+            # Check if athlete is already registered
+            is_registered = False
+            if athlete:
+                existing_reg = db.query(Registration).filter(
+                    Registration.race_id == race.id,
+                    Registration.athlete_id == athlete.id
+                ).first()
+                is_registered = existing_reg is not None
+            
+            races_data.append({
+                'id': race.id,
+                'name': race.name,
+                'date': race.date.isoformat() if race.date else None,
+                'location': race.location,
+                'status': race.status,
+                'description': race.description,
+                'registrationDeadline': race.registration_deadline.isoformat() if race.registration_deadline else None,
+                'maxParticipants': race.max_participants,
+                'currentParticipants': len(race.registrations) if race.registrations else 0,
+                'isRegistered': is_registered
+            })
+        
+        return jsonify({
+            'races': races_data,
+            'count': len(races_data),
+            'message': '✅ Available races retrieved successfully'
+        }), 200
+    except Exception as e:
+        print(f"Get available races error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to retrieve races'
+        }), 500
+
+
+@app.route('/api/athlete/register-race', methods=['POST'])
+@require_auth(roles=['athlete'])
+def register_for_race():
+    """Register athlete for a specific race"""
+    data = request.get_json()
+    
+    if not data or 'race_id' not in data:
+        return jsonify({
+            'error': 'Invalid request',
+            'message': 'race_id is required'
+        }), 400
+    
+    try:
+        current_user_id = request.headers.get('X-User-ID')
+        if not current_user_id:
+            return jsonify({
+                'error': 'Not authenticated',
+                'message': 'User ID not found'
+            }), 401
+        
+        db = next(get_db())
+        athlete = db.query(Athlete).filter(Athlete.user_id == int(current_user_id)).first()
+        
+        if not athlete:
+            return jsonify({
+                'error': 'Not found',
+                'message': 'Athlete not found'
+            }), 404
+        
+        race = db.query(Race).filter(Race.id == data['race_id']).first()
+        if not race:
+            return jsonify({
+                'error': 'Not found',
+                'message': 'Race not found'
+            }), 404
+        
+        # Check if already registered
+        existing = db.query(Registration).filter(
+            Registration.race_id == race.id,
+            Registration.athlete_id == athlete.id
+        ).first()
+        
+        if existing:
+            return jsonify({
+                'error': 'Already registered',
+                'message': 'You are already registered for this race'
+            }), 409
+        
+        # Create registration
+        registration = Registration(
+            athlete_id=athlete.id,
+            race_id=race.id,
+            bib_number=data.get('bib_number'),
+            category=data.get('category'),
+            status='confirmed'
+        )
+        
+        db.add(registration)
+        db.commit()
+        db.refresh(registration)
+        
+        # Log audit
+        log_audit('register', 'race', race.id, f'Athlete {athlete.name} registered for {race.name}')
+        
+        return jsonify({
+            'message': '✅ Successfully registered for race',
+            'registration': {
+                'id': registration.id,
+                'raceId': race.id,
+                'raceName': race.name,
+                'status': registration.status,
+                'registrationDate': registration.registration_date.isoformat() if registration.registration_date else None,
+                'bibNumber': registration.bib_number
+            }
+        }), 201
+    except Exception as e:
+        print(f"Register for race error: {e}")
+        return jsonify({
+            'error': 'Server error',
+            'message': 'Failed to register for race'
+        }), 500
+
+
 @app.route('/api/events', methods=['GET'])
 def get_events():
     """Get all events with demo data"""
