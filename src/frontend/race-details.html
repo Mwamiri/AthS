@@ -433,7 +433,7 @@
 
         <!-- Race Header -->
         <div class="race-header">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+            <div class="race-header-flex">
                 <div>
                     <h1 class="race-title" id="raceName">Loading...</h1>
                     <span class="status-badge" id="raceStatus">Loading...</span>
@@ -479,13 +479,13 @@
         </div>
 
         <!-- Description -->
-        <div class="description" id="descriptionSection" style="display: none;">
+        <div class="description hidden-section" id="descriptionSection">
             <h2>About This Race</h2>
             <p id="raceDescription">--</p>
         </div>
 
         <!-- Tabs -->
-        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+        <div class="tabs-wrapper">
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('events')">🏃 Events</button>
                 <button class="tab-btn" onclick="switchTab('registrations')">📋 Registrations</button>
@@ -495,7 +495,7 @@
             <div class="tabs-container">
                 <!-- Events Tab -->
                 <div id="events" class="tab-content active">
-                    <h2 style="margin-bottom: 1.5rem;">Events in This Race</h2>
+                    <h2 class="tab-title">Events in This Race</h2>
                     <div class="events-grid" id="eventsGrid">
                         <div class="no-data">
                             <div class="spinner"></div>
@@ -506,7 +506,7 @@
 
                 <!-- Registrations Tab -->
                 <div id="registrations" class="tab-content">
-                    <h2 style="margin-bottom: 1.5rem;">Registered Athletes</h2>
+                    <h2 class="tab-title">Registered Athletes</h2>
                     <div id="registrationsContent">
                         <div class="no-data">
                             <div class="spinner"></div>
@@ -517,7 +517,7 @@
 
                 <!-- Results Tab -->
                 <div id="results" class="tab-content">
-                    <h2 style="margin-bottom: 1.5rem;">Race Results</h2>
+                    <h2 class="tab-title">Race Results</h2>
                     <div id="resultsContent">
                         <div class="no-data">
                             <div class="spinner"></div>

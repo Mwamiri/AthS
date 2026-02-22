@@ -1058,3 +1058,113 @@ th.sort-desc .sort-icon {
     padding: 2rem;
     text-align: center;
 }
+
+/* ============================================
+   Error Page Styles
+   ============================================ */
+.error-details-top {
+    margin-top: 20px;
+}
+
+.error-code {
+    background: var(--bg-light);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* ============================================
+   Logs Page Styles
+   ============================================ */
+.back-link-spacious {
+    padding: 20px 20px 0;
+}
+
+.btn-success {
+    background: #27ae60;
+}
+
+.stats-hidden {
+    display: none;
+}
+
+/* ============================================
+   Status Page & Card Styles
+   ============================================ */
+.status-card-full {
+    grid-column: 1/-1;
+}
+
+/* ============================================
+   Athlete Page Styles
+   ============================================ */
+.dashboard-grid-spaced {
+    margin-top: 20px;
+}
+
+.empty-state-text {
+    color: var(--text-light);
+    text-align: center;
+    padding: 30px;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.btn-full-width-top {
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* ============================================
+   Race Details Page Styles
+   ============================================ */
+.race-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+
+.hidden-section {
+    display: none;
+}
+
+.tabs-wrapper {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tab-title {
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   CMS Admin Page Styles
+   ============================================ */
+.header-description {
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+
+.input-readonly {
+    background: var(--bg-light);
+}
+
+.alert-info-custom {
+    background: rgba(74, 144, 226, 0.15);
+    color: #4a90e2;
+    border-left-color: #4a90e2;
+}
+
+.color-input-flex {
+    flex: 1;
+}
+
+.toggle-switch-spaced {
+    margin: 1rem 0;
+}

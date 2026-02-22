@@ -321,12 +321,12 @@
             <p>Real-time monitoring of all system events, errors, and API calls</p>
         </div>
 
-        <a href="/" class="back-link" style="padding: 20px 20px 0;">← Back to Dashboard</a>
+        <a href="/" class="back-link back-link-spacious">← Back to Dashboard</a>
 
         <div class="controls">
             <div class="control-group">
                 <label>Log Type</label>
-                <select id="logType" onchange="loadLogs()">
+                <select id="logType" onchange="loadLogs()" title="Select log type">
                     <option value="all">All Logs</option>
                     <option value="errors">Errors Only</option>
                     <option value="security">Security Events</option>
@@ -336,7 +336,7 @@
 
             <div class="control-group">
                 <label>Limit</label>
-                <select id="logLimit" onchange="loadLogs()">
+                <select id="logLimit" onchange="loadLogs()" title="Log limit">
                     <option value="50">Last 50</option>
                     <option value="100" selected>Last 100</option>
                     <option value="200">Last 200</option>
@@ -346,7 +346,7 @@
 
             <div class="control-group">
                 <label>Auto Refresh</label>
-                <select id="autoRefresh" onchange="setupAutoRefresh()">
+                <select id="autoRefresh" onchange="setupAutoRefresh()" title="Auto-refresh interval">
                     <option value="0">Off</option>
                     <option value="5">5 seconds</option>
                     <option value="10" selected>10 seconds</option>
@@ -361,14 +361,14 @@
 
             <div class="control-group">
                 <label>&nbsp;</label>
-                <button onclick="downloadLogs()" style="background: #27ae60;">⬇️ Download</button>
+                <button onclick="downloadLogs()" class="btn btn-success">⬇️ Download</button>
             </div>
         </div>
 
-        <div class="stats" id="statsContainer" style="display: none;">
-            <div class="stat-card">
-                <div class="stat-label">Total Logs</div>
-                <div class="stat-value" id="statTotal">-</div>
+        <div class=\"stats stats-hidden\" id=\"statsContainer\">
+            <div class=\"stat-card\">
+                <div class=\"stat-label\">Total Logs</div>
+                <div class=\"stat-value\" id=\"statTotal\">-</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Errors</div>

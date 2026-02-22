@@ -78,6 +78,7 @@
             margin-bottom: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: bold;
         }
@@ -425,7 +426,7 @@
         <!-- Search & Filter -->
         <div class="search-filter">
             <input type="text" id="search-input" placeholder="Search races by name or location..." onkeyup="filterRaces()">
-            <select id="status-filter" onchange="filterRaces()">
+            <select id="status-filter" onchange="filterRaces()" title="Filter races by status">
                 <option value="">All Status</option>
                 <option value="upcoming">Upcoming</option>
                 <option value="ongoing">Ongoing</option>

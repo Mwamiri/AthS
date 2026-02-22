@@ -440,7 +440,7 @@
         <header>
             <div>
                 <h1>⚙️ System Settings</h1>
-                <p style="color: var(--text-light); margin-top: 0.5rem;">Manage AthSys configuration and preferences</p>
+                <p class="header-description">Manage AthSys configuration and preferences</p>
             </div>
             <div class="header-actions">
                 <a href="admin.html" class="btn btn-secondary">← Back to Dashboard</a>
@@ -475,7 +475,7 @@
                             </div>
                             <div>
                                 <label>Platform Version</label>
-                                <input type="text" id="platformVersion" value="2.2.0" placeholder="Version" readonly style="background: var(--bg-light);">
+                                <input type="text" id="platformVersion" value="2.2.0" placeholder="Version" readonly class="input-readonly">
                                 <div class="label-info">Current system version</div>
                             </div>
                         </div>
@@ -509,7 +509,7 @@
 
                 <!-- Frontend Tab -->
                 <div id="frontend" class="tab-panel">
-                    <div class="alert alert-info" style="background: rgba(74, 144, 226, 0.15); color: #4a90e2; border-left-color: #4a90e2;">
+                    <div class="alert alert-info alert-info-custom">
                         <span class="alert-icon">🎨</span>
                         <div>Customize the appearance and user interface of your platform.</div>
                     </div>
@@ -521,7 +521,7 @@
                                 <h4>Primary Color</h4>
                                 <div class="color-input-group">
                                     <input type="color" id="primaryColor" value="#ff6b35" onchange="updateColorPreview('primaryColor')">
-                                    <input type="text" id="primaryColorHex" value="#ff6b35" style="flex: 1;" placeholder="#ff6b35">
+                                    <input type="text" id="primaryColorHex" value="#ff6b35" class="color-input-flex" placeholder="#ff6b35">
                                 </div>
                             </div>
 
@@ -529,7 +529,7 @@
                                 <h4>Secondary Color</h4>
                                 <div class="color-input-group">
                                     <input type="color" id="secondaryColor" value="#06d6a0" onchange="updateColorPreview('secondaryColor')">
-                                    <input type="text" id="secondaryColorHex" value="#06d6a0" style="flex: 1;" placeholder="#06d6a0">
+                                    <input type="text" id="secondaryColorHex" value="#06d6a0" class="color-input-flex" placeholder="#06d6a0">
                                 </div>
                             </div>
 
@@ -537,7 +537,7 @@
                                 <h4>Accent Color</h4>
                                 <div class="color-input-group">
                                     <input type="color" id="accentColor" value="#f39c12" onchange="updateColorPreview('accentColor')">
-                                    <input type="text" id="accentColorHex" value="#f39c12" style="flex: 1;" placeholder="#f39c12">
+                                    <input type="text" id="accentColorHex" value="#f39c12" class="color-input-flex" placeholder="#f39c12">
                                 </div>
                             </div>
                         </div>
