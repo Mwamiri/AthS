@@ -48,9 +48,12 @@ except ImportError:
 try:
     from import_export_api import register_import_export_blueprint
     IMPORT_EXPORT_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     IMPORT_EXPORT_AVAILABLE = False
-    print("[WARNING] Import/Export module not available")
+    print(f"[WARNING] Import/Export module not available: {e}")
+except Exception as e:
+    IMPORT_EXPORT_AVAILABLE = False
+    print(f"[ERROR] Unexpected error loading Import/Export module: {e}")
 
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
@@ -125,20 +128,30 @@ app.config['REDIS_URL'] = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 
 # Initialize connections on startup (Flask 3.0+ compatible)
 def initialize():
-    """Initialize database and test connections"""
+    """Initialize database and test connections (non-blocking)"""
     try:
+        # Basic check only - don't do heavy operations during startup
         # Database is already initialized by docker-entrypoint.sh
         print("[OK] Database connection ready")
     except Exception as e:
         print(f"[WARNING] Database connection warning: {e}")
     
-    if test_redis_connection():
-        print("✅ Redis connected")
-    else:
+    # Test Redis with timeout to prevent blocking
+    try:
+        redis_ok = test_redis_connection()
+        if redis_ok:
+            print("✅ Redis connected")
+        else:
+            print("⚠️  Redis unavailable - caching disabled")
+    except Exception as e:
+        print(f"⚠️  Redis connection error: {e}")
         print("⚠️  Redis unavailable - caching disabled")
 
-# Run initialization immediately
-initialize()
+# Run initialization immediately with error handling
+try:
+    initialize()
+except Exception as e:
+    print(f"[WARNING] Initialization error: {e}")
 
 # Register blueprints
 if BUILDER_AVAILABLE:
@@ -154,8 +167,12 @@ else:
     print("[WARNING] Records module disabled")
 
 if IMPORT_EXPORT_AVAILABLE:
-    register_import_export_blueprint(app)
-    print("[OK] Import/Export API mounted at /api/admin")
+    try:
+        register_import_export_blueprint(app)
+        print("[OK] Import/Export API mounted at /api/admin")
+    except Exception as e:
+        print(f"[ERROR] Failed to register Import/Export blueprint: {e}")
+        IMPORT_EXPORT_AVAILABLE = False
 else:
     print("[WARNING] Import/Export module disabled")
 
@@ -2365,10 +2382,10 @@ def serve_static(filename):
 if __name__ == '__main__':
     port = app.config['PORT']
     print("=" * 60)
-    print(f"🏃‍♂️  {APP_NAME} v{APP_VERSION}")
+    print(f"[RUN]  {APP_NAME} v{APP_VERSION}")
     print("=" * 60)
-    print(f"🚀  Server starting on http://0.0.0.0:{port}")
-    print(f"📊  Environment: {'Development' if app.config['DEBUG'] else 'Production'}")
-    print(f"⚡  Status: Ready to serve requests")
+    print(f"[LAUNCH]  Server starting on http://0.0.0.0:{port}")
+    print(f"[ENV]  Environment: {'Development' if app.config['DEBUG'] else 'Production'}")
+    print(f"[READY]  Status: Ready to serve requests")
     print("=" * 60)
     app.run(host='0.0.0.0', port=port, debug=app.config['DEBUG'])

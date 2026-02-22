@@ -9,9 +9,15 @@ import json
 from functools import wraps
 from flask import request
 
-# Redis connection
+# Redis connection with optimized timeouts to prevent startup blocking
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+redis_client = redis.from_url(
+    REDIS_URL, 
+    decode_responses=True,
+    socket_connect_timeout=1,  # Reduced from default for faster startup
+    socket_timeout=1,           # Reduced from default for faster startup
+    retry_on_timeout=False      # Don't retry on timeout during init
+)
 
 
 class RedisCache:
