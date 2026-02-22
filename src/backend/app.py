@@ -2001,6 +2001,39 @@ def root():
     return send_from_directory(FRONTEND_DIR, 'index.html')
 
 
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """Serve static files from frontend directory"""
+    file_path = os.path.join(FRONTEND_DIR, filename)
+    
+    # Security: prevent directory traversal
+    if '..' in filename or filename.startswith('/'):
+        return jsonify({'error': 'Invalid path'}), 400
+    
+    # If file exists, serve it
+    if os.path.isfile(file_path):
+        return send_from_directory(FRONTEND_DIR, filename)
+    
+    # For HTML files that don't exist, return error page
+    if filename.endswith('.html'):
+        return jsonify({
+            'error': 'Not Found',
+            'message': f'The requested page "{filename}" does not exist',
+            'status_code': 404,
+            'suggestion': 'Visit / for available endpoints',
+            'timestamp': datetime.now().isoformat()
+        }), 404
+    
+    # For non-HTML files that don't exist, return 404
+    return jsonify({
+        'error': 'Not Found',
+        'message': f'The requested endpoint does not exist',
+        'status_code': 404,
+        'suggestion': 'Visit / for available endpoints',
+        'timestamp': datetime.now().isoformat()
+    }), 404
+
+
 if __name__ == '__main__':
     port = app.config['PORT']
     print("=" * 60)
