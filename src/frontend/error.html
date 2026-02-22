@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - AthSys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1;
+            text-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        .error-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #b0b0b0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .error-details {
+            background: rgba(30, 30, 46, 0.6);
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #aaa;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .error-detail-item {
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .error-detail-label {
+            color: #e74c3c;
+            font-weight: 600;
+            display: inline-block;
+            width: 80px;
+        }
+
+        .suggestions {
+            background: rgba(41, 128, 185, 0.1);
+            border-left: 4px solid #2980b9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .suggestions h3 {
+            color: #2980b9;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .suggestions ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .suggestions li {
+            margin-bottom: 8px;
+            color: #b0b0b0;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .suggestions li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #2980b9;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(45, 156, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #2d9cdb;
+            border: 1px solid #2d9cdb;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(45, 156, 219, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .footer-text {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .footer-text a {
+            color: #2d9cdb;
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .support-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            color: #666;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+
+        <div class="support-badge" id="statusBadge">System Operational</div>
+
+        <div class="error-code" id="errorCode">404</div>
+        <h1 class="error-title" id="errorTitle">Page Not Found</h1>
+        <p class="error-message" id="errorMessage">
+            The resource you're looking for doesn't exist or has been moved.
+        </p>
+
+        <div class="error-details" id="errorDetails">
+            <div class="error-detail-item">
+                <span class="error-detail-label">Error:</span>
+                <span id="detailError">Not Found</span>
+            </div>
+            <div class="error-detail-item">
+                <span class="error-detail-label">Status:</span>
+                <span id="detailStatus">404</span>
+            </div>
+            <div class="error-detail-item">
+                <span class="error-detail-label">Time:</span>
+                <span id="detailTime">-</span>
+            </div>
+            <div class="error-detail-item">
+                <span class="error-detail-label">Path:</span>
+                <span id="detailPath">-</span>
+            </div>
+        </div>
+
+        <div class="suggestions">
+            <h3>💡 What you can try:</h3>
+            <ul>
+                <li>Check the URL and make sure it's correct</li>
+                <li><a href="/" style="color: #2980b9;">Return to the home page</a></li>
+                <li><a href="/logs.html" style="color: #2980b9;">View system logs</a> to diagnose issues</li>
+                <li>Contact support if the problem persists</li>
+                <li>Clear your browser cache and try again</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="window.location.href='/'">← Return Home</button>
+            <button class="btn btn-secondary" onclick="window.history.back()">← Go Back</button>
+            <a href="/logs.html" class="btn btn-secondary">📋 View Logs</a>
+        </div>
+
+        <div class="timestamp" id="timestamp">
+            Last error check: <span id="timeCheck">-</span>
+        </div>
+    </div>
+
+    <script>
+        // Extract error details from JSON in page title or from current URL
+        function initializeErrorPage() {
+            // Try to get error info from URL parameters or window data
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorCode = urlParams.get('code') || document.body.getAttribute('data-error-code') || '404';
+            const errorTitle = urlParams.get('title') || 'Page Not Found';
+            const errorMessage = urlParams.get('message') || 'The resource you\'re looking for doesn\'t exist or has been moved.';
+            const errorStatus = urlParams.get('status') || errorCode;
+
+            // Update page elements
+            document.getElementById('errorCode').textContent = errorCode;
+            document.getElementById('errorTitle').textContent = errorTitle;
+            document.getElementById('errorMessage').textContent = errorMessage;
+            document.getElementById('detailError').textContent = document.getElementById('detailError').textContent;
+            document.getElementById('detailStatus').textContent = errorStatus;
+            document.getElementById('detailPath').textContent = window.location.pathname;
+            document.getElementById('detailTime').textContent = new Date().toLocaleString();
+            document.getElementById('timeCheck').textContent = new Date().toLocaleTimeString();
+
+            // Determine status badge color
+            const badge = document.getElementById('statusBadge');
+            if (errorCode >= 500) {
+                badge.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                badge.textContent = '🔴 System Error';
+            } else if (errorCode >= 400) {
+                badge.style.background = 'linear-gradient(135deg, #f39c12 0%, #d68910 100%)';
+                badge.textContent = '🟡 Client Error';
+            } else {
+                badge.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
+                badge.textContent = '🟢 System Operational';
+            }
+
+            // Check system health
+            checkSystemHealth();
+        }
+
+        async function checkSystemHealth() {
+            try {
+                const response = await fetch('/health', { method: 'GET' });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('System health:', data);
+                }
+            } catch (e) {
+                console.log('System health check failed:', e.message);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeErrorPage);
+    </script>
+</body>
+</html>

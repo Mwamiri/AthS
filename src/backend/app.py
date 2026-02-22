@@ -1787,19 +1787,39 @@ def bad_request(error):
     }), 400
 
 
-# Serve static frontend files (HTML, CSS, JS)
-@app.route('/<path:path>')
-def serve_static(path):
-    """Serve static frontend files"""
-    # Don't serve API routes through this handler
-    if path.startswith('api/'):
-        return jsonify({'error': 'Not Found', 'message': 'The requested endpoint does not exist'}), 404
-    
-    try:
-        return send_from_directory(FRONTEND_DIR, path)
-    except:
-        # If file not found, return 404 or redirect to index
-        return send_from_directory(FRONTEND_DIR, 'index.html')
+# Serve static frontend files (HTML, CSS, JS, etc)
+# REMOVED CUSTOM CATCH-ALL ROUTES - Using only 4 explicit routes:
+# 1. Root "/" explicitly defined above - serves index.html
+# 2. Specific file route for /index.html
+# 3. Specific file route for /error.html  
+# 4. Let Flask handle static files internally (no custom routing)
+
+@app.route('/index.html')
+def serve_index():
+    """Explicitly serve index.html"""
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
+
+@app.route('/error.html')
+def serve_error():
+    """Explicitly serve error.html"""
+    return send_from_directory(FRONTEND_DIR, 'error.html')
+
+
+@app.route('/logs.html')
+def serve_logs():
+    """Explicitly serve logs.html"""
+    return send_from_directory(FRONTEND_DIR, 'logs.html')
+
+
+@app.route('/status.html')
+def serve_status():
+    """Explicitly serve status.html"""
+    return send_from_directory(FRONTEND_DIR, 'status.html')
+
+
+# Note: Flask automatically handles static files from the static_folder
+# defined in app initialization. This avoids interfering with API routes.
 
 
 if __name__ == '__main__':
