@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AthSys - Elite Athletics Management Platform</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -18,593 +15,14 @@
             --primary: #ff6b35;
             --primary-dark: #d45528;
             --secondary: #06d6a0;
-            --dark: #1a1a2e;
             --text: #2d2d2d;
             --text-light: #666;
             --bg: #ffffff;
-            --bg-light: #f8f9ff;
             --border: #e0e0e0;
-            --success: #00d084;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Navigation */
-        nav {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1.2rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(10px);
-        }
-
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links { display: flex; gap: 2rem; list-style: none; }
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        .nav-links a:hover { color: var(--primary); }
-
-        .btn-login {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
-        }
-
-        /* Hero Section */
-        .hero {
-            min-height: 85vh;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.95), rgba(212, 85, 40, 0.95)), 
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="1200" height="600" fill="url(%23grid)"/></svg>');
-            background-size: cover, 40px 40px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            padding: 6rem 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(6, 214, 160, 0.15), transparent);
-            border-radius: 50%;
-            z-index: 0;
-        }
-
-        .hero-content {
-            z-index: 2;
-            color: white;
-        }
-
-        .hero-content h1 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .hero-content p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
-            line-height: 1.8;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background: white;
-            color: var(--primary);
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            border: 2px solid white;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-block;
-        }
-
-        .btn-secondary:hover {
-            background: white;
-            color: var(--primary);
-        }
-
-        .hero-visual {
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-image {
-            width: 100%;
-            max-width: 400px;
-            height: 400px;
-            background: linear-gradient(135deg, rgba(6, 214, 160, 0.2), rgba(255, 255, 255, 0.1));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 180px;
-            animation: float 3s ease-in-out infinite;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-30px); }
-        }
-
-        /* Features Section */
-        .features {
-            padding: 6rem 0;
-            background: var(--bg-light);
-        }
-
-        .section-title {
-            text-align: center;
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-light);
-            font-size: 1.1rem;
-            margin-bottom: 4rem;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-card h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        .feature-card p {
-            color: var(--text-light);
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        /* Stats Section */
-        .stats {
-            padding: 4rem 0;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-item h3 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-item p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
-
-        /* Version & CTA */
-        .cta-section {
-            padding: 5rem 0;
-            text-align: center;
-        }
-
-        .cta-section h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta-section p {
-            font-size: 1.2rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
-        }
-
-        .cta-button {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
-            transition: all 0.3s;
-            display: inline-block;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .cta-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
-        }
-
-        /* Footer */
-        footer {
-            background: var(--dark);
-            color: white;
-            padding: 3rem 0 1.5rem;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-            text-align: left;
-        }
-
-        .footer-section h4 { margin-bottom: 1rem; }
-
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: color 0.3s;
-            font-size: 0.95rem;
-        }
-
-        .footer-section a:hover { color: white; }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 1.5rem;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-        }
-
-        /* Status Indicator */
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: var(--success);
-            border-radius: 50%;
-            margin-right: 0.5rem;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero {
-                grid-template-columns: 1fr;
-                min-height: auto;
-                padding: 4rem 0;
-            }
-
-            .hero-content h1 { font-size: 2rem; }
-            .hero-buttons { flex-direction: column; }
-            .nav-links { display: none; }
-            .section-title { font-size: 2rem; }
-            .features-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <div class="nav-content">
-                <div class="logo">🏃 AthSys</div>
-                <div class="nav-right">
-                    <ul class="nav-links">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="races-results.html">🏁 Races & Results</a></li>
-                        <li><a href="#cta">About</a></li>
-                    </ul>
-                    <a href="#" onclick="openLoginModal(); return false;" class="btn-login">Login</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main>
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Track Excellence, Deliver Results</h1>
-                <p>The modern platform for managing professional athletics competitions. Register athletes, manage races, and track performance all in one place.</p>
-                <div class="hero-buttons">
-                    <a href="#" onclick="openLoginModal(); return false;" class="btn-primary">Login / Admin</a>
-                    <a href="#" onclick="openLoginModal(); switchToRegister(); return false;" class="btn-secondary">🏃 Athletes Register</a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="hero-image">🏆</div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features" id="features">
-            <div class="container">
-                <h2 class="section-title">Powerful Features</h2>
-                <p class="section-subtitle">Everything you need for professional athletics management</p>
-                
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">📊</div>
-                        <h3>Real-Time Analytics</h3>
-                        <p>Track performance metrics and generate comprehensive reports with detailed athlete statistics.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">👥</div>
-                        <h3>Athlete Management</h3>
-                        <p>Register and manage athletes with complete profiles, participation history, and performance data.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎯</div>
-                        <h3>Race Management</h3>
-                        <p>Schedule races, configure events, manage heats, and track results seamlessly.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔒</div>
-                        <h3>Enterprise Security</h3>
-                        <p>Enterprise-grade security with 2FA authentication, audit logging, and access control.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <h3>Lightning Fast</h3>
-                        <p>Built on modern cloud infrastructure with Kubernetes scaling and Redis caching.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📱</div>
-                        <h3>Mobile Ready</h3>
-                        <p>Responsive design works seamlessly across mobile, tablet, and desktop devices.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section class="stats">
-            <div class="container">
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <h3>2,500+</h3>
-                        <p>Athletes Managed</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>500+</h3>
-                        <p>Events Organized</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>99.9%</h3>
-                        <p>Uptime Guaranteed</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>24/7</h3>
-                        <p>Support Available</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="cta-section">
-            <div class="container">
-                <h2>Ready to Transform Your Athletics Management?</h2>
-                <p>Join professional event organizers using AthSys for seamless competition management</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <a href="races-results.html" class="cta-button" style="background: linear-gradient(135deg, #06d6a0, #00b884); border: none;">🏁 View Races & Results</a>
-                    <a href="#" onclick="openLoginModal(); return false;" class="cta-button">Login Now</a>
-                </div>
-                <div style="margin-top: 2rem;">
-                    <span class="status-indicator"></span>
-                    <span style="color: var(--text-light);">System Status: Operational • v2.2.0</span>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>🏃 AthSys</h4>
-                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.95rem;">Modern Athletics Management Platform</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#">Pricing</a></li>
-                        <li><a href="#">Updates</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="#">Documentation</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">FAQ</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="#">Privacy</a></li>
-                        <li><a href="#">Terms</a></li>
-                        <li><a href="#">Status</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 AthSys v2.2.0 - Elite Athletics Management. Built with ❤️ for excellence.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Scroll animations
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href !== '#') {
-                    e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
-            });
-        });
-    </script>
-</body>
-</html>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #ff6b35;
-            --primary-dark: #d45528;
-            --secondary: #06d6a0;
-            --dark: #1a1a2e;
-            --text: #2d2d2d;
-            --text-light: #666;
-            --bg: #ffffff;
-            --bg-light: #f8f9ff;
-            --border: #e0e0e0;
-            --success: #00d084;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -618,12 +36,12 @@
 
         /* Navigation */
         nav {
-            background: var(--bg);
+            background: white;
             padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .nav-content {
@@ -633,13 +51,9 @@
         }
 
         .logo {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--primary);
         }
 
         .nav-right {
@@ -666,37 +80,38 @@
         }
 
         .btn-login {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--primary);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s;
             border: none;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+            background: var(--primary-dark);
         }
 
         /* Hero Section */
-        .hero {
-            padding: 6rem 0;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+        main {
+            min-height: 80vh;
+            display: flex;
             align-items: center;
+            justify-content: center;
+            padding: 4rem 0;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 700px;
         }
 
         .hero-content h1 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
+            font-size: 3rem;
+            margin-bottom: 1rem;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -704,7 +119,7 @@
         }
 
         .hero-content p {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             color: var(--text-light);
             margin-bottom: 2rem;
             line-height: 1.8;
@@ -713,36 +128,40 @@
         .hero-buttons {
             display: flex;
             gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--primary);
             color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
+            padding: 0.8rem 1.8rem;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
             border: none;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 1rem;
             display: inline-block;
         }
 
         .btn-primary:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(255, 107, 53, 0.4);
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         .btn-secondary {
             background: transparent;
             color: var(--primary);
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
+            padding: 0.8rem 1.8rem;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
             border: 2px solid var(--primary);
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 1rem;
             display: inline-block;
         }
 
@@ -751,331 +170,161 @@
             color: white;
         }
 
-        .hero-visual {
-            position: relative;
-            height: 500px;
+        /* Footer */
+        footer {
+            background: #f5f5f5;
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--text-light);
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
         }
 
-        .hero-bg {
-            position: absolute;
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(6, 214, 160, 0.1));
-            border-radius: 20px;
-            display: flex;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            font-size: 10rem;
-            animation: float 3s ease-in-out infinite;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        .modal.active {
+            display: flex;
         }
 
-        /* Features Section */
-        .features {
-            padding: 6rem 0;
-            background: var(--bg-light);
-        }
-
-        .section-title {
-            text-align: center;
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--text);
-        }
-
-        .section-subtitle {
-            text-align: center;
-            color: var(--text-light);
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .feature-card {
+        .modal-content {
             background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            border: 1px solid var(--border);
+            padding: 2.5rem;
+            border-radius: 10px;
+            max-width: 420px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card h3 {
-            font-family: 'Poppins', sans-serif;
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
             font-size: 1.5rem;
-            margin-bottom: 0.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
             color: var(--primary);
+            font-size: 1.8rem;
         }
 
-        .feature-card p {
-            color: var(--text-light);
-            line-height: 1.8;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        /* Stats Section */
-        .stats {
-            padding: 4rem 0;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-item h3 {
-            font-size: 2.5rem;
-            font-weight: 800;
+        .form-group label {
+            display: block;
             margin-bottom: 0.5rem;
-        }
-
-        .stat-item p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-
-        /* Benefits Section */
-        .benefits {
-            padding: 6rem 0;
-        }
-
-        .benefits-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: center;
-        }
-
-        .benefits-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .benefit-item {
-            display: flex;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
-
-        .benefit-check {
-            flex-shrink: 0;
-            width: 40px;
-            height: 40px;
-            background: var(--secondary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-
-        .benefit-item h4 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
+            font-weight: 600;
             color: var(--text);
-        }
-
-        .benefit-item p {
-            color: var(--text-light);
-        }
-
-        .benefits-visual {
-            height: 400px;
-            background: linear-gradient(135deg, rgba(6, 214, 160, 0.1), rgba(255, 107, 53, 0.1));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8rem;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        /* Version History */
-        .version-section {
-            padding: 4rem 0;
-            background: var(--bg-light);
-        }
-
-        .version-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .version-item {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border-left: 4px solid var(--secondary);
-            display: flex;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
-
-        .version-badge {
-            background: var(--secondary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        .version-content h4 {
-            font-family: 'Poppins', sans-serif;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
-
-        .version-content p {
-            color: var(--text-light);
             font-size: 0.95rem;
         }
 
-        /* Status Section */
-        .status-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
             border: 1px solid var(--border);
-            margin-top: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* CTA Section */
-        .cta-section {
-            padding: 5rem 0;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            text-align: center;
-            border-radius: 16px;
-            margin: 4rem 0;
-        }
-
-        .cta-section h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta-section p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
-        }
-
-        .cta-button {
-            background: white;
-            color: var(--primary);
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 700;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
             transition: all 0.3s;
-            display: inline-block;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
             border: none;
+            border-radius: 6px;
+            font-weight: 600;
             cursor: pointer;
             font-size: 1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .cta-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        .btn:hover {
+            background: var(--primary-dark);
         }
 
-        /* Footer */
-        footer {
-            background: var(--dark);
-            color: white;
-            padding: 3rem 0;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-            text-align: left;
-        }
-
-        .footer-section h4 {
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
             margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 6px;
+            display: none;
         }
 
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-section a:hover {
-            color: white;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
+        .switch-form {
             text-align: center;
-            color: rgba(255, 255, 255, 0.7);
+            margin-top: 1rem;
+            font-size: 0.95rem;
         }
 
-        /* Responsive */
+        .switch-form a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .welcome-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .welcome-buttons .btn {
+            flex: 1;
+        }
+
         @media (max-width: 768px) {
-            .hero, .benefits-content {
-                grid-template-columns: 1fr;
+            .nav-links {
+                display: none;
             }
 
             .hero-content h1 {
@@ -1086,414 +335,258 @@
                 flex-direction: column;
             }
 
-            .nav-links {
-                display: none;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
+            main {
+                min-height: 60vh;
             }
         }
     </style>
 </head>
 <body>
-    <header>
+    <!-- Navigation -->
+    <nav>
         <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1>🏃‍♂️ AthSys v2.2</h1>
-                    <p class="tagline">⚡ Elite Athletics Management Platform ⚡</p>
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <a href="#" onclick="openLoginModal(); return false;" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: transform 0.3s;">
-                        🔐 Login
-                    </a>
+            <div class="nav-content">
+                <div class="logo">🏃 AthSys</div>
+                <div class="nav-right">
+                    <ul class="nav-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="races-results.html">🏁 Races & Results</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                    <a href="#" onclick="openLoginModal(); return false;" class="btn-login">Login</a>
                 </div>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <main class="container">
-        <section class="landing-hero">
-            <h2>🏆 Track Excellence, Deliver Results 🏆</h2>
-            <p>Comprehensive athletics competition management platform powered by cutting-edge technology</p>
-            <a href="#" onclick="openLoginModal(); return false;" class="cta-button" style="cursor: pointer;">
-                🚀 Get Started - Login Now
-            </a>
-            <div style="margin-top: 2rem;">
-                <div class="status" id="status">
-                    <span class="status-indicator"></span>
-                    <span>System Status: <span id="system-status">Checking...</span></span>
+    <!-- Hero Section -->
+    <main>
+        <div class="container">
+            <div class="hero-content">
+                <h1>🏆 Track Excellence, Deliver Results</h1>
+                <p>The modern platform for managing professional athletics competitions. Register athletes, manage races, and track performance all in one place.</p>
+                <div class="hero-buttons">
+                    <a href="#" onclick="openLoginModal(); return false;" class="btn-primary">🔐 Login / Admin</a>
+                    <a href="#" onclick="openLoginModal(); switchToRegister(); return false;" class="btn-secondary">🏃 Athletes Register</a>
                 </div>
             </div>
-        </section>
-
-        <section class="version-history">
-            <h3>🆕 What's New in Version 2.2</h3>
-            <div class="version-item">
-                <div>
-                    <span class="version-badge">v2.2</span>
-                </div>
-                <div>
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--success-color);">February 2026 - Latest Release</h4>
-                    <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary);">
-                        <li>🔧 Modular plugin system with 20+ configurable plugins</li>
-                        <li>⏱️ Official timing system with manual START/STOP buttons (world athletics standard)</li>
-                        <li>🏁 Public races & results portal (no login required)</li>
-                        <li>📊 Enhanced analytics and reporting features</li>
-                        <li>⚡ Performance improvements and bug fixes</li>
-                        <li>🎨 Modernized UI with better accessibility</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="version-item" style="border-left-color: var(--primary-color); background: rgba(255, 107, 53, 0.05);">
-                <div>
-                    <span class="version-badge" style="background: var(--primary-color);">v2.0</span>
-                </div>
-                <div>
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-color);">January 2026</h4>
-                    <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary);">
-                        <li>🏗️ Complete system redesign with modern architecture</li>
-                        <li>👥 Role-based access control (7 user roles)</li>
-                        <li>📱 Responsive design for mobile and tablet</li>
-                        <li>🔒 Enhanced security with JWT authentication</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="version-item" style="border-left-color: var(--accent-color); background: rgba(247, 147, 30, 0.05);">
-                <div>
-                    <span class="version-badge" style="background: var(--accent-color);">v1.0</span>
-                </div>
-                <div>
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--accent-color);">December 2025</h4>
-                    <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary);">
-                        <li>🎉 Initial release with core features</li>
-                        <li>🏃 Athlete and race management</li>
-                        <li>📝 Results entry and tracking</li>
-                        <li>📄 Basic reporting capabilities</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                Access the full suite of athletics management features with your credentials.
-            </p>
-            <div style="padding: 1.5rem; background: rgba(6, 214, 160, 0.1); border-radius: 8px; border-left: 4px solid var(--success-color); max-width: 600px; margin: 0 auto;">
-                <p style="margin: 0 0 1rem 0; font-size: 1.1rem;">
-                    <strong>🔒 Secure Authentication</strong>
-                </p>
-                <p style="margin: 0; color: var(--text-secondary);">
-                    This system uses enterprise-grade security with role-based access control. 
-                    Contact your administrator for credentials to access the platform.
-                </p>
-                <div style="margin-top: 1.5rem;">
-                    <a href="#" onclick="openLoginModal(); return false;" class="btn" style="background: linear-gradient(135deg, var(--primary-color), var(--danger-color)); color: white; padding: 0.75rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block; cursor: pointer;">
-                        → Proceed to Login
-                    </a>
-                </div>
-            </div>
-        </section>
+        </div>
     </main>
 
+    <!-- Footer -->
     <footer>
         <div class="container">
             <p>© 2026 <strong>AthSys v2.2</strong> - Elite Athletics Management System</p>
-            <p>Developed with ❤️ by <strong>Mwamiri</strong> | <a href="https://appstore.co.ke" target="_blank" rel="noopener">appstore.co.ke</a> | <a href="status.html" style="text-decoration: none;">🏥 System Status</a></p>
+            <p>Developed with ❤️ by <strong>Mwamiri</strong> | <a href="https://appstore.co.ke" target="_blank" rel="noopener">appstore.co.ke</a> | <a href="status.html">🏥 System Status</a></p>
         </div>
     </footer>
 
-    <script src="app.js"></script>
-
-
-
     <!-- Login Modal -->
-    <div id="loginModal" class="modal" style="display: none;">
-        <div class="modal-content" style="background: linear-gradient(135deg, rgba(30, 30, 46, 0.98) 0%, rgba(22, 33, 62, 0.98) 100%); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); padding: 40px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h2 style="font-size: 28px; color: #fff; margin: 0;">🔐 Login</h2>
-                <button onclick="closeLoginModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px;">✕</button>
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+            
+            <!-- Login Message -->
+            <div id="loginMessage">
+                <div class="modal-header">
+                    <h2>Welcome</h2>
+                </div>
+                <p style="color: var(--text-light); margin-bottom: 1.5rem; text-align: center;">Choose to login or create a new account</p>
+                <div class="welcome-buttons">
+                    <button onclick="switchToLogin()" class="btn" style="background: var(--primary);">🔐 Login</button>
+                    <button onclick="switchToRegister()" class="btn" style="background: var(--secondary);">✍️ Register</button>
+                </div>
             </div>
 
             <!-- Login Form -->
             <form id="loginForm" onsubmit="handleLogin(event)" style="display: none;">
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #aaa; font-size: 12px; text-transform: uppercase; font-weight: 600;">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="admin@athsys.com" required style="width: 100%; padding: 12px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 14px;">
+                <div class="modal-header">
+                    <h2>Login</h2>
+                </div>
+                
+                <div id="loginError" class="error-message"></div>
+
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="admin@example.com" required>
                 </div>
 
-                <div style="margin-bottom: 30px;">
-                    <label style="display: block; margin-bottom: 8px; color: #aaa; font-size: 12px; text-transform: uppercase; font-weight: 600;">Password</label>
-                    <input type="password" id="loginPassword" placeholder="Enter your password" required style="width: 100%; padding: 12px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 14px;">
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
                 </div>
 
-                <div id="loginError" style="background: rgba(231, 76, 60, 0.1); border-left: 3px solid #e74c3c; padding: 12px; margin-bottom: 20px; color: #e74c3c; font-size: 13px; border-radius: 4px; display: none;"></div>
+                <button type="submit" class="btn">🔓 Sign In</button>
 
-                <button type="submit" id="loginBtn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s;">
-                    <span id="loginBtnText">🔓 Sign In</span>
-                    <span id="loginSpinner" style="display: none;">⏳ Signing in...</span>
-                </button>
-
-                <p style="text-align: center; margin-top: 20px; color: #888; font-size: 13px;">
-                    Don't have an account? <a href="#" onclick="switchToRegister()" style="color: #2d9cdb; text-decoration: none; font-weight: 600;">Create one</a>
-                </p>
+                <div class="switch-form">
+                    Don't have an account? <a onclick="switchToRegister(); return false;">Create one</a>
+                </div>
             </form>
 
             <!-- Register Form -->
             <form id="registerForm" onsubmit="handleRegister(event)" style="display: none;">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 6px; color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: 600;">Full Name</label>
-                    <input type="text" id="regName" placeholder="Your full name" required style="width: 100%; padding: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 13px;">
+                <div class="modal-header">
+                    <h2>Register</h2>
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 6px; color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: 600;">Email Address</label>
-                    <input type="email" id="regEmail" placeholder="your@email.com" required style="width: 100%; padding: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 13px;">
+                <div id="regError" class="error-message"></div>
+
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" placeholder="Your full name" required>
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 6px; color: #aaa; font-size: 11px; text-transform: uppercase; font-weight: 600;">Password</label>
-                    <input type="password" id="regPassword" placeholder="Min 8 chars, 1 uppercase, 1 digit, 1 special" required style="width: 100%; padding: 10px; border: 1px solid #444; background: rgba(255,255,255,0.05); color: #e0e0e0; border-radius: 6px; font-size: 13px;">
-                    <small style="color: #666; display: block; margin-top: 6px;">Password must contain: uppercase, lowercase, number, special character (@#$%)</small>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" placeholder="your@example.com" required>
                 </div>
 
-                <div id="registerError" style="background: rgba(231, 76, 60, 0.1); border-left: 3px solid #e74c3c; padding: 12px; margin-bottom: 15px; color: #e74c3c; font-size: 12px; border-radius: 4px; display: none;"></div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Min 8 characters" required>
+                </div>
 
-                <button type="submit" id="regBtn" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s;">
-                    <span id="regBtnText">✓ Create Account</span>
-                    <span id="regSpinner" style="display: none;">⏳ Creating...</span>
-                </button>
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required>
+                </div>
 
-                <p style="text-align: center; margin-top: 15px; color: #888; font-size: 12px;">
-                    Already have an account? <a href="#" onclick="switchToLogin()" style="color: #2d9cdb; text-decoration: none; font-weight: 600;">Sign in</a>
-                </p>
+                <button type="submit" class="btn">✍️ Create Account</button>
+
+                <div class="switch-form">
+                    Already have an account? <a onclick="switchToLogin(); return false;">Login here</a>
+                </div>
             </form>
-
-            <!-- Default Message -->
-            <div id="loginMessage" style="text-align: center; color: #aaa;">
-                <p style="margin-bottom: 20px;">Choose an option below to get started:</p>
-                <button onclick="switchToLogin()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #2d9cdb 0%, #1f4788 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 10px; text-transform: uppercase;">🔓 Sign In</button>
-                <button onclick="switchToRegister()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; text-transform: uppercase;">👤 Create Account</button>
-            </div>
         </div>
     </div>
 
-    <!-- Modal Backdrop -->
-    <div id="loginBackdrop" class="modal-backdrop" onclick="closeLoginModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 998; backdrop-filter: blur(4px);"></div>
-
-    <style>
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
-
-        .modal-content {
-            animation: modalSlideIn 0.4s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-    </style>
-
     <script>
-        // ============ CMS - Load Frontend Config from Backend ============
-        let frontendConfig = {};
-
-        async function loadFrontendConfig() {
-            try {
-                const response = await fetch('/api/config/frontend');
-                const data = await response.json();
-                frontendConfig = data.config || {};
-                
-                // Build dynamic navigation
-                if (frontendConfig.nav_links) {
-                    buildDynamicNavigation(frontendConfig.nav_links);
-                }
-            } catch (error) {
-                console.warn('Failed to load frontend config:', error);
-                // Use defaults if backend unavailable
-            }
-        }
-
-        function buildDynamicNavigation(navLinks) {
-            const navLinksContainer = document.querySelector('.nav-links');
-            if (!navLinksContainer) return;
-
-            // Clear existing links (except login button)
-            navLinksContainer.innerHTML = '';
-
-            // Add links from backend config
-            navLinks.forEach(link => {
-                if (link.visible) {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = link.url;
-                    a.textContent = link.label;
-                    
-                    li.appendChild(a);
-                    navLinksContainer.appendChild(li);
-                }
-            });
-        }
-
-        // ============ Login Modal Management ============
+        // ============ Modal Management ============
         function openLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-            document.getElementById('loginBackdrop').style.display = 'block';
+            document.getElementById('loginModal').classList.add('active');
             document.getElementById('loginMessage').style.display = 'block';
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'none';
         }
 
         function closeLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('loginBackdrop').style.display = 'none';
+            document.getElementById('loginModal').classList.remove('active');
         }
 
         function switchToLogin() {
             document.getElementById('loginMessage').style.display = 'none';
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('loginEmail').focus();
         }
 
         function switchToRegister() {
             document.getElementById('loginMessage').style.display = 'none';
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'block';
-            document.getElementById('regName').focus();
         }
 
+        // ============ Login Handler ============
         async function handleLogin(event) {
             event.preventDefault();
             
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
-            const btn = document.getElementById('loginBtn');
-            const btnText = document.getElementById('loginBtnText');
-            const spinner = document.getElementById('loginSpinner');
 
             try {
-                btn.disabled = true;
-                btnText.style.display = 'none';
-                spinner.style.display = 'inline';
-                errorDiv.style.display = 'none';
-
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
 
-                const data = await response.json();
-
-                if (response.ok && data.user) {
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store auth token and user info
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    setTimeout(() => {
+                    
+                    // Redirect based on role
+                    if (data.user.role === 'admin') {
                         window.location.href = '/admin.html';
-                    }, 800);
+                    } else {
+                        window.location.href = '/athlete.html';
+                    }
                 } else {
-                    errorDiv.textContent = data.message || 'Login failed. Please try again.';
+                    const error = await response.json();
+                    errorDiv.textContent = error.message || 'Login failed';
                     errorDiv.style.display = 'block';
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                errorDiv.textContent = 'Connection error. Please check your internet connection.';
+                errorDiv.textContent = 'Network error: ' + error.message;
                 errorDiv.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btnText.style.display = 'inline';
-                spinner.style.display = 'none';
             }
         }
 
+        // ============ Register Handler ============
         async function handleRegister(event) {
             event.preventDefault();
             
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
-            const errorDiv = document.getElementById('registerError');
-            const btn = document.getElementById('regBtn');
-            const btnText = document.getElementById('regBtnText');
-            const spinner = document.getElementById('regSpinner');
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const errorDiv = document.getElementById('regError');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Validate password length
+            if (password.length < 8) {
+                errorDiv.textContent = 'Password must be at least 8 characters';
+                errorDiv.style.display = 'block';
+                return;
+            }
 
             try {
-                btn.disabled = true;
-                btnText.style.display = 'none';
-                spinner.style.display = 'inline';
-                errorDiv.style.display = 'none';
-
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        name, 
-                        email, 
-                        password,
-                        user_type: 'athlete'
-                    })
+                    body: JSON.stringify({ name, email, password })
                 });
 
-                const data = await response.json();
-
-                if (response.ok && data.user) {
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store auth token and user info
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    setTimeout(() => {
-                        window.location.href = '/athlete.html';
-                    }, 800);
+                    
+                    // Redirect to athlete dashboard
+                    window.location.href = '/athlete.html';
                 } else {
-                    errorDiv.textContent = data.message || 'Registration failed. Please try again.';
+                    const error = await response.json();
+                    errorDiv.textContent = error.message || 'Registration failed';
                     errorDiv.style.display = 'block';
                 }
             } catch (error) {
-                console.error('Register error:', error);
-                errorDiv.textContent = 'Connection error. Please check your internet connection.';
+                errorDiv.textContent = 'Network error: ' + error.message;
                 errorDiv.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btnText.style.display = 'inline';
-                spinner.style.display = 'none';
             }
         }
 
-        // Close modal on Escape key
+        // ============ Close modal with Escape key ============
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeLoginModal();
-                closeLogsModal();
             }
         });
 
-        // ============ Initialize on Page Load ============
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFrontendConfig();
+        // ============ Close modal when clicking backdrop ============
+        document.getElementById('loginModal').addEventListener('click', (e) => {
+            if (e.target.id === 'loginModal') {
+                closeLoginModal();
+            }
         });
     </script>
 </body>
