@@ -1,17 +1,44 @@
 {
-  "name": "athsys-frontend",
-  "version": "1.0.0",
-  "description": "AthSys Frontend - Athletics Management System",
-  "main": "index.html",
+  "name": "athsys-dashboard",
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Modern Vue 3 + TailwindCSS Dashboard for AthSys",
   "scripts": {
-    "start": "python -m http.server 3000",
-    "build": "mkdir -p build && cp -r src/* build/"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "e2e": "cypress open",
+    "lint": "eslint src --fix",
+    "format": "prettier --write src/**/*.{vue,js}",
+    "type-check": "vue-tsc --noEmit"
   },
-  "keywords": [
-    "athletics",
-    "sports",
-    "management"
-  ],
-  "author": "Mwamiri",
-  "license": "MIT"
+  "dependencies": {
+    "vue": "^3.3.4",
+    "vue-router": "^4.2.4",
+    "pinia": "^2.1.4",
+    "axios": "^1.5.0",
+    "@headlessui/vue": "^1.7.14",
+    "@heroicons/vue": "^2.0.18",
+    "@vueuse/core": "^10.7.2",
+    "vue-toastification": "^2.0.0",
+    "chart.js": "^4.4.0",
+    "vue-chartjs": "^5.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.4.4",
+    "vite": "^5.0.2",
+    "tailwindcss": "^3.3.5",
+    "postcss": "^8.4.31",
+    "autoprefixer": "^10.4.16",
+    "vitest": "^0.34.6",
+    "@vitest/ui": "^0.34.6",
+    "@vue/test-utils": "^2.4.1",
+    "cypress": "^13.6.2",
+    "eslint": "^8.51.0",
+    "eslint-plugin-vue": "^9.18.1",
+    "prettier": "^3.0.3",
+    "vue-tsc": "^1.8.22"
+  }
 }

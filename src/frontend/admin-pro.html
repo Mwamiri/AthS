@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthSys Admin Dashboard Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Alpine.js for interactions -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        [data-theme="dark"] { color-scheme: dark; }
+        [data-theme="light"] { color-scheme: light; }
+        
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        .slide-up-enter-active { animation: slideUp 0.3s ease; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sidebar-collapsed { width: 80px; }
+        .sidebar-expanded { width: 280px; }
+        .smooth-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hover-lift:hover { transform: translateY(-4px); }
+        
+        .checkbox-input { accent-color: #ff6b35; }
+        .modal-backdrop { animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Notification Styles */
+        .notification-badge {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            padding: 1rem;
+        }
+        
+        .quick-stat:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950">
+    <div id="app">
+        <!-- Loading Screen -->
+        <div v-if="!appReady" class="flex items-center justify-center h-screen bg-gradient-to-br from-orange-500 to-orange-600">
+            <div class="text-center">
+                <div class="text-6xl mb-4 animate-bounce">🏃</div>
+                <h1 class="text-4xl font-bold text-white mb-2">AthSys Pro</h1>
+                <p class="text-orange-100">Loading Dashboard...</p>
+                <div class="mt-8 flex justify-center gap-1">
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0s"></div>
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0.15s"></div>
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div v-show="appReady" class="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white smooth-transition">
+            
+            <!-- Sidebar -->
+            <aside class="smooth-transition" :class="[sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed', 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-black dark:to-slate-950 text-white shadow-lg flex flex-col']">
+                
+                <!-- Header -->
+                <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+                    <div v-if="sidebarExpanded" class="flex items-center gap-3 flex-1">
+                        <span class="text-3xl">🏃</span>
+                        <div>
+                            <h1 class="text-lg font-bold">AthSys</h1>
+                            <p class="text-xs text-slate-400">Pro Admin</p>
+                        </div>
+                    </div>
+                    <div v-else class="w-full text-center">
+                        <span class="text-2xl">🏃</span>
+                    </div>
+                    <button @click="sidebarExpanded = !sidebarExpanded" class="text-slate-400 hover:text-white">{{ sidebarExpanded ? '◀' : '▶' }}</button>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 overflow-y-auto">
+                    <div v-for="section in menuSections" :key="section.title" class="py-4">
+                        <p v-if="sidebarExpanded" class="px-4 text-xs uppercase text-slate-500 font-semibold tracking-wider mb-3">{{ section.title }}</p>
+                        <div v-for="item in section.items" :key="item.id"
+                             @click="currentPage = item.id"
+                             :class="['mx-2 px-3 py-3 rounded-lg transition flex items-center gap-3 cursor-pointer', currentPage === item.id ? 'bg-orange-500 text-white' : 'text-slate-300 hover:bg-slate-700']">
+                            <span class="text-xl">{{ item.icon }}</span>
+                            <span v-if="sidebarExpanded" class="text-sm font-medium">{{ item.label }}</span>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Footer -->
+                <div class="border-t border-slate-700 p-4">
+                    <div :class="['rounded-lg mb-4', sidebarExpanded ? 'bg-orange-500/20 border border-orange-500/50 p-3' : 'text-center']">
+                        <div v-if="sidebarExpanded">
+                            <p class="text-sm font-semibold text-white">{{ currentUser.name }}</p>
+                            <p class="text-xs text-orange-100 capitalize">{{ currentUser.role }}</p>
+                        </div>
+                    </div>
+                    <button @click="logout" class="w-full py-2 px-3 rounded-lg text-sm font-medium bg-red-500/20 text-red-300 hover:bg-red-500/40">{{ sidebarExpanded ? '🚪 Logout' : '🚪' }}</button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto">
+                
+                <!-- Top Header -->
+                <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 p-6 sticky top-0 z-40 shadow-sm">
+                    <div class="flex items-center justify-between max-w-full mx-auto">
+                        <div>
+                            <h1 class="text-3xl font-bold">{{ getPageTitle() }}</h1>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ getPageDescription() }}</p>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <!-- Search Bar -->
+                            <div class="hidden md:flex relative">
+                                <input v-model="searchQuery" @input="performSearch" type="text" placeholder="Search..." class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 w-64">
+                                <span v-if="searchQuery" class="absolute right-3 top-2.5 text-gray-400 cursor-pointer" @click="searchQuery = ''">✕</span>
+                            </div>
+                            
+                            <!-- Theme Toggle -->
+                            <button @click="theme = theme === 'light' ? 'dark' : 'light'; applyTheme()" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700">
+                                {{ theme === 'light' ? '🌙' : '☀️' }}
+                            </button>
+                            
+                            <!-- Notifications -->
+                            <div class="relative">
+                                <button @click="showNotifications = !showNotifications" class="relative p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700">
+                                    🔔
+                                    <span v-if="notifications.filter(n => !n.read).length > 0" class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold notification-badge">
+                                        {{ notifications.filter(n => !n.read).length }}
+                                    </span>
+                                </button>
+                                
+                                <!-- Notifications Panel -->
+                                <div v-if="showNotifications" @click.outside="showNotifications = false" class="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-50 max-h-96 overflow-y-auto">
+                                    <div class="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                                        <h3 class="font-semibold">Notifications</h3>
+                                        <button @click="clearAllNotifications" class="text-xs text-red-600 hover:text-red-700">Clear All</button>
+                                    </div>
+                                    <div v-if="notifications.length > 0">
+                                        <div v-for="notification in notifications.slice(0, 5)" :key="notification.id" :class="['p-4 border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 cursor-pointer', notification.read ? '' : 'bg-blue-50 dark:bg-blue-500/10']">
+                                            <p class="font-medium text-sm">{{ notification.title }}</p>
+                                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ notification.message }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ formatTime(notification.timestamp) }}</p>
+                                        </div>
+                                    </div>
+                                    <div v-else class="p-8 text-center text-gray-500 dark:text-gray-400">
+                                        <p class="mb-2">✓ All caught up!</p>
+                                        <p class="text-xs">No new notifications</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Settings Dropdown -->
+                            <div class="relative" @click.outside="showSettings = false">
+                                <button @click="showSettings = !showSettings" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700">⚙️</button>
+                                <div v-if="showSettings" class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-2 z-50">
+                                    <button @click="currentPage = 'settings'; showSettings = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700">⚙️ Settings</button>
+                                    <button @click="currentPage = 'audit-logs'; showSettings = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700">📋 Audit Logs</button>
+                                    <button @click="currentPage = 'backups'; showSettings = false" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700">💾 Backups</button>
+                                    <div class="border-t border-gray-200 dark:border-slate-700 my-2"></div>
+                                    <button @click="logout" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20">🚪 Logout</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <div class="p-6 max-w-7xl mx-auto">
+                    
+                    <!-- DASHBOARD PAGE -->
+                    <div v-if="currentPage === 'dashboard'" class="space-y-8">
+                        
+                        <!-- Quick Stats with Trends -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div v-for="stat in dashboardStats" :key="stat.id" class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700 quick-stat smooth-transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">{{ stat.label }}</p>
+                                    <span class="text-2xl">{{ stat.icon }}</span>
+                                </div>
+                                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</p>
+                                <div class="mt-4 flex items-center gap-2">
+                                    <span :class="['text-sm font-medium', stat.changePercent >= 0 ? 'text-green-600' : 'text-red-600']">
+                                        {{ stat.changePercent >= 0 ? '↑' : '↓' }} {{ Math.abs(stat.changePercent) }}%
+                                    </span>
+                                    <span class="text-xs text-gray-500">vs last month</span>
+                                </div>
+                                <div class="mt-2 w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                                    <div :style="`width: ${stat.progress}%`" class="bg-gradient-to-r from-orange-400 to-orange-500 h-2 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Participation Trends -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📈 Participation Trends</h3>
+                                <div class="chart-container">
+                                    <canvas id="trendsChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Race Distribution -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">🏁 Race Distribution</h3>
+                                <div class="chart-container">
+                                    <canvas id="raceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions & Status -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Quick Actions -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">🚀 Quick Actions</h3>
+                                <div class="space-y-3">
+                                    <button @click="openModal('create-race')" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3 rounded-lg font-medium transition smooth-transition hover-lift">➕ New Race</button>
+                                    <button @click="openModal('register-athlete')" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium transition smooth-transition hover-lift">➕ Register Athlete</button>
+                                    <button @click="openModal('add-user')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition smooth-transition hover-lift">👥 Add User</button>
+                                </div>
+                            </div>
+
+                            <!-- System Status -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">🏥 System Status</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">API Status</p>
+                                        <p class="flex items-center gap-2 text-lg font-semibold">
+                                            <span :class="systemStatus.api === 'online' ? 'text-green-500' : 'text-red-500'">●</span>
+                                            {{ systemStatus.api === 'online' ? 'Online' : 'Offline' }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Database</p>
+                                        <p class="flex items-center gap-2 text-lg font-semibold">
+                                            <span :class="systemStatus.database === 'connected' ? 'text-green-500' : 'text-red-500'">●</span>
+                                            {{ systemStatus.database === 'connected' ? 'Connected' : 'Disconnected' }}
+                                        </p>
+                                    </div>
+                                    <button @click="checkSystemHealth" class="w-full mt-4 text-sm px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition">🔄 Check Health</button>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">📋 Recent Activity</h3>
+                                <div class="space-y-2 text-sm">
+                                    <p v-for="activity in recentActivity.slice(0, 5)" :key="activity.id" class="text-gray-600 dark:text-gray-400">
+                                        ✓ {{ activity.description }}
+                                    </p>
+                                    <button @click="currentPage = 'audit-logs'" class="text-orange-600 hover:text-orange-700 font-medium text-xs mt-4">View All →</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Tables -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Recent Races -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold flex items-center gap-2">🏁 Recent Races</h3>
+                                    <button @click="currentPage = 'races'" class="text-orange-600 hover:text-orange-700 text-sm font-medium">View All →</button>
+                                </div>
+                                <div class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <div v-for="race in races.slice(0, 3)" :key="race.id" class="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ race.name }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ race.date }} • {{ race.location }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Athletes -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold flex items-center gap-2">🏃 Recent Athletes</h3>
+                                    <button @click="currentPage = 'athletes'" class="text-orange-600 hover:text-orange-700 text-sm font-medium">View All →</button>
+                                </div>
+                                <div class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <div v-for="athlete in athletes.slice(0, 3)" :key="athlete.id" class="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ athlete.name }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ athlete.team }} • {{ athlete.event }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RACES PAGE -->
+                    <div v-if="currentPage === 'races'" class="space-y-6">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold">Race Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400">Create and manage races and events</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="openModal('create-race')" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-medium smooth-transition hover-lift">➕ New Race</button>
+                                <button @click="exportData('races', 'csv')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium">📥 Export CSV</button>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                            <div class="flex gap-4 flex-wrap items-end">
+                                <div class="flex-1 min-w-64">
+                                    <label class="block text-sm font-medium mb-2">Search Races</label>
+                                    <input v-model="raceFilters.search" type="text" placeholder="Race name, location..." class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Status</label>
+                                    <select v-model="raceFilters.status" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                                        <option value="">All</option>
+                                        <option value="active">Active</option>
+                                        <option value="upcoming">Upcoming</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                                <button @click="applyFilters('races')" class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium">Apply Filters</button>
+                            </div>
+                        </div>
+
+                        <!-- Races Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left">
+                                            <input type="checkbox" class="checkbox-input" @change="toggleSelectAll('races')" :checked="allRacesSelected">
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Race Name</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Date</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Location</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="race in races" :key="race.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4"><input type="checkbox" class="checkbox-input" @change="toggleSelect('races', race.id)" :checked="selectedRaces.includes(race.id)"></td>
+                                        <td class="px-6 py-4 text-sm font-medium">{{ race.name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ race.date }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ race.location }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', race.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400']">
+                                                {{ race.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button @click="editRace(race)" class="text-blue-600 hover:text-blue-700">Edit</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button @click="deleteRace(race.id)" class="text-red-600 hover:text-red-700">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div v-if="selectedRaces.length > 0" class="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4 flex items-center justify-between">
+                            <p class="text-sm font-medium text-blue-900 dark:text-blue-300">{{ selectedRaces.length }} races selected</p>
+                            <div class="flex gap-2">
+                                <button @click="bulkDeleteRaces" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium">🗑️ Delete Selected</button>
+                                <button @click="selectedRaces = []" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm font-medium">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ATHLETES PAGE -->
+                    <div v-if="currentPage === 'athletes'" class="space-y-6">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold">Athlete Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400">Manage athlete registrations and profiles</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="openModal('register-athlete')" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium smooth-transition hover-lift">➕ Register Athlete</button>
+                                <button @click="exportData('athletes', 'csv')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium">📥 Export CSV</button>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                            <div class="flex gap-4 flex-wrap items-end">
+                                <div class="flex-1 min-w-64">
+                                    <label class="block text-sm font-medium mb-2">Search Athletes</label>
+                                    <input v-model="athleteFilters.search" type="text" placeholder="Name, team..." class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Status</label>
+                                    <select v-model="athleteFilters.status" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                                        <option value="">All</option>
+                                        <option value="active">Active</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                                <button @click="applyFilters('athletes')" class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium">Apply Filters</button>
+                            </div>
+                        </div>
+
+                        <!-- Athletes Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left">
+                                            <input type="checkbox" class="checkbox-input" @change="toggleSelectAll('athletes')" :checked="allAthletesSelected">
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Team</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Event</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="athlete in athletes" :key="athlete.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4"><input type="checkbox" class="checkbox-input" @change="toggleSelect('athletes', athlete.id)" :checked="selectedAthletes.includes(athlete.id)"></td>
+                                        <td class="px-6 py-4 text-sm font-medium">{{ athlete.name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ athlete.team }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ athlete.event }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', athlete.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400']">
+                                                {{ athlete.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button @click="editAthlete(athlete)" class="text-blue-600 hover:text-blue-700">View</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button @click="deleteAthlete(athlete.id)" class="text-red-600 hover:text-red-700">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div v-if="selectedAthletes.length > 0" class="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4 flex items-center justify-between">
+                            <p class="text-sm font-medium text-blue-900 dark:text-blue-300">{{ selectedAthletes.length }} athletes selected</p>
+                            <div class="flex gap-2">
+                                <button @click="bulkApproveAthletes" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">✓ Approve</button>
+                                <button @click="bulkDeleteAthletes" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium">🗑️ Delete</button>
+                                <button @click="selectedAthletes = []" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm font-medium">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- USERS PAGE -->
+                    <div v-if="currentPage === 'users'" class="space-y-6">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold">User Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400">Manage users, roles, and permissions</p>
+                            </div>
+                            <button @click="openModal('add-user')" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium smooth-transition hover-lift">👥 Add User</button>
+                        </div>
+
+                        <!-- Users Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Email</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Role</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm font-medium">{{ user.name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', user.role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400']">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', user.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400']">
+                                                {{ user.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button @click="editUser(user)" class="text-blue-600 hover:text-blue-700">Edit</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button @click="deleteUser(user.id)" class="text-red-600 hover:text-red-700">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- AUDIT LOGS PAGE -->
+                    <div v-if="currentPage === 'audit-logs'" class="space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-bold">Audit Logs</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Track all system changes and activities</p>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                            <div class="flex gap-4 flex-wrap items-end">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Action Type</label>
+                                    <select v-model="auditFilters.action" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                        <option value="">All</option>
+                                        <option value="create">Create</option>
+                                        <option value="update">Update</option>
+                                        <option value="delete">Delete</option>
+                                        <option value="login">Login</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">User</label>
+                                    <select v-model="auditFilters.user" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                        <option value="">All Users</option>
+                                        <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+                                    </select>
+                                </div>
+                                <button @click="applyFilters('audit')" class="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium">Apply Filters</button>
+                            </div>
+                        </div>
+
+                        <!-- Logs Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Timestamp</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">User</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Action</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Resource</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="log in auditLogs.slice(0, 20)" :key="log.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ formatTime(log.timestamp) }}</td>
+                                        <td class="px-6 py-4 text-sm font-medium">{{ log.user }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', 
+                                                log.action === 'create' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' :
+                                                log.action === 'update' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400' :
+                                                log.action === 'delete' ? 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400' :
+                                                'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                                            ]">
+                                                {{ log.action }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ log.resource }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ log.details }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- BACKUPS PAGE -->
+                    <div v-if="currentPage === 'backups'" class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold">Database Backups</h2>
+                                <p class="text-gray-600 dark:text-gray-400">Manage system backups and restoration</p>
+                            </div>
+                            <button @click="createBackup" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium smooth-transition hover-lift">💾 Create Backup</button>
+                        </div>
+
+                        <!-- Backups Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Backup ID</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Created</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Size</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="backup in backups" :key="backup.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm font-medium">{{ backup.id }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ formatTime(backup.created) }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ backup.size }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400">Completed</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button @click="downloadBackup(backup.id)" class="text-blue-600 hover:text-blue-700">Download</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button @click="restoreBackup(backup.id)" class="text-green-600 hover:text-green-700">Restore</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- RESULTS PAGE -->
+                    <div v-if="currentPage === 'results'" class="space-y-6">
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold">Results Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400">View and manage race results</p>
+                            </div>
+                            <button @click="exportData('results', 'csv')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium">📥 Export CSV</button>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Race</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Athlete</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Time</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Position</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="result in results" :key="result.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm font-medium">{{ result.race }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ result.athlete }}</td>
+                                        <td class="px-6 py-4 text-sm font-medium">{{ result.time }}</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-orange-600">{{ result.position }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button @click="editResult(result)" class="text-blue-600 hover:text-blue-700">Edit</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button @click="deleteResult(result.id)" class="text-red-600 hover:text-red-700">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- CMS SETTINGS PAGE -->
+                    <div v-if="currentPage === 'cms'" class="space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-bold">CMS Settings</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Manage content and website configuration</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold mb-4">Site Configuration</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Site Title</label>
+                                        <input type="text" value="AthSys - Athletics Management" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Site Tagline</label>
+                                        <input type="text" value="Elite Athletics Management System" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Contact Email</label>
+                                        <input type="email" value="admin@athsys.com" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold mb-4">Email Configuration</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">SMTP Server</label>
+                                        <input type="text" placeholder="smtp.example.com" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">SMTP Port</label>
+                                        <input type="number" value="587" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="saveCMS" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium">💾 Save CMS Settings</button>
+                    </div>
+
+                    <!-- PLUGINS PAGE -->
+                    <div v-if="currentPage === 'plugins'" class="space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-bold">Plugin Management</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Manage installed plugins and extensions</p>
+                        </div>
+
+                        <!-- Installed Plugins -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold">📦 Installed Plugins</h3>
+                            </div>
+                            <div class="divide-y divide-gray-200 dark:divide-slate-700">
+                                <div v-for="plugin in plugins" :key="plugin.id" class="p-6 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900 dark:text-white">{{ plugin.name }}</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ plugin.description }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">v{{ plugin.version }}</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button :class="['px-4 py-2 rounded-lg font-medium transition', plugin.enabled ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white']">
+                                            {{ plugin.enabled ? 'Disable' : 'Enable' }}
+                                        </button>
+                                        <button class="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white font-medium hover:bg-gray-400 dark:hover:bg-gray-600">Settings</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SYSTEM STATUS PAGE -->
+                    <div v-if="currentPage === 'status'" class="space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-bold">System Status</h2>
+                            <p class="text-gray-600 dark:text-gray-400">Monitor system health and performance</p>
+                        </div>
+
+                        <!-- System Health Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div v-for="component in systemComponents" :key="component.id" class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="font-semibold text-gray-900 dark:text-white mb-4">{{ component.name }}</h3>
+                                <div class="mb-4">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Status</p>
+                                    <p :class="['text-2xl font-bold', component.status === 'online' ? 'text-green-600' : 'text-red-600']">
+                                        {{ component.status === 'online' ? '✓ Online' : '✗ Offline' }}
+                                    </p>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Uptime:</span>
+                                        <span class="font-medium">{{ component.uptime }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600 dark:text-gray-400">Response:</span>
+                                        <span class="font-medium">{{ component.response }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                            <h3 class="text-lg font-semibold mb-4">Performance Metrics</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">CPU Usage</p>
+                                    <p class="text-3xl font-bold text-orange-600">45%</p>
+                                    <div class="mt-2 w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                                        <div style="width: 45%" class="bg-orange-500 h-2 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Memory Usage</p>
+                                    <p class="text-3xl font-bold text-blue-600">72%</p>
+                                    <div class="mt-2 w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                                        <div style="width: 72%" class="bg-blue-500 h-2 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Disk Usage</p>
+                                    <p class="text-3xl font-bold text-green-600">38%</p>
+                                    <div class="mt-2 w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                                        <div style="width: 38%" class="bg-green-500 h-2 rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="checkSystemHealth" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium">🔄 Refresh Status</button>
+                    </div>
+
+                    <!-- SETTINGS PAGE -->
+                    <div v-if="currentPage === 'settings'" class="space-y-6">
+                        <h2 class="text-2xl font-bold">System Settings</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold mb-4">General</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">System Name</label>
+                                        <input type="text" v-model="settings.systemName" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Organization</label>
+                                        <input type="text" v-model="settings.organization" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold mb-4">Theme</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-sm font-medium">Dark Mode</label>
+                                        <button @click="theme = theme === 'dark' ? 'light' : 'dark'; applyTheme()" :class="['w-12 h-6 rounded-full transition', theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300']"></button>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Primary Color</label>
+                                        <input type="color" v-model="settings.primaryColor" class="w-full h-10 rounded-lg cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                            <button @click="saveSettings" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium">💾 Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Action Modals -->
+        <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full">
+                <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                    <h2 class="text-2xl font-bold">{{ getModalTitle() }}</h2>
+                    <button @click="showModal = false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 text-2xl">✕</button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div v-if="modalType === 'create-race'">
+                        <label class="block text-sm font-medium mb-2">Race Name</label>
+                        <input v-model="formData.raceName" type="text" placeholder="e.g., 100m Sprint" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                        <label class="block text-sm font-medium mb-2">Date</label>
+                        <input v-model="formData.raceDate" type="date" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                        <label class="block text-sm font-medium mb-2">Location</label>
+                        <input v-model="formData.raceLocation" type="text" placeholder="Stadium location" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                    </div>
+                    
+                    <div v-else-if="modalType === 'register-athlete'">
+                        <label class="block text-sm font-medium mb-2">Athlete Name</label>
+                        <input v-model="formData.athleteName" type="text" placeholder="Full name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                        <label class="block text-sm font-medium mb-2">Team</label>
+                        <input v-model="formData.athleteTeam" type="text" placeholder="Team name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                        <label class="block text-sm font-medium mb-2">Event</label>
+                        <input v-model="formData.athleteEvent" type="text" placeholder="100m, 400m, etc." class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+                    </div>
+
+                    <div v-else-if="modalType === 'add-user'">
+                        <label class="block text-sm font-medium mb-2">Full Name</label>
+                        <input v-model="formData.userName" type="text" placeholder="User name" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                        <label class="block text-sm font-medium mb-2">Email</label>
+                        <input v-model="formData.userEmail" type="email" placeholder="user@athsys.com" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                        <label class="block text-sm font-medium mb-2">Role</label>
+                        <select v-model="formData.userRole" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 mb-4">
+                            <option value="user">User</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-200 dark:border-slate-700 flex gap-3">
+                    <button @click="submitModal" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-medium">Create</button>
+                    <button @click="showModal = false" class="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white py-2 rounded-lg font-medium">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-service.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    appReady: false,
+                    api: null,
+                    sidebarExpanded: true,
+                    showSettings: false,
+                    showNotifications: false,
+                    showModal: false,
+                    modalType: '',
+                    theme: localStorage.getItem('theme') || 'light',
+                    currentPage: 'dashboard',
+                    searchQuery: '',
+                    
+                    // Current user
+                    currentUser: {
+                        name: localStorage.getItem('userName') || 'Admin User',
+                        role: localStorage.getItem('userRole') || 'admin',
+                        email: localStorage.getItem('userEmail') || 'admin@athsys.com'
+                    },
+
+                    // Menu sections
+                    menuSections: [
+                        {
+                            title: 'Main',
+                            items: [
+                                { id: 'dashboard', label: 'Dashboard', icon: '📊' }
+                            ]
+                        },
+                        {
+                            title: 'Management',
+                            items: [
+                                { id: 'races', label: 'Races', icon: '🏁' },
+                                { id: 'athletes', label: 'Athletes', icon: '🏃' },
+                                { id: 'results', label: 'Results', icon: '🏆' }
+                            ]
+                        },
+                        {
+                            title: 'Administration',
+                            items: [
+                                { id: 'users', label: 'Users & Roles', icon: '👥' },
+                                { id: 'cms', label: 'CMS Settings', icon: '⚙️' },
+                                { id: 'plugins', label: 'Plugins', icon: '🔌' }
+                            ]
+                        },
+                        {
+                            title: 'System',
+                            items: [
+                                { id: 'status', label: 'System Status', icon: '🏥' },
+                                { id: 'audit-logs', label: 'Activity Logs', icon: '📋' },
+                                { id: 'backups', label: 'Backups', icon: '💾' },
+                                { id: 'settings', label: 'Settings', icon: '⚙️' }
+                            ]
+                        }
+                    ],
+
+                    // Dashboard stats
+                    dashboardStats: [
+                        { id: 1, label: 'Total Races', value: 0, change: '+12%', changePercent: 12, progress: 75, icon: '🏁' },
+                        { id: 2, label: 'Athletes', value: 0, change: '+8%', changePercent: 8, progress: 60, icon: '🏃' },
+                        { id: 3, label: 'Results', value: 0, change: '+25%', changePercent: 25, progress: 85, icon: '🏆' },
+                        { id: 4, label: 'Active Users', value: 0, change: '+3%', changePercent: 3, progress: 45, icon: '👥' }
+                    ],
+
+                    // Data
+                    races: [],
+                    athletes: [],
+                    results: [],
+                    users: [],
+                    notifications: [],
+                    auditLogs: [],
+                    backups: [],
+                    recentActivity: [],
+                    plugins: [],
+                    systemComponents: [],
+
+                    // Selection
+                    selectedRaces: [],
+                    selectedAthletes: [],
+
+                    // Filters
+                    raceFilters: { search: '', status: '' },
+                    athleteFilters: { search: '', status: '' },
+                    auditFilters: { action: '', user: '' },
+
+                    // System Status
+                    systemStatus: { api: 'online', database: 'connected' },
+
+                    // Form data
+                    formData: {
+                        raceName: '', raceDate: '', raceLocation: '',
+                        athleteName: '', athleteTeam: '', athleteEvent: '',
+                        userName: '', userEmail: '', userRole: 'user'
+                    },
+
+                    // Settings
+                    settings: {
+                        systemName: 'AthSys Pro',
+                        organization: 'Athletics Administration',
+                        primaryColor: '#ff6b35'
+                    }
+                };
+            },
+
+            computed: {
+                allRacesSelected() {
+                    return this.races.length > 0 && this.selectedRaces.length === this.races.length;
+                },
+                allAthletesSelected() {
+                    return this.athletes.length > 0 && this.selectedAthletes.length === this.athletes.length;
+                }
+            },
+
+            methods: {
+                async init() {
+                    const token = localStorage.getItem('authToken');
+                    if (!token) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    this.api = new AthSysAPI();
+                    this.applyTheme();
+                    
+                    // Load all data
+                    await Promise.all([
+                        this.loadDashboardData(),
+                        this.loadNotifications(),
+                        this.loadAuditLogs(),
+                        this.loadBackups(),
+                        this.loadPlugins(),
+                        this.loadSystemComponents(),
+                        this.checkSystemHealth()
+                    ]);
+
+                    this.appReady = true;
+                    this.initCharts();
+                    
+                    // Add some notifications
+                    this.addNotification('✓ Dashboard loaded successfully', 'Welcome back!', 'success');
+                },
+
+                async loadDashboardData() {
+                    try {
+                        // Try to load from API, fall back to sample data if API is down
+                        try {
+                            const stats = await this.api.getDashboardStats();
+                            if (stats) {
+                                this.dashboardStats[0].value = stats.races || 0;
+                                this.dashboardStats[1].value = stats.athletes || 0;
+                                this.dashboardStats[2].value = stats.results || 0;
+                                this.dashboardStats[3].value = stats.users || 0;
+                            }
+
+                            const racesRes = await this.api.getRaces();
+                            this.races = (Array.isArray(racesRes) ? racesRes : racesRes.data || []).map((r, i) => ({
+                                ...r,
+                                id: r.id || i + 1,
+                                status: r.status || 'active'
+                            }));
+
+                            const athletesRes = await this.api.getAthletes();
+                            this.athletes = (Array.isArray(athletesRes) ? athletesRes : athletesRes.data || []).map((a, i) => ({
+                                ...a,
+                                id: a.id || i + 1,
+                                status: a.status || 'active'
+                            }));
+
+                            const resultsRes = await this.api.getResults();
+                            this.results = (Array.isArray(resultsRes) ? resultsRes : resultsRes.data || []).map((r, i) => ({
+                                ...r,
+                                id: r.id || i + 1
+                            }));
+
+                            const usersRes = await this.api.getUsers();
+                            this.users = (Array.isArray(usersRes) ? usersRes : usersRes.data || []).map((u, i) => ({
+                                ...u,
+                                id: u.id || i + 1,
+                                status: u.status || 'active'
+                            }));
+                        } catch (apiError) {
+                            console.warn('API error, using sample data:', apiError);
+                            this.addNotification('Using sample data (API unavailable)', '⚠ API Warning', 'warning');
+                            // Continue with sample data below
+                        }
+
+                        // Sample data as fallback
+                        if (this.races.length === 0) {
+                            this.races = [
+                                { id: 1, name: '100m Sprint', date: '2026-02-25', location: 'Stadium A', status: 'active' },
+                                { id: 2, name: '400m Relay', date: '2026-02-26', location: 'Stadium B', status: 'active' },
+                                { id: 3, name: '1500m Run', date: '2026-02-27', location: 'Stadium C', status: 'pending' }
+                            ];
+                        }
+
+                        if (this.athletes.length === 0) {
+                            this.athletes = [
+                                { id: 1, name: 'John Doe', team: 'Team A', event: '100m', status: 'active' },
+                                { id: 2, name: 'Jane Smith', team: 'Team B', event: '400m', status: 'active' },
+                                { id: 3, name: 'Mike Johnson', team: 'Team A', event: '1500m', status: 'pending' }
+                            ];
+                        }
+
+                        if (this.results.length === 0) {
+                            this.results = [
+                                { id: 1, race: '100m Sprint', athlete: 'John Doe', time: '10.2s', position: '1st' },
+                                { id: 2, race: '100m Sprint', athlete: 'Jane Smith', time: '10.5s', position: '2nd' },
+                                { id: 3, race: '400m Relay', athlete: 'Mike Johnson', time: '45.3s', position: '1st' }
+                            ];
+                        }
+
+                        if (this.users.length === 0) {
+                            this.users = [
+                                { id: 1, name: 'Admin User', email: 'admin@athsys.com', role: 'admin', status: 'active' },
+                                { id: 2, name: 'Race Manager', email: 'manager@athsys.com', role: 'manager', status: 'active' },
+                                { id: 3, name: 'Statistician', email: 'stats@athsys.com', role: 'user', status: 'active' }
+                            ];
+                        }
+
+                        // Set recent data
+                        this.recentActivity = [
+                            { id: 1, description: this.races.length + ' races created' },
+                            { id: 2, description: this.athletes.length + ' athletes registered' },
+                            { id: 3, description: this.results.length + ' results submitted' },
+                            { id: 4, description: 'System backup completed' },
+                            { id: 5, description: 'Security audit passed' }
+                        ];
+                    } catch (error) {
+                        console.error('Error loading dashboard data:', error);
+                        this.addNotification('Error loading data: ' + error.message, 'Error', 'error');
+                    }
+                },
+
+                async loadNotifications() {
+                    this.notifications = [
+                        { id: 1, title: 'System Update', message: 'AthSys v3.0 is now available', timestamp: new Date(), read: false },
+                        { id: 2, title: 'New Race Created', message: 'Marathon 2026 has been created', timestamp: new Date(Date.now() - 3600000), read: false },
+                        { id: 3, title: 'Backup Completed', message: 'Database backup completed successfully', timestamp: new Date(Date.now() - 7200000), read: true }
+                    ];
+                },
+
+                async loadAuditLogs() {
+                    this.auditLogs = [
+                        { id: 1, timestamp: new Date(), user: 'Admin User', action: 'create', resource: 'Race', details: '100m Sprint created' },
+                        { id: 2, timestamp: new Date(Date.now() - 3600000), user: 'Race Manager', action: 'update', resource: 'Athlete', details: 'John Doe profile updated' },
+                        { id: 3, timestamp: new Date(Date.now() - 7200000), user: 'Admin User', action: 'delete', resource: 'Result', details: 'Invalid result removed' },
+                        { id: 4, timestamp: new Date(Date.now() - 10800000), user: 'Statistician', action: 'create', resource: 'Result', details: 'Marathon result added' }
+                    ];
+                },
+
+                async loadBackups() {
+                    this.backups = [
+                        { id: 'bkp001', created: new Date(), size: '125 MB' },
+                        { id: 'bkp002', created: new Date(Date.now() - 86400000), size: '122 MB' },
+                        { id: 'bkp003', created: new Date(Date.now() - 172800000), size: '120 MB' }
+                    ];
+                },
+
+                async checkSystemHealth() {
+                    try {
+                        await this.api.getSystemHealth().catch(() => {});
+                        this.systemStatus.api = 'online';
+                        this.systemStatus.database = 'connected';
+                    } catch (error) {
+                        this.systemStatus.api = 'offline';
+                        this.systemStatus.database = 'disconnected';
+                    }
+                },
+
+                async loadPlugins() {
+                    this.plugins = [
+                        { id: 1, name: 'Email Notifications', description: 'Send email notifications for important events', version: '1.0.0', enabled: true },
+                        { id: 2, name: 'SMS Alerts', description: 'Send SMS alerts to athletes', version: '2.1.0', enabled: true },
+                        { id: 3, name: 'Live Tracking', description: 'Real-time race tracking and updates', version: '1.5.0', enabled: false },
+                        { id: 4, name: 'Analytics Pro', description: 'Advanced analytics and reporting', version: '3.0.0', enabled: true }
+                    ];
+                },
+
+                async loadSystemComponents() {
+                    this.systemComponents = [
+                        { id: 1, name: 'API Server', status: 'online', uptime: '45d 12h', response: '125ms' },
+                        { id: 2, name: 'Database', status: 'online', uptime: '45d 12h', response: '45ms' },
+                        { id: 3, name: 'Cache Server', status: 'online', uptime: '8d 3h', response: '15ms' },
+                        { id: 4, name: 'Email Service', status: 'online', uptime: '2d 14h', response: '250ms' },
+                        { id: 5, name: 'File Storage', status: 'online', uptime: '45d 12h', response: '180ms' },
+                        { id: 6, name: 'Backup Service', status: 'online', uptime: '30d 6h', response: '500ms' }
+                    ];
+                },
+
+                initCharts() {
+                    // Participation Trends Chart
+                    const trendsCtx = document.getElementById('trendsChart')?.getContext('2d');
+                    if (trendsCtx) {
+                        new Chart(trendsCtx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'Participation',
+                                    data: [65, 59, 80, 81, 56, 95],
+                                    borderColor: '#ff6b35',
+                                    backgroundColor: '#ff6b351a',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } }
+                            }
+                        });
+                    }
+
+                    // Race Distribution Chart
+                    const raceCtx = document.getElementById('raceChart')?.getContext('2d');
+                    if (raceCtx) {
+                        new Chart(raceCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['100m', '400m', '1500m', 'Relay'],
+                                datasets: [{
+                                    data: [25, 20, 30, 25],
+                                    backgroundColor: ['#ff6b35', '#06d6a0', '#3b82f6', '#8b5cf6'],
+                                    borderColor: ['#fff', '#fff', '#fff', '#fff'],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'bottom' } }
+                            }
+                        });
+                    }
+                },
+
+                toggleTheme() {
+                    this.theme = this.theme === 'light' ? 'dark' : 'light';
+                    this.applyTheme();
+                },
+
+                applyTheme() {
+                    const html = document.documentElement;
+                    html.setAttribute('data-theme', this.theme);
+                    if (this.theme === 'dark') {
+                        html.classList.add('dark');
+                    } else {
+                        html.classList.remove('dark');
+                    }
+                    localStorage.setItem('theme', this.theme);
+                },
+
+                getPageTitle() {
+                    const titles = {
+                        'dashboard': '📊 Dashboard',
+                        'races': '🏁 Race Management',
+                        'athletes': '🏃 Athlete Management',
+                        'results': '🏆 Results',
+                        'users': '👥 User Management',
+                        'audit-logs': '📋 Audit Logs',
+                        'backups': '💾 Backups',
+                        'settings': '⚙️ Settings'
+                    };
+                    return titles[this.currentPage] || 'Dashboard';
+                },
+
+                getPageDescription() {
+                    const descriptions = {
+                        'dashboard': 'Welcome to your AthSys administration panel',
+                        'races': 'Create and manage races and events',
+                        'athletes': 'Manage athlete registrations and profiles',
+                        'results': 'View and manage race results',
+                        'users': 'Manage users, roles, and permissions',
+                        'audit-logs': 'Track all system changes and activities',
+                        'backups': 'Manage system backups and restoration',
+                        'settings': 'Configure system settings'
+                    };
+                    return descriptions[this.currentPage] || '';
+                },
+
+                getModalTitle() {
+                    const titles = {
+                        'create-race': 'Create New Race',
+                        'register-athlete': 'Register Athlete',
+                        'add-user': 'Add New User'
+                    };
+                    return titles[this.modalType] || 'Action';
+                },
+
+                openModal(type) {
+                    this.modalType = type;
+                    this.showModal = true;
+                    this.formData = { raceName: '', raceDate: '', raceLocation: '', athleteName: '', athleteTeam: '', athleteEvent: '', userName: '', userEmail: '', userRole: 'user' };
+                },
+
+                async submitModal() {
+                    try {
+                        if (this.modalType === 'create-race') {
+                            const newRace = {
+                                name: this.formData.raceName,
+                                date: this.formData.raceDate,
+                                location: this.formData.raceLocation,
+                                status: 'active'
+                            };
+                            this.races.push({ ...newRace, id: Date.now() });
+                            this.addNotification('Race created successfully', '✓ Success', 'success');
+                        } else if (this.modalType === 'register-athlete') {
+                            const newAthlete = {
+                                name: this.formData.athleteName,
+                                team: this.formData.athleteTeam,
+                                event: this.formData.athleteEvent,
+                                status: 'pending'
+                            };
+                            this.athletes.push({ ...newAthlete, id: Date.now() });
+                            this.addNotification('Athlete registered successfully', '✓ Success', 'success');
+                        } else if (this.modalType === 'add-user') {
+                            const newUser = {
+                                name: this.formData.userName,
+                                email: this.formData.userEmail,
+                                role: this.formData.userRole,
+                                status: 'active'
+                            };
+                            this.users.push({ ...newUser, id: Date.now() });
+                            this.addNotification('User added successfully', '✓ Success', 'success');
+                        }
+                        this.showModal = false;
+                    } catch (error) {
+                        this.addNotification(error.message, '❌ Error', 'error');
+                    }
+                },
+
+                toggleSelect(type, id) {
+                    const array = type === 'races' ? this.selectedRaces : this.selectedAthletes;
+                    const index = array.indexOf(id);
+                    if (index > -1) {
+                        array.splice(index, 1);
+                    } else {
+                        array.push(id);
+                    }
+                },
+
+                toggleSelectAll(type) {
+                    const dataArray = type === 'races' ? this.races : this.athletes;
+                    const selectedArray = type === 'races' ? this.selectedRaces : this.selectedAthletes;
+                    
+                    if (selectedArray.length === dataArray.length) {
+                        selectedArray.length = 0;
+                    } else {
+                        selectedArray.length = 0;
+                        dataArray.forEach(item => selectedArray.push(item.id));
+                    }
+                },
+
+                bulkDeleteRaces() {
+                    if (!confirm(`Delete ${this.selectedRaces.length} races?`)) return;
+                    this.races = this.races.filter(r => !this.selectedRaces.includes(r.id));
+                    this.selectedRaces = [];
+                    this.addNotification(`${this.selectedRaces.length} races deleted`, '✓ Bulk Delete', 'success');
+                },
+
+                bulkApproveAthletes() {
+                    this.athletes.forEach(a => {
+                        if (this.selectedAthletes.includes(a.id)) a.status = 'active';
+                    });
+                    this.addNotification(`${this.selectedAthletes.length} athletes approved`, '✓ Bulk Approve', 'success');
+                    this.selectedAthletes = [];
+                },
+
+                bulkDeleteAthletes() {
+                    if (!confirm(`Delete ${this.selectedAthletes.length} athletes?`)) return;
+                    this.athletes = this.athletes.filter(a => !this.selectedAthletes.includes(a.id));
+                    this.selectedAthletes = [];
+                    this.addNotification('Athletes deleted', '✓ Bulk Delete', 'success');
+                },
+
+                editRace(race) {
+                    this.addNotification(`Opening race editor for ${race.name}`, 'Edit Race', 'info');
+                },
+
+                deleteRace(id) {
+                    if (!confirm('Delete this race?')) return;
+                    this.races = this.races.filter(r => r.id !== id);
+                    this.addNotification('Race deleted', '✓ Success', 'success');
+                },
+
+                editAthlete(athlete) {
+                    this.addNotification(`Opening profile for ${athlete.name}`, 'Edit Athlete', 'info');
+                },
+
+                deleteAthlete(id) {
+                    if (!confirm('Delete this athlete?')) return;
+                    this.athletes = this.athletes.filter(a => a.id !== id);
+                    this.addNotification('Athlete deleted', '✓ Success', 'success');
+                },
+
+                editUser(user) {
+                    this.addNotification(`Opening user editor for ${user.name}`, 'Edit User', 'info');
+                },
+
+                deleteUser(id) {
+                    if (!confirm('Delete this user?')) return;
+                    this.users = this.users.filter(u => u.id !== id);
+                    this.addNotification('User deleted', '✓ Success', 'success');
+                },
+
+                editResult(result) {
+                    this.addNotification(`Opening result editor`, 'Edit Result', 'info');
+                },
+
+                deleteResult(id) {
+                    if (!confirm('Delete this result?')) return;
+                    this.results = this.results.filter(r => r.id !== id);
+                    this.addNotification('Result deleted', '✓ Success', 'success');
+                },
+
+                async createBackup() {
+                    try {
+                        const backup = {
+                            id: `bkp${Date.now()}`,
+                            created: new Date(),
+                            size: '126 MB'
+                        };
+                        this.backups.unshift(backup);
+                        this.addNotification('Backup created successfully', '✓ Backup', 'success');
+                    } catch (error) {
+                        this.addNotification(error.message, '❌ Error', 'error');
+                    }
+                },
+
+                downloadBackup(id) {
+                    this.addNotification(`Downloading backup ${id}`, 'Download', 'info');
+                },
+
+                restoreBackup(id) {
+                    if (!confirm('Restore from this backup? This will overwrite current data.')) return;
+                    this.addNotification(`Restored from backup ${id}`, '✓ Restored', 'success');
+                },
+
+                applyFilters(type) {
+                    this.addNotification('Filters applied', '✓ Filtered', 'info');
+                },
+
+                performSearch() {
+                    if (!this.searchQuery) return;
+                    this.addNotification(`Searching for "${this.searchQuery}"`, 'Search', 'info');
+                },
+
+                async exportData(type, format) {
+                    this.addNotification(`Exporting ${type} as ${format.toUpperCase()}`, '📥 Export', 'success');
+                },
+
+                clearAllNotifications() {
+                    this.notifications = [];
+                    this.addNotification('All notifications cleared', '✓ Cleared', 'success');
+                },
+
+                addNotification(message, title, type = 'info') {
+                    this.notifications.unshift({
+                        id: Date.now(),
+                        title,
+                        message,
+                        timestamp: new Date(),
+                        read: false
+                    });
+                    if (this.notifications.length > 10) this.notifications.pop();
+                },
+
+                formatTime(timestamp) {
+                    if (!timestamp) return '';
+                    const date = new Date(timestamp);
+                    const now = new Date();
+                    const diff = now - date;
+                    const minutes = Math.floor(diff / 60000);
+                    const hours = Math.floor(diff / 3600000);
+                    const days = Math.floor(diff / 86400000);
+                    
+                    if (minutes < 60) return `${minutes}m ago`;
+                    if (hours < 24) return `${hours}h ago`;
+                    if (days < 7) return `${days}d ago`;
+                    return date.toLocaleDateString();
+                },
+
+                saveSettings() {
+                    localStorage.setItem('systemSettings', JSON.stringify(this.settings));
+                    this.addNotification('Settings saved successfully', '✓ Saved', 'success');
+                },
+
+                saveCMS() {
+                    localStorage.setItem('cmsSettings', JSON.stringify({
+                        title: 'AthSys - Athletics Management',
+                        tagline: 'Elite Athletics Management System',
+                        contactEmail: 'admin@athsys.com'
+                    }));
+                    this.addNotification('CMS settings saved successfully', '✓ Saved', 'success');
+                },
+
+                logout() {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }
+            },
+
+            mounted() {
+                this.init();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

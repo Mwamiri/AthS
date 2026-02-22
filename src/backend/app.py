@@ -44,6 +44,14 @@ except ImportError:
     RECORDS_AVAILABLE = False
     print("[WARNING] Records module not available")
 
+# Import import/export API blueprint
+try:
+    from import_export_api import register_import_export_blueprint
+    IMPORT_EXPORT_AVAILABLE = True
+except ImportError:
+    IMPORT_EXPORT_AVAILABLE = False
+    print("[WARNING] Import/Export module not available")
+
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
@@ -136,10 +144,20 @@ initialize()
 if BUILDER_AVAILABLE:
     app.register_blueprint(builder_bp)
     print("[OK] Page builder API mounted at /api/builder")
+else:
+    print("[WARNING] Page builder module disabled")
 
 if RECORDS_AVAILABLE:
     app.register_blueprint(records_bp)
     print("[OK] Records & Standards API mounted at /api/records")
+else:
+    print("[WARNING] Records module disabled")
+
+if IMPORT_EXPORT_AVAILABLE:
+    register_import_export_blueprint(app)
+    print("[OK] Import/Export API mounted at /api/admin")
+else:
+    print("[WARNING] Import/Export module disabled")
 
 # Store version and metadata
 APP_VERSION = '2.2'

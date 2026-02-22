@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthSys Admin Dashboard v3</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Alpine.js for additional interactions -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        [data-theme="dark"] {
+            color-scheme: dark;
+        }
+        
+        [data-theme="light"] {
+            color-scheme: light;
+        }
+        
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+        
+        .slide-up-enter-active {
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        
+        .sidebar-expanded {
+            width: 280px;
+        }
+        
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950">
+    <div id="app">
+        <!-- Loading Screen -->
+        <div v-if="!appReady" class="flex items-center justify-center h-screen bg-gradient-to-br from-orange-500 to-orange-600">
+            <div class="text-center">
+                <div class="text-6xl mb-4 animate-bounce">🏃</div>
+                <h1 class="text-4xl font-bold text-white mb-2">AthSys</h1>
+                <p class="text-orange-100">Loading Dashboard...</p>
+                <div class="mt-8 flex justify-center gap-1">
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0s"></div>
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0.15s"></div>
+                    <div class="w-2 h-2 bg-white rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard (v-show for better performance) -->
+        <div v-show="appReady" class="flex h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white smooth-transition">
+            
+            <!-- Sidebar Navigation -->
+            <aside class="smooth-transition"
+                   :class="[
+                       sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed',
+                       'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-black dark:to-slate-950 text-white shadow-lg flex flex-col'
+                   ]">
+                
+                <!-- Sidebar Header -->
+                <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+                    <div v-if="sidebarExpanded" class="flex items-center gap-3">
+                        <span class="text-3xl">🏃</span>
+                        <div>
+                            <h1 class="text-xl font-bold">AthSys</h1>
+                            <p class="text-xs text-slate-400">Admin v3.0</p>
+                        </div>
+                    </div>
+                    <div v-else class="w-full text-center">
+                        <span class="text-2xl">🏃</span>
+                    </div>
+                    <button @click="toggleSidebar" class="text-slate-400 hover:text-white transition">
+                        {{ sidebarExpanded ? '◀' : '▶' }}
+                    </button>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="flex-1 overflow-y-auto">
+                    <div v-for="section in menuSections" :key="section.title" class="py-4">
+                        <p v-if="sidebarExpanded" class="px-4 text-xs uppercase text-slate-500 font-semibold tracking-wider mb-3">
+                            {{ section.title }}
+                        </p>
+                        <div v-for="item in section.items" :key="item.id"
+                             @click="navigateTo(item)"
+                             :class="[
+                                 'mx-2 px-3 py-3 rounded-lg transition flex items-center gap-3 cursor-pointer group',
+                                 currentPage === item.id 
+                                     ? 'bg-orange-500 text-white' 
+                                     : 'text-slate-300 hover:bg-slate-700'
+                             ]">
+                            <span class="text-xl">{{ item.icon }}</span>
+                            <span v-if="sidebarExpanded" class="text-sm font-medium">{{ item.label }}</span>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Sidebar Footer -->
+                <div class="border-t border-slate-700 p-4">
+                    <div class="mb-4 rounded-lg" :class="sidebarExpanded ? 'bg-orange-500/20 border border-orange-500/50 p-3' : 'text-center'">
+                        <div v-if="sidebarExpanded">
+                            <p class="text-sm font-semibold text-white">{{ currentUser.name || 'Admin User' }}</p>
+                            <p class="text-xs text-orange-100">{{ currentUser.role || 'Administrator' }}</p>
+                        </div>
+                        <p v-else class="text-xs text-orange-400">👤</p>
+                    </div>
+                    <button @click="logout" 
+                            :class="['w-full py-2 px-3 rounded-lg transition text-sm font-medium', sidebarExpanded ? '' : 'text-center']"
+                            class="bg-red-500/20 text-red-300 hover:bg-red-500/40">
+                        {{ sidebarExpanded ? '🚪 Logout' : '🚪' }}
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 overflow-y-auto">
+                <!-- Top Header Bar -->
+                <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 p-6 shadow-sm sticky top-0 z-40">
+                    <div class="flex items-center justify-between max-w-7xl mx-auto">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ getPageTitle() }}</h1>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ getPageDescription() }}</p>
+                        </div>
+                        
+                        <!-- Header Actions -->
+                        <div class="flex items-center gap-4">
+                            <!-- Theme Switcher -->
+                            <button @click="toggleTheme"
+                                    class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition"
+                                    :title="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`">
+                                {{ theme === 'light' ? '🌙' : '☀️' }}
+                            </button>
+                            
+                            <!-- Notifications -->
+                            <button class="relative p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition"
+                                    @click="showNotifications = !showNotifications">
+                                🔔
+                                <span v-if="notificationCount > 0" class="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                                    {{ notificationCount }}
+                                </span>
+                            </button>
+
+                            <!-- Settings Dropdown -->
+                            <div class="relative" @click.outside="showSettings = false">
+                                <button @click="showSettings = !showSettings"
+                                        class="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition">
+                                    ⚙️
+                                </button>
+                                <div v-if="showSettings" class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-2 z-50">
+                                    <button @click="openThemeModal" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition">🎨 Theme Customizer</button>
+                                    <button @click="openSettings" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition">⚙️ Settings</button>
+                                    <div class="border-t border-gray-200 dark:border-slate-700 my-2"></div>
+                                    <button @click="logout" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 transition">🚪 Logout</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <div class="p-6 max-w-7xl mx-auto">
+                    <!-- Dashboard Page -->
+                    <div v-if="currentPage === 'dashboard'" class="space-y-8">
+                        <!-- Quick Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div v-for="stat in dashboardStats" :key="stat.id"
+                                 class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700 hover-lift hover:shadow-lg smooth-transition">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-600 dark:text-gray-400 text-sm font-medium">{{ stat.label }}</p>
+                                        <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ stat.value }}</p>
+                                        <p class="text-xs text-green-600 dark:text-green-400 mt-1">{{ stat.change }}</p>
+                                    </div>
+                                    <div class="text-4xl opacity-20">{{ stat.icon }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span>🚀</span> Quick Actions
+                                </h3>
+                                <div class="space-y-3">
+                                    <button @click="quickAction('create-race')"
+                                            class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3 rounded-lg font-medium transition smooth-transition hover-lift">
+                                        ➕ Create New Race
+                                    </button>
+                                    <button @click="quickAction('register-athlete')"
+                                            class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium transition smooth-transition hover-lift">
+                                        ➕ Register Athlete
+                                    </button>
+                                    <button @click="quickAction('add-user')"
+                                            class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-lg font-medium transition smooth-transition hover-lift">
+                                        👥 Add User
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span>📊</span> System Status
+                                </h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">API Status</p>
+                                        <p class="flex items-center gap-2 text-lg font-semibold">
+                                            <span :class="apiStatus === 'online' ? 'text-green-500' : 'text-red-500'">●</span>
+                                            {{ apiStatus === 'online' ? 'Online' : 'Offline' }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Database</p>
+                                        <p class="flex items-center gap-2 text-lg font-semibold">
+                                            <span :class="dbStatus === 'connected' ? 'text-green-500' : 'text-red-500'">●</span>
+                                            {{ dbStatus === 'connected' ? 'Connected' : 'Disconnected' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span>📋</span> Recent Activity
+                                </h3>
+                                <div class="space-y-2 text-sm">
+                                    <p class="text-gray-600 dark:text-gray-400">✓ 3 races created today</p>
+                                    <p class="text-gray-600 dark:text-gray-400">✓ 12 athletes registered</p>
+                                    <p class="text-gray-600 dark:text-gray-400">✓ 5 results submitted</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Tables Preview -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Recent Races -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <span>🏁</span> Recent Races
+                                    </h3>
+                                    <button @click="navigateTo({id: 'races'})" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                                        View All →
+                                    </button>
+                                </div>
+                                <div class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <div v-for="race in recentRaces.slice(0, 3)" :key="race.id" class="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ race.name }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ race.date }} • {{ race.location }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Athletes -->
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                                <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <span>🏃</span> Recent Athletes
+                                    </h3>
+                                    <button @click="navigateTo({id: 'athletes'})" class="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                                        View All →
+                                    </button>
+                                </div>
+                                <div class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <div v-for="athlete in recentAthletes.slice(0, 3)" :key="athlete.id" class="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <p class="font-medium text-gray-900 dark:text-white">{{ athlete.name }}</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ athlete.team }} • {{ athlete.event }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Races Management Page -->
+                    <div v-if="currentPage === 'races'" class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Race Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400 mt-1">Create and manage races and events</p>
+                            </div>
+                            <button @click="quickAction('create-race')"
+                                    class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-medium transition smooth-transition hover-lift">
+                                ➕ New Race
+                            </button>
+                        </div>
+
+                        <!-- Races Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Race Name</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Date</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Location</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="race in races" :key="race.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">{{ race.name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ race.date }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ race.location }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="[
+                                                'px-3 py-1 rounded-full text-xs font-semibold',
+                                                race.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                                            ]">
+                                                {{ race.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button class="text-blue-600 hover:text-blue-700 font-medium">Edit</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button class="text-red-600 hover:text-red-700 font-medium">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Athletes Management Page -->
+                    <div v-if="currentPage === 'athletes'" class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Athlete Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400 mt-1">Manage athlete registrations and profiles</p>
+                            </div>
+                            <button @click="quickAction('register-athlete')"
+                                    class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium transition smooth-transition hover-lift">
+                                ➕ Register Athlete
+                            </button>
+                        </div>
+
+                        <!-- Athletes Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Team</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Event</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="athlete in athletes" :key="athlete.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">{{ athlete.name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ athlete.team }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ athlete.event }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="[
+                                                'px-3 py-1 rounded-full text-xs font-semibold',
+                                                athlete.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400'
+                                            ]">
+                                                {{ athlete.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button class="text-blue-600 hover:text-blue-700 font-medium">View</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button class="text-purple-600 hover:text-purple-700 font-medium">Edit</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Users Management Page -->
+                    <div v-if="currentPage === 'users'" class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400 mt-1">Manage users, roles, and permissions</p>
+                            </div>
+                            <button @click="quickAction('add-user')"
+                                    class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition smooth-transition hover-lift">
+                                👥 Add User
+                            </button>
+                        </div>
+
+                        <!-- Users Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Email</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Role</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">{{ user.name }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ user.email }}</td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="[
+                                                'px-3 py-1 rounded-full text-xs font-semibold',
+                                                user.role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400' : 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400'
+                                            ]">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <span :class="[
+                                                'px-3 py-1 rounded-full text-xs font-semibold',
+                                                user.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                                            ]">
+                                                {{ user.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button class="text-blue-600 hover:text-blue-700 font-medium">Edit</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button class="text-red-600 hover:text-red-700 font-medium">Remove</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Results Management Page -->
+                    <div v-if="currentPage === 'results'" class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Results Management</h2>
+                                <p class="text-gray-600 dark:text-gray-400 mt-1">View and manage race results</p>
+                            </div>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Race</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Athlete</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Time</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Position</th>
+                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="result in results" :key="result.id" class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">{{ result.race }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ result.athlete }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white font-medium">{{ result.time }}</td>
+                                        <td class="px-6 py-4 text-sm font-medium">
+                                            <span class="text-orange-600 dark:text-orange-400">{{ result.position }}</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            <button class="text-blue-600 hover:text-blue-700 font-medium">View</button>
+                                            <span class="text-gray-300 mx-2">•</span>
+                                            <button class="text-purple-600 hover:text-purple-700 font-medium">Edit</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Settings Page -->
+                    <div v-if="currentPage === 'settings'" class="space-y-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">System Settings</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">General Settings</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">System Name</label>
+                                        <input type="text" value="AthSys" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Organization</label>
+                                        <input type="text" value="AthSys Administration" class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Theme Settings</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Dark Mode</label>
+                                        <button @click="toggleTheme" 
+                                                :class="['w-12 h-6 rounded-full transition', theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300']">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Theme Modal -->
+        <div v-if="showThemeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">🎨 Theme Customizer</h2>
+                    <button @click="showThemeModal = false" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">✕</button>
+                </div>
+                <div class="p-6">
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Select or create a custom theme for your dashboard</p>
+                    <!-- Theme options will be added here -->
+                    <button @click="showThemeModal = false" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-medium transition">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    appReady: false,
+                    sidebarExpanded: true,
+                    showSettings: false,
+                    showThemeModal: false,
+                    showNotifications: false,
+                    theme: localStorage.getItem('theme') || 'light',
+                    currentPage: 'dashboard',
+                    notificationCount: 3,
+                    apiStatus: 'online',
+                    dbStatus: 'connected',
+                    currentUser: {
+                        name: localStorage.getItem('userName') || 'Admin User',
+                        role: 'Administrator',
+                        email: localStorage.getItem('userEmail') || 'admin@athsys.com'
+                    },
+
+                    // Menu Sections
+                    menuSections: [
+                        {
+                            title: 'Main',
+                            items: [
+                                { id: 'dashboard', label: 'Dashboard', icon: '📊' }
+                            ]
+                        },
+                        {
+                            title: 'Management',
+                            items: [
+                                { id: 'races', label: 'Races & Events', icon: '🏁' },
+                                { id: 'athletes', label: 'Athletes', icon: '🏃' },
+                                { id: 'results', label: 'Results', icon: '🏆' }
+                            ]
+                        },
+                        {
+                            title: 'Administration',
+                            items: [
+                                { id: 'users', label: 'Users & Roles', icon: '👥' },
+                                { id: 'cms', label: 'CMS Settings', icon: '⚙️' },
+                                { id: 'plugins', label: 'Plugins', icon: '🔌' }
+                            ]
+                        },
+                        {
+                            title: 'System',
+                            items: [
+                                { id: 'status', label: 'System Status', icon: '🏥' },
+                                { id: 'logs', label: 'Activity Logs', icon: '📋' },
+                                { id: 'settings', label: 'Settings', icon: '⚙️' }
+                            ]
+                        }
+                    ],
+
+                    // Dashboard Stats
+                    dashboardStats: [
+                        { id: 1, label: 'Total Races', value: 0, change: '+12% this month', icon: '🏁' },
+                        { id: 2, label: 'Athletes', value: 0, change: '+8% this month', icon: '🏃' },
+                        { id: 3, label: 'Results', value: 0, change: '+25% this month', icon: '🏆' },
+                        { id: 4, label: 'Active Users', value: 0, change: '+3% this month', icon: '👥' }
+                    ],
+
+                    // Sample Data
+                    recentRaces: [
+                        { id: 1, name: '100m Sprint', date: '2026-02-25', location: 'Stadium A' },
+                        { id: 2, name: '400m Relay', date: '2026-02-26', location: 'Stadium B' },
+                        { id: 3, name: '1500m Run', date: '2026-02-27', location: 'Stadium C' }
+                    ],
+                    races: [
+                        { id: 1, name: '100m Sprint', date: '2026-02-25', location: 'Stadium A', status: 'active' },
+                        { id: 2, name: '400m Relay', date: '2026-02-26', location: 'Stadium B', status: 'active' },
+                        { id: 3, name: '1500m Run', date: '2026-02-27', location: 'Stadium C', status: 'pending' }
+                    ],
+
+                    recentAthletes: [
+                        { id: 1, name: 'John Doe', team: 'Team A', event: '100m' },
+                        { id: 2, name: 'Jane Smith', team: 'Team B', event: '400m' },
+                        { id: 3, name: 'Mike Johnson', team: 'Team A', event: '1500m' }
+                    ],
+                    athletes: [
+                        { id: 1, name: 'John Doe', team: 'Team A', event: '100m', status: 'active' },
+                        { id: 2, name: 'Jane Smith', team: 'Team B', event: '400m', status: 'active' },
+                        { id: 3, name: 'Mike Johnson', team: 'Team A', event: '1500m', status: 'pending' }
+                    ],
+
+                    users: [
+                        { id: 1, name: 'Admin User', email: 'admin@athsys.com', role: 'admin', status: 'active' },
+                        { id: 2, name: 'Race Manager', email: 'manager@athsys.com', role: 'manager', status: 'active' },
+                        { id: 3, name: 'Statistician', email: 'stats@athsys.com', role: 'user', status: 'active' }
+                    ],
+
+                    results: [
+                        { id: 1, race: '100m Sprint', athlete: 'John Doe', time: '10.2s', position: '1st' },
+                        { id: 2, race: '100m Sprint', athlete: 'Jane Smith', time: '10.5s', position: '2nd' },
+                        { id: 3, race: '400m Relay', athlete: 'Mike Johnson', time: '45.3s', position: '1st' }
+                    ]
+                };
+            },
+
+            methods: {
+                async init() {
+                    // Check authentication
+                    const token = localStorage.getItem('authToken');
+                    if (!token) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    // Load dashboard data
+                    await this.loadDashboardData();
+                    
+                    // Apply theme
+                    this.applyTheme();
+                    
+                    this.appReady = true;
+                },
+
+                async loadDashboardData() {
+                    try {
+                        const headers = { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` };
+
+                        // Load stats
+                        const statsRes = await fetch('/api/dashboard/stats', { headers }).catch(() => null);
+                        if (statsRes && statsRes.ok) {
+                            const stats = await statsRes.json();
+                            this.dashboardStats[0].value = stats.races || 0;
+                            this.dashboardStats[1].value = stats.athletes || 0;
+                            this.dashboardStats[2].value = stats.results || 0;
+                            this.dashboardStats[3].value = stats.users || 0;
+                        }
+
+                        // Load races
+                        const racesRes = await fetch('/api/races', { headers }).catch(() => null);
+                        if (racesRes && racesRes.ok) {
+                            this.races = await racesRes.json();
+                            this.recentRaces = this.races.slice(0, 3);
+                        }
+
+                        // Load athletes
+                        const athletesRes = await fetch('/api/athletes', { headers }).catch(() => null);
+                        if (athletesRes && athletesRes.ok) {
+                            this.athletes = await athletesRes.json();
+                            this.recentAthletes = this.athletes.slice(0, 3);
+                        }
+
+                        // Load results
+                        const resultsRes = await fetch('/api/results', { headers }).catch(() => null);
+                        if (resultsRes && resultsRes.ok) {
+                            this.results = await resultsRes.json();
+                        }
+
+                        // Load users
+                        const usersRes = await fetch('/api/admin/users', { headers }).catch(() => null);
+                        if (usersRes && usersRes.ok) {
+                            this.users = await usersRes.json();
+                        }
+                    } catch (error) {
+                        console.error('Error loading dashboard data:', error);
+                    }
+                },
+
+                toggleTheme() {
+                    this.theme = this.theme === 'light' ? 'dark' : 'light';
+                    this.applyTheme();
+                    localStorage.setItem('theme', this.theme);
+                },
+
+                applyTheme() {
+                    const html = document.documentElement;
+                    html.setAttribute('data-theme', this.theme);
+                    if (this.theme === 'dark') {
+                        html.classList.add('dark');
+                    } else {
+                        html.classList.remove('dark');
+                    }
+                },
+
+                toggleSidebar() {
+                    this.sidebarExpanded = !this.sidebarExpanded;
+                },
+
+                navigateTo(item) {
+                    this.currentPage = item.id;
+                    this.showSettings = false;
+                },
+
+                getPageTitle() {
+                    const pageMap = {
+                        'dashboard': '📊 Dashboard',
+                        'races': '🏁 Race Management',
+                        'athletes': '🏃 Athlete Management',
+                        'results': '🏆 Results Management',
+                        'users': '👥 User Management',
+                        'cms': '⚙️ CMS Settings',
+                        'plugins': '🔌 Plugins',
+                        'status': '🏥 System Status',
+                        'logs': '📋 Activity Logs',
+                        'settings': '⚙️ Settings'
+                    };
+                    return pageMap[this.currentPage] || 'Dashboard';
+                },
+
+                getPageDescription() {
+                    const descMap = {
+                        'dashboard': 'Welcome to your AthSys administration panel',
+                        'races': 'Create and manage races and events',
+                        'athletes': 'Manage athlete registrations and profiles',
+                        'results': 'View and manage race results',
+                        'users': 'Manage users, roles, and permissions',
+                        'cms': 'Configure CMS and content settings',
+                        'plugins': 'Manage installed plugins',
+                        'status': 'Monitor system health and performance',
+                        'logs': 'View system activity logs',
+                        'settings': 'Configure system settings'
+                    };
+                    return descMap[this.currentPage] || '';
+                },
+
+                quickAction(action) {
+                    console.log('Quick action:', action);
+                    switch (action) {
+                        case 'create-race':
+                            this.showModal('Create New Race');
+                            break;
+                        case 'register-athlete':
+                            this.showModal('Register Athlete');
+                            break;
+                        case 'add-user':
+                            this.showModal('Add New User');
+                            break;
+                    }
+                },
+
+                showModal(title) {
+                    alert(`${title} form will open here`);
+                },
+
+                openThemeModal() {
+                    this.showThemeModal = true;
+                    this.showSettings = false;
+                },
+
+                openSettings() {
+                    this.navigateTo({ id: 'settings' });
+                    this.showSettings = false;
+                },
+
+                logout() {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = 'index.html';
+                }
+            },
+
+            mounted() {
+                this.init();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

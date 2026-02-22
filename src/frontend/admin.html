@@ -3,593 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - AthSys v2.2</title>
+    <title>Redirecting to AthSys Pro Dashboard...</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #ff6b35;
-            --primary-dark: #d45528;
-            --secondary: #06d6a0;
-            --dark: #1a1a2e;
-            --text: #2d2d2d;
-            --text-light: #666;
-            --bg: #ffffff;
-            --bg-light: #f8f9ff;
-            --border: #e0e0e0;
-            --success: #00d084;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-light);
-            color: var(--text);
-        }
-
-        .admin-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Navigation */
-        aside {
-            width: 280px;
-            background: linear-gradient(135deg, var(--dark) 0%, #0f1220 100%);
-            color: white;
+            margin: 0;
             padding: 0;
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2);
-            z-index: 999;
-        }
-
-        .sidebar-header {
-            padding: 2rem 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .logo-icon {
-            font-size: 2rem;
-        }
-
-        .sidebar-header h1 {
-            font-size: 1.3rem;
-            margin: 0;
-            font-weight: 700;
-        }
-
-        .version {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 1.5rem 0;
-        }
-
-        .menu-section {
-            margin: 0;
-        }
-
-        .menu-title {
-            padding: 0.75rem 1.5rem;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 700;
-            margin-top: 1rem;
-        }
-
-        .menu-title:first-child {
-            margin-top: 0;
-        }
-
-        .sidebar-menu li a {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 0.9rem 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            font-weight: 500;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8a50 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-
-        .sidebar-menu li a:hover {
-            color: white;
-            background: rgba(255, 107, 53, 0.1);
-            border-left: 3px solid var(--primary);
-            padding-left: calc(1.5rem - 3px);
-        }
-
-        .sidebar-menu li a.active {
-            color: var(--primary);
-            background: rgba(255, 107, 53, 0.15);
-            border-left: 3px solid var(--primary);
-            padding-left: calc(1.5rem - 3px);
-        }
-
-        .sidebar-icon {
-            font-size: 1.2rem;
-            min-width: 24px;
+        
+        .container {
             text-align: center;
-        }
-
-        .sidebar-footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .user-card {
-            background: rgba(255, 107, 53, 0.15);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 107, 53, 0.3);
-        }
-
-        .user-card .user-name {
-            font-weight: 700;
             color: white;
-            margin-bottom: 0.25rem;
         }
-
-        .user-card .user-role {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            animation: bounce 1s infinite;
         }
-
-        .btn-logout {
-            width: 100%;
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 0.95rem;
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
-
-        .btn-logout:hover {
-            background: #c0392b;
-        }
-
-        /* Main Content */
-        main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2rem;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3rem;
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid var(--primary);
-        }
-
+        
         h1 {
-            color: var(--primary);
-            font-size: 2rem;
-        }
-
-        .breadcrumb {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            text-decoration: none;
-            color: inherit;
-            cursor: pointer;
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
-
-        .card-icon {
             font-size: 2.5rem;
+            margin: 0 0 1rem 0;
         }
-
-        .card-status {
-            background: var(--bg-light);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-light);
-        }
-
-        .card h3 {
-            color: var(--text);
-            font-size: 1.2rem;
-            margin: 0;
-        }
-
-        .card p {
-            color: var(--text-light);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
+        
+        p {
+            font-size: 1.1rem;
             margin: 0.5rem 0;
+            opacity: 0.95;
         }
-
-        .card-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: auto;
+        
+        .spinner {
+            margin: 2rem 0;
         }
-
-        .btn {
-            padding: 0.75rem 1.25rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            text-align: center;
-            font-size: 0.9rem;
+        
+        .dot {
             display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 6px;
+            animation: pulse 1.4s infinite;
         }
-
-        .btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .admin-container {
-                flex-direction: column;
-            }
-
-            aside {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-
-            main {
-                margin-left: 0;
-                padding: 1rem;
-            }
-
-            header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
+        
+        .dot:nth-child(1) { animation-delay: 0s; }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
-        <!-- Sidebar Navigation -->
-        <aside>
-            <div class="sidebar-header">
-                <div class="logo-icon">🏃</div>
-                <div>
-                    <h1>AthSys</h1>
-                    <div class="version">Admin Panel v2.2</div>
-                </div>
-            </div>
-
-            <ul class="sidebar-menu">
-                <!-- Dashboard -->
-                <li class="menu-title">Main</li>
-                <li><a href="#" class="active" onclick="setActive(event, 'dashboard'); return false;">
-                    <span class="sidebar-icon">📊</span>
-                    <span>Dashboard</span>
-                </a></li>
-
-                <!-- Management -->
-                <li class="menu-title">Management</li>
-                <li><a href="races.html" onclick="setActive(event, 'races'); return false;">
-                    <span class="sidebar-icon">🏁</span>
-                    <span>Races & Events</span>
-                </a></li>
-                <li><a href="athletes.html" onclick="setActive(event, 'athletes'); return false;">
-                    <span class="sidebar-icon">🏃</span>
-                    <span>Athletes</span>
-                </a></li>
-                <li><a href="results.html" onclick="setActive(event, 'results'); return false;">
-                    <span class="sidebar-icon">🏆</span>
-                    <span>Results</span>
-                </a></li>
-
-                <!-- Administration -->
-                <li class="menu-title">Administration</li>
-                <li><a href="users.html" onclick="setActive(event, 'users'); return false;">
-                    <span class="sidebar-icon">👥</span>
-                    <span>Users & Roles</span>
-                </a></li>
-                <li><a href="cms-admin.html" onclick="setActive(event, 'cms'); return false;">
-                    <span class="sidebar-icon">⚙️</span>
-                    <span>CMS Settings</span>
-                </a></li>
-                <li><a href="plugins-admin.html" onclick="setActive(event, 'plugins'); return false;">
-                    <span class="sidebar-icon">🔌</span>
-                    <span>Plugins</span>
-                </a></li>
-
-                <!-- System -->
-                <li class="menu-title">System</li>
-                <li><a href="status.html" onclick="setActive(event, 'status'); return false;">
-                    <span class="sidebar-icon">🏥</span>
-                    <span>System Status</span>
-                </a></li>
-                <li><a href="logs.html" onclick="setActive(event, 'logs'); return false;">
-                    <span class="sidebar-icon">📋</span>
-                    <span>Activity Logs</span>
-                </a></li>
-                <li><a href="/apidocs" target="_blank" onclick="setActive(event, 'api'); return false;">
-                    <span class="sidebar-icon">📚</span>
-                    <span>API Documentation</span>
-                </a></li>
-            </ul>
-
-            <!-- Sidebar Footer -->
-            <div class="sidebar-footer">
-                <div class="user-card">
-                    <div class="user-name" id="sidebarUserName">Admin User</div>
-                    <div class="user-role">Administrator</div>
-                </div>
-                <button class="btn-logout" onclick="logout()">🚪 Logout</button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main>
-            <header>
-                <div>
-                    <h1>📊 Dashboard</h1>
-                    <p class="breadcrumb">Welcome back to AthSys Administration</p>
-                </div>
-            </header>
-
-            <!-- Quick Stats -->
-            <div class="dashboard-grid">
-                <a class="card" href="races.html" style="cursor: pointer;">
-                    <div class="card-header">
-                        <div class="card-icon">🏁</div>
-                        <span class="card-status">Upcoming</span>
-                    </div>
-                    <div>
-                        <h3>Races</h3>
-                        <div class="stat-value" id="racesCount">0</div>
-                        <p>Active races and events</p>
-                    </div>
-                    <div class="card-actions">
-                        <a href="races.html" class="btn">Manage</a>
-                    </div>
-                </a>
-
-                <a class="card" href="athletes.html" style="cursor: pointer;">
-                    <div class="card-header">
-                        <div class="card-icon">🏃</div>
-                        <span class="card-status">Registered</span>
-                    </div>
-                    <div>
-                        <h3>Athletes</h3>
-                        <div class="stat-value" id="athletesCount">0</div>
-                        <p>Total athletes in system</p>
-                    </div>
-                    <div class="card-actions">
-                        <a href="athletes.html" class="btn">Manage</a>
-                    </div>
-                </a>
-
-                <a class="card" href="results.html" style="cursor: pointer;">
-                    <div class="card-header">
-                        <div class="card-icon">🏆</div>
-                        <span class="card-status">Recorded</span>
-                    </div>
-                    <div>
-                        <h3>Results</h3>
-                        <div class="stat-value" id="resultsCount">0</div>
-                        <p>Race results recorded</p>
-                    </div>
-                    <div class="card-actions">
-                        <a href="results.html" class="btn">View</a>
-                    </div>
-                </a>
-
-                <a class="card" href="users.html" style="cursor: pointer;">
-                    <div class="card-header">
-                        <div class="card-icon">👥</div>
-                        <span class="card-status">Active</span>
-                    </div>
-                    <div>
-                        <h3>Users</h3>
-                        <div class="stat-value" id="usersCount">0</div>
-                        <p>System users and admins</p>
-                    </div>
-                    <div class="card-actions">
-                        <a href="users.html" class="btn">Manage</a>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Quick Actions -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-                <div class="card">
-                    <h3>🚀 Quick Actions</h3>
-                    <div class="card-actions" style="flex-direction: column;">
-                        <a href="races.html" class="btn" style="width: 100%;">➕ Create New Race</a>
-                        <a href="athletes.html" class="btn btn-secondary" style="width: 100%;">➕ Register Athlete</a>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>⚙️ System Tools</h3>
-                    <div class="card-actions" style="flex-direction: column;">
-                        <button onclick="exportSystemData()" class="btn" style="width: 100%;">📥 Export Data</button>
-                        <button onclick="backupDatabase()" class="btn btn-secondary" style="width: 100%;">💾 Backup</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>📚 Resources</h3>
-                    <div class="card-actions" style="flex-direction: column;">
-                        <a href="/apidocs" target="_blank" class="btn" style="width: 100%;">📖 API Docs</a>
-                        <a href="https://github.com" target="_blank" class="btn btn-secondary" style="width: 100%;">🔗 GitHub</a>
-                    </div>
-                </div>
-            </div>
-        </main>
+    <div class="container">
+        <div class="logo">🏃</div>
+        <h1>AthSys Admin Pro v3.0</h1>
+        <p>Upgrading to the new dashboard...</p>
+        <p style="font-size: 0.9rem; opacity: 0.8;">You will be redirected in a moment</p>
+        <div class="spinner">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
     </div>
 
     <script>
-        // Initialize dashboard
-        function initDashboard() {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (!user.name && !user.email) {
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            document.getElementById('sidebarUserName').textContent = user.name || user.email;
-            loadDashboardStats();
-        }
-
-        function loadDashboardStats() {
-            const token = localStorage.getItem('authToken');
-            const headers = { 'Authorization': `Bearer ${token}` };
-            
-            // Load race count
-            fetch('/api/races', { headers })
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('racesCount').textContent = Array.isArray(data) ? data.length : 0;
-                })
-                .catch(() => document.getElementById('racesCount').textContent = '—');
-            
-            // Load athletes count
-            fetch('/api/athletes', { headers })
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('athletesCount').textContent = Array.isArray(data) ? data.length : 0;
-                })
-                .catch(() => document.getElementById('athletesCount').textContent = '—');
-            
-            // Load results count
-            fetch('/api/results', { headers })
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('resultsCount').textContent = Array.isArray(data) ? data.length : 0;
-                })
-                .catch(() => document.getElementById('resultsCount').textContent = '—');
-            
-            // Load users count
-            fetch('/api/admin/users', { headers })
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('usersCount').textContent = Array.isArray(data) ? data.length : 0;
-                })
-                .catch(() => document.getElementById('usersCount').textContent = '—');
-        }
-
-        function setActive(event, page) {
-            event.preventDefault();
-            document.querySelectorAll('.sidebar-menu li a').forEach(el => el.classList.remove('active'));
-            event.target.closest('a').classList.add('active');
-        }
-
-        function logout() {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
-
-        function exportSystemData() {
-            alert('📥 Export feature will be implemented in the next update');
-        }
-
-        function backupDatabase() {
-            alert('💾 Backup feature will be implemented in the next update');
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initDashboard);
+        // Redirect to new Pro dashboard after 2 seconds
+        setTimeout(() => {
+            window.location.href = 'admin-pro.html';
+        }, 2000);
     </script>
 </body>
 </html>
