@@ -4,12 +4,14 @@ Main application entry point with enhanced UX features
 Production-ready with PostgreSQL and Redis
 """
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, make_response
 from flask_cors import CORS
 import os
 import time
 import uuid
 import jwt
+import json
+import hashlib
 from datetime import datetime, timedelta
 from functools import wraps
 from sqlalchemy import text
@@ -174,6 +176,7 @@ app.config['JWT_SECRET'] = os.getenv('JWT_SECRET_KEY') or os.getenv('JWT_SECRET'
 app.config['JWT_ALGORITHM'] = os.getenv('JWT_ALGORITHM', 'HS256')
 app.config['JWT_ACCESS_EXPIRES_SECONDS'] = int(os.getenv('JWT_ACCESS_EXPIRES_SECONDS', 3600))
 app.config['JWT_REFRESH_EXPIRES_SECONDS'] = int(os.getenv('JWT_REFRESH_EXPIRES_SECONDS', 604800))
+app.config['IDEMPOTENCY_TTL_SECONDS'] = int(os.getenv('IDEMPOTENCY_TTL_SECONDS', 600))
 
 # Initialize connections on startup (Flask 3.0+ compatible)
 def initialize():
@@ -231,7 +234,7 @@ else:
     print("[WARNING] Import/Export module disabled")
 
 # Store version and metadata
-APP_VERSION = '2.2'
+APP_VERSION = '2.3.0'
 APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
@@ -356,6 +359,45 @@ def require_auth(roles=None):
             if error_message:
                 return jsonify({'error': error_message}), status_code
             return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def _get_idempotency_cache_key(raw_key):
+    user_id = getattr(request, 'user', {}).get('id') or request.remote_addr or 'anonymous'
+    payload = request.get_data(cache=True, as_text=True) or ''
+    payload_hash = hashlib.sha256(payload.encode('utf-8')).hexdigest()
+    return f"idempotency:{request.method}:{request.path}:{user_id}:{raw_key}:{payload_hash}"
+
+
+def idempotency_guard(ttl_seconds=None):
+    """Idempotency protection for retry-safe write endpoints via Idempotency-Key header."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            raw_key = request.headers.get('Idempotency-Key', '').strip()
+            if not raw_key:
+                return func(*args, **kwargs)
+
+            ttl = ttl_seconds or app.config['IDEMPOTENCY_TTL_SECONDS']
+            cache_key = _get_idempotency_cache_key(raw_key)
+            cached = RedisCache.get(cache_key)
+            if cached:
+                return jsonify(cached.get('body', {})), int(cached.get('status', 200))
+
+            result = func(*args, **kwargs)
+            response = make_response(result)
+
+            if 200 <= response.status_code < 300:
+                payload = response.get_json(silent=True)
+                if payload is not None:
+                    RedisCache.set(
+                        cache_key,
+                        {'status': response.status_code, 'body': payload},
+                        expiry=ttl
+                    )
+
+            return result
         return wrapper
     return decorator
 
@@ -513,6 +555,24 @@ SYSTEM_SETTINGS = {
 @app.before_request
 def before_request():
     request.start_time = time.time()
+    incoming_request_id = request.headers.get('X-Request-ID', '').strip()
+    request.request_id = incoming_request_id or f"req_{uuid.uuid4().hex[:12]}"
+
+    request.idempotency_key = request.headers.get('Idempotency-Key', '').strip()
+    request.idempotency_cache_key = None
+
+    is_mutation_request = request.method in {'POST', 'PUT', 'PATCH', 'DELETE'} and request.path.startswith('/api/')
+    if is_mutation_request and request.idempotency_key:
+        request.idempotency_cache_key = _get_idempotency_cache_key(request.idempotency_key)
+        cached_response = RedisCache.get(request.idempotency_cache_key)
+        if cached_response:
+            replay_body = cached_response.get('body', {}) if isinstance(cached_response, dict) else {}
+            replay_status = int(cached_response.get('status', 200)) if isinstance(cached_response, dict) else 200
+            replay = jsonify(replay_body)
+            replay.status_code = replay_status
+            replay.headers['X-Request-ID'] = request.request_id
+            replay.headers['X-Idempotency-Replayed'] = 'true'
+            return replay
 
 
 @app.after_request
@@ -523,9 +583,25 @@ def after_request(response):
     if hasattr(request, 'start_time'):
         elapsed = time.time() - request.start_time
         response.headers['X-Response-Time'] = f'{elapsed*1000:.2f}ms'
+
+    if getattr(request, 'idempotency_key', None):
+        response.headers['X-Idempotency-Key'] = request.idempotency_key
+
+    if getattr(request, 'idempotency_cache_key', None):
+        if 200 <= response.status_code < 300:
+            payload = response.get_json(silent=True)
+            if payload is not None:
+                RedisCache.set(
+                    request.idempotency_cache_key,
+                    {
+                        'status': response.status_code,
+                        'body': payload
+                    },
+                    expiry=app.config['IDEMPOTENCY_TTL_SECONDS']
+                )
     
-    response.headers['X-Request-ID'] = f'req_{REQUEST_COUNT}'
-    response.headers['X-Powered-By'] = 'AthSys v1.0.0'
+    response.headers['X-Request-ID'] = getattr(request, 'request_id', f'req_{uuid.uuid4().hex[:12]}')
+    response.headers['X-Powered-By'] = f"AthSys v{APP_VERSION}"
     return response
 
 
@@ -535,7 +611,7 @@ def add_metadata(data):
         **data,
         'meta': {
             'timestamp': datetime.now().isoformat(),
-            'request_id': f'req_{REQUEST_COUNT}',
+            'request_id': getattr(request, 'request_id', f'req_{REQUEST_COUNT}'),
             'version': APP_VERSION
         }
     }
