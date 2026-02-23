@@ -50,5 +50,5 @@ faker==22.0.0
 safety==2.3.5
 
 # Database Migrations
-flask-migrate==4.0.5
+flask-migrate==4.1.0
 flask-sqlalchemy==3.1.1
