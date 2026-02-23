@@ -10,7 +10,23 @@ from functools import wraps
 from flask import request
 
 # Redis connection with optimized timeouts to prevent startup blocking
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+def _build_redis_url():
+    explicit_url = os.getenv('REDIS_URL')
+    if explicit_url:
+        return explicit_url
+
+    redis_host = os.getenv('REDIS_HOST', 'localhost')
+    redis_port = os.getenv('REDIS_PORT', '6379')
+    redis_db = os.getenv('REDIS_DB', '0')
+    redis_password = os.getenv('REDIS_PASSWORD', '').strip()
+
+    if redis_password:
+        return f"redis://:{redis_password}@{redis_host}:{redis_port}/{redis_db}"
+
+    return f"redis://{redis_host}:{redis_port}/{redis_db}"
+
+
+REDIS_URL = _build_redis_url()
 redis_client = redis.from_url(
     REDIS_URL, 
     decode_responses=True,

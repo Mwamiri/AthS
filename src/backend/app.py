@@ -58,7 +58,8 @@ except Exception as e:
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ORIGINS', 'http://localhost:5000,http://127.0.0.1:5000').split(',') if origin.strip()]
+CORS(app, resources={r"/api/*": {"origins": CORS_ORIGINS}}, supports_credentials=True)
 
 # Security Headers
 @app.after_request
@@ -120,11 +121,41 @@ if Swagger:
     print("Swagger API documentation available at /apidocs")
 
 # Configuration
+def _build_database_url():
+    explicit_url = os.getenv('DATABASE_URL')
+    if explicit_url:
+        return explicit_url
+
+    db_user = os.getenv('DB_USER', 'athsys_user')
+    db_password = os.getenv('DB_PASSWORD', 'athsys_pass')
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_port = os.getenv('DB_PORT', '5432')
+    db_name = os.getenv('DB_NAME', 'athsys_db')
+
+    return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+
+def _build_redis_url():
+    explicit_url = os.getenv('REDIS_URL')
+    if explicit_url:
+        return explicit_url
+
+    redis_host = os.getenv('REDIS_HOST', 'localhost')
+    redis_port = os.getenv('REDIS_PORT', '6379')
+    redis_db = os.getenv('REDIS_DB', '0')
+    redis_password = os.getenv('REDIS_PASSWORD', '').strip()
+
+    if redis_password:
+        return f"redis://:{redis_password}@{redis_host}:{redis_port}/{redis_db}"
+
+    return f"redis://{redis_host}:{redis_port}/{redis_db}"
+
+
 app.config['DEBUG'] = os.getenv('DEBUG', 'False') == 'True'
 app.config['PORT'] = int(os.getenv('PORT', 5000))
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'development-secret-key-change-in-production')
-app.config['DATABASE_URL'] = os.getenv('DATABASE_URL', 'postgresql://athsys_user:athsys_pass@localhost:5432/athsys_db')
-app.config['REDIS_URL'] = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+app.config['DATABASE_URL'] = _build_database_url()
+app.config['REDIS_URL'] = _build_redis_url()
 
 # Initialize connections on startup (Flask 3.0+ compatible)
 def initialize():
@@ -299,6 +330,54 @@ DEMO_STARTLISTS = [
         'status': 'pending',  # pending, confirmed, finalized
         'confirmed_by': None,
         'createdAt': '2026-02-20'
+    }
+]
+
+# App build requests (demo data)
+DEMO_APP_REQUESTS = [
+    {
+        'id': 1,
+        'title': 'School Events Tracker',
+        'requested_by': 'coach@athsys.com',
+        'description': 'Simple app to track inter-school events and results.',
+        'priority': 'medium',
+        'status': 'pending',
+        'created_at': '2026-02-20',
+        'approved_by': None,
+        'approved_at': None,
+        'rejected_reason': None
+    },
+    {
+        'id': 2,
+        'title': 'Athlete Health Dashboard',
+        'requested_by': 'admin@athsys.com',
+        'description': 'Dashboard to monitor injuries, recovery plans, and wellness.',
+        'priority': 'high',
+        'status': 'approved',
+        'created_at': '2026-02-18',
+        'approved_by': 'admin@athsys.com',
+        'approved_at': '2026-02-19',
+        'rejected_reason': None
+    }
+]
+
+# Form submissions for marking (demo data)
+DEMO_FORM_SUBMISSIONS = [
+    {
+        'id': 1,
+        'form_name': 'Athlete Registration',
+        'submitted_by': 'john@athsys.com',
+        'submitted_at': '2026-02-21 09:15',
+        'status': 'pending',
+        'notes': ''
+    },
+    {
+        'id': 2,
+        'form_name': 'Event Participation',
+        'submitted_by': 'sarah@athsys.com',
+        'submitted_at': '2026-02-21 10:45',
+        'status': 'approved',
+        'notes': 'Verified by registrar'
     }
 ]
 
@@ -1140,7 +1219,7 @@ def register():
         }), 400
     
     # Validate required fields
-    required_fields = ['name', 'email', 'password', 'role']
+    required_fields = ['name', 'email', 'password']
     missing_fields = [field for field in required_fields if field not in data]
     
     if missing_fields:
@@ -1152,7 +1231,7 @@ def register():
     name = data.get('name', '').strip()
     email = data.get('email', '').strip().lower()
     password = data.get('password')
-    role = data.get('role', '').lower()
+    role = data.get('role', 'athlete').lower()
     
     # Input validation
     if not name or len(name) < 2:
@@ -1434,6 +1513,159 @@ def delete_user(user_id):
     
     return jsonify(add_metadata({
         'message': '✅ User deleted successfully'
+    })), 200
+
+
+# ===== APP BUILD REQUESTS (Admin Only) =====
+
+@app.route('/api/admin/app-requests', methods=['GET'])
+def get_app_requests():
+    """Get all app build requests"""
+    return jsonify(add_metadata({
+        'requests': DEMO_APP_REQUESTS,
+        'count': len(DEMO_APP_REQUESTS),
+        'message': '✅ App build requests retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/app-requests', methods=['POST'])
+def create_app_request():
+    """Create new app build request"""
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request body is required'}), 400
+
+    required = ['title', 'requested_by']
+    missing = [field for field in required if field not in data]
+    if missing:
+        return jsonify({'error': f'Missing required fields: {", ".join(missing)}'}), 400
+
+    new_request = {
+        'id': len(DEMO_APP_REQUESTS) + 1,
+        'title': data.get('title'),
+        'requested_by': data.get('requested_by'),
+        'description': data.get('description', ''),
+        'priority': data.get('priority', 'medium'),
+        'status': 'pending',
+        'created_at': datetime.now().strftime('%Y-%m-%d'),
+        'approved_by': None,
+        'approved_at': None,
+        'rejected_reason': None
+    }
+
+    DEMO_APP_REQUESTS.append(new_request)
+
+    return jsonify(add_metadata({
+        'message': '✅ App build request created successfully',
+        'request': new_request
+    })), 201
+
+
+@app.route('/api/admin/app-requests/<int:request_id>/approve', methods=['PUT'])
+def approve_app_request(request_id):
+    """Approve an app build request"""
+    req = next((r for r in DEMO_APP_REQUESTS if r['id'] == request_id), None)
+    if not req:
+        return jsonify({'error': 'App request not found'}), 404
+
+    data = request.get_json() or {}
+    req['status'] = 'approved'
+    req['approved_by'] = data.get('approved_by', 'admin@athsys.com')
+    req['approved_at'] = datetime.now().strftime('%Y-%m-%d')
+    req['rejected_reason'] = None
+
+    return jsonify(add_metadata({
+        'message': '✅ App request approved',
+        'request': req
+    })), 200
+
+
+@app.route('/api/admin/app-requests/<int:request_id>/reject', methods=['PUT'])
+def reject_app_request(request_id):
+    """Reject an app build request"""
+    req = next((r for r in DEMO_APP_REQUESTS if r['id'] == request_id), None)
+    if not req:
+        return jsonify({'error': 'App request not found'}), 404
+
+    data = request.get_json() or {}
+    req['status'] = 'rejected'
+    req['rejected_reason'] = data.get('reason', 'Not specified')
+
+    return jsonify(add_metadata({
+        'message': '✅ App request rejected',
+        'request': req
+    })), 200
+
+
+# ===== FORM SUBMISSIONS (Admin Only) =====
+
+@app.route('/api/admin/form-submissions', methods=['GET'])
+def get_form_submissions():
+    """Get all form submissions"""
+    return jsonify(add_metadata({
+        'submissions': DEMO_FORM_SUBMISSIONS,
+        'count': len(DEMO_FORM_SUBMISSIONS),
+        'message': '✅ Form submissions retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/form-submissions', methods=['POST'])
+def create_form_submission():
+    """Create a form submission (for demo/testing)"""
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Request body is required'}), 400
+
+    required = ['form_name', 'submitted_by']
+    missing = [field for field in required if field not in data]
+    if missing:
+        return jsonify({'error': f'Missing required fields: {", ".join(missing)}'}), 400
+
+    new_submission = {
+        'id': len(DEMO_FORM_SUBMISSIONS) + 1,
+        'form_name': data.get('form_name'),
+        'submitted_by': data.get('submitted_by'),
+        'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'status': 'pending',
+        'notes': data.get('notes', '')
+    }
+
+    DEMO_FORM_SUBMISSIONS.append(new_submission)
+
+    return jsonify(add_metadata({
+        'message': '✅ Form submission created successfully',
+        'submission': new_submission
+    })), 201
+
+
+@app.route('/api/admin/form-submissions/<int:submission_id>/approve', methods=['PUT'])
+def approve_form_submission(submission_id):
+    """Approve a form submission"""
+    submission = next((s for s in DEMO_FORM_SUBMISSIONS if s['id'] == submission_id), None)
+    if not submission:
+        return jsonify({'error': 'Form submission not found'}), 404
+
+    submission['status'] = 'approved'
+    return jsonify(add_metadata({
+        'message': '✅ Form submission approved',
+        'submission': submission
+    })), 200
+
+
+@app.route('/api/admin/form-submissions/<int:submission_id>/reject', methods=['PUT'])
+def reject_form_submission(submission_id):
+    """Reject a form submission"""
+    submission = next((s for s in DEMO_FORM_SUBMISSIONS if s['id'] == submission_id), None)
+    if not submission:
+        return jsonify({'error': 'Form submission not found'}), 404
+
+    data = request.get_json() or {}
+    submission['status'] = 'rejected'
+    submission['notes'] = data.get('notes', submission.get('notes', ''))
+
+    return jsonify(add_metadata({
+        'message': '✅ Form submission rejected',
+        'submission': submission
     })), 200
 
 
@@ -2336,6 +2568,14 @@ def redirect_register():
 def builder_dashboard():
     """Serve builder dashboard"""
     return send_from_directory(FRONTEND_DIR, 'builder-dashboard.html')
+
+
+@app.route('/admin')
+@app.route('/admin-pro')
+@app.route('/admin-pro-complete')
+def admin_pro_dashboard():
+    """Serve the primary modern admin dashboard"""
+    return send_from_directory(FRONTEND_DIR, 'admin-pro-complete.html')
 
 
 # 4. Error handlers - lowest priority

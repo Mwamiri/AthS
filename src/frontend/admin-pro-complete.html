@@ -482,8 +482,8 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div v-if="sidebarExpanded" class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-white truncate">Admin</p>
-                        <p class="text-xs text-slate-400 truncate">Administrator</p>
+                        <p class="text-sm font-semibold text-white truncate">{{ currentUser.name || 'Admin User' }}</p>
+                        <p class="text-xs text-slate-400 truncate">{{ currentUser.roleLabel || 'Administrator' }}</p>
                     </div>
                 </div>
             </aside>
@@ -493,7 +493,19 @@
                 
                 <!-- Top Bar -->
                 <header class="top-bar h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-slate-700">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ getPageTitle() }}</h2>
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ getPageTitle() }}</h2>
+                        <div class="hidden md:flex items-center gap-2">
+                            <span class="badge" :class="health.api_status === 'online' ? 'badge-success' : 'badge-danger'">
+                                <span class="status-dot" :class="health.api_status === 'online' ? 'online' : 'offline'"></span>
+                                API {{ health.api_status_label }}
+                            </span>
+                            <span class="badge" :class="health.db_status === 'online' ? 'badge-success' : 'badge-danger'">
+                                <span class="status-dot" :class="health.db_status === 'online' ? 'online' : 'offline'"></span>
+                                DB {{ health.db_status_label }}
+                            </span>
+                        </div>
+                    </div>
                     <div class="flex items-center gap-4">
                         <!-- Notifications Dropdown -->
                         <div class="relative">
@@ -545,7 +557,7 @@
                                 <button @click="currentPage = 'audit'; showUserMenu = false" class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2">
                                     <i class="fas fa-file-alt"></i> Audit Logs
                                 </button>
-                                <button class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2">
+                                <button @click="currentPage = 'backups'; showUserMenu = false" class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2">
                                     <i class="fas fa-save"></i> Backups
                                 </button>
                                 <div class="border-t dark:border-slate-700"></div>
@@ -578,8 +590,8 @@
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-gray-600 dark:text-slate-400 mb-2">Total Events</p>
-                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">1,247</h4>
-                                        <p class="text-xs text-green-600"><i class="fas fa-arrow-up"></i> 12.5% this month</p>
+                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.total_events }}</h4>
+                                        <p class="text-xs text-green-600"><i class="fas fa-arrow-up"></i> {{ stats.active_competitions }} active</p>
                                     </div>
                                     <div class="stat-icon"><i class="fas fa-flag text-orange-600"></i></div>
                                 </div>
@@ -589,8 +601,8 @@
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-gray-600 dark:text-slate-400 mb-2">Active Athletes</p>
-                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">3,892</h4>
-                                        <p class="text-xs text-green-600"><i class="fas fa-arrow-up"></i> 8.2% growth</p>
+                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.total_athletes }}</h4>
+                                        <p class="text-xs text-green-600"><i class="fas fa-arrow-up"></i> {{ stats.total_athletes_delta }}</p>
                                     </div>
                                     <div class="stat-icon"><i class="fas fa-person-running text-green-600"></i></div>
                                 </div>
@@ -600,8 +612,8 @@
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-gray-600 dark:text-slate-400 mb-2">Registrations</p>
-                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">856</h4>
-                                        <p class="text-xs text-yellow-600"><i class="fas fa-arrow-right"></i> This month</p>
+                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.total_results }}</h4>
+                                        <p class="text-xs text-yellow-600"><i class="fas fa-arrow-right"></i> Results tracked</p>
                                     </div>
                                     <div class="stat-icon"><i class="fas fa-clipboard-list text-yellow-600"></i></div>
                                 </div>
@@ -611,8 +623,8 @@
                                 <div class="flex items-start justify-between">
                                     <div>
                                         <p class="text-sm font-medium text-gray-600 dark:text-slate-400 mb-2">System Status</p>
-                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">99.9%</h4>
-                                        <p class="text-xs text-blue-600"><span class="status-dot online"></span> Online</p>
+                                        <h4 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ stats.system_status_label }}</h4>
+                                        <p class="text-xs text-blue-600"><span class="status-dot online"></span> {{ stats.system_status }}</p>
                                     </div>
                                     <div class="stat-icon"><i class="fas fa-server text-blue-600"></i></div>
                                 </div>
@@ -670,24 +682,24 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div class="p-4 border rounded-lg dark:border-slate-700">
                                         <p class="text-sm text-gray-600 dark:text-slate-400 flex items-center gap-2 mb-2">
-                                            <span class="status-dot online"></span> API Status
+                                            <span :class="['status-dot', health.api_status === 'online' ? 'online' : 'offline']"></span> API Status
                                         </p>
-                                        <p class="text-lg font-bold text-green-600">● Online</p>
+                                        <p :class="['text-lg font-bold', health.api_status === 'online' ? 'text-green-600' : 'text-red-600']">● {{ health.api_status_label }}</p>
                                     </div>
                                     <div class="p-4 border rounded-lg dark:border-slate-700">
                                         <p class="text-sm text-gray-600 dark:text-slate-400 flex items-center gap-2 mb-2">
-                                            <span class="status-dot online"></span> Database
+                                            <span :class="['status-dot', health.db_status === 'online' ? 'online' : 'offline']"></span> Database
                                         </p>
-                                        <p class="text-lg font-bold text-green-600">● Connected</p>
+                                        <p :class="['text-lg font-bold', health.db_status === 'online' ? 'text-green-600' : 'text-red-600']">● {{ health.db_status_label }}</p>
                                     </div>
                                     <div class="p-4 border rounded-lg dark:border-slate-700">
                                         <p class="text-sm text-gray-600 dark:text-slate-400 mb-2 flex items-center gap-2">
                                             <i class="fas fa-sync"></i> Last Check
                                         </p>
-                                        <p class="text-lg font-bold text-gray-900 dark:text-white">2 min ago</p>
+                                        <p class="text-lg font-bold text-gray-900 dark:text-white">{{ health.last_checked }}</p>
                                     </div>
                                 </div>
-                                <button class="btn-secondary btn-small">
+                                <button @click="refreshHealth" class="btn-secondary btn-small">
                                     <i class="fas fa-sync"></i> Check Health
                                 </button>
                             </div>
@@ -710,7 +722,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button class="text-orange-600 hover:text-orange-700 text-sm font-medium mt-4">View All →</button>
+                                <button @click="currentPage = 'audit'" class="text-orange-600 hover:text-orange-700 text-sm font-medium mt-4">View All →</button>
                             </div>
 
                             <div class="space-y-6">
@@ -723,7 +735,7 @@
                                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ race.name }}</p>
                                         <p class="text-xs text-gray-600 dark:text-slate-400">{{ race.date }} • {{ race.location }}</p>
                                     </div>
-                                    <button class="text-orange-600 hover:text-orange-700 text-sm font-medium">View All →</button>
+                                    <button @click="currentPage = 'races'" class="text-orange-600 hover:text-orange-700 text-sm font-medium">View All →</button>
                                 </div>
 
                                 <!-- Recent Athletes -->
@@ -735,7 +747,7 @@
                                         <p class="text-sm font-medium text-gray-900 dark:text-white">{{ athlete.name }}</p>
                                         <p class="text-xs text-gray-600 dark:text-slate-400">{{ athlete.team }} • {{ athlete.event }}</p>
                                     </div>
-                                    <button class="text-orange-600 hover:text-orange-700 text-sm font-medium">View All →</button>
+                                    <button @click="currentPage = 'athletes'" class="text-orange-600 hover:text-orange-700 text-sm font-medium">View All →</button>
                                 </div>
                             </div>
                         </div>
@@ -753,14 +765,14 @@
                             
                             <!-- Filters -->
                             <div class="mb-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg flex items-center gap-4">
-                                <input type="text" placeholder="Search races..." class="form-input flex-1" />
-                                <select class="form-input">
+                                <input v-model="filters.raceQuery" type="text" placeholder="Search races..." class="form-input flex-1" />
+                                <select v-model="filters.raceStatus" class="form-input">
                                     <option>All Status</option>
                                     <option>Active</option>
                                     <option>Completed</option>
                                     <option>Upcoming</option>
                                 </select>
-                                <button class="btn-secondary btn-small">Apply Filters</button>
+                                <button @click="applyRaceFilters" class="btn-secondary btn-small">Apply Filters</button>
                             </div>
 
                             <!-- Table -->
@@ -776,7 +788,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="race in recentRaces" :key="race.id">
+                                        <tr v-for="race in filteredRaces" :key="race.id">
                                             <td class="font-medium text-gray-900 dark:text-white">{{ race.name }}</td>
                                             <td>{{ race.date }}</td>
                                             <td>{{ race.location }}</td>
@@ -809,13 +821,13 @@
 
                             <!-- Filters -->
                             <div class="mb-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg flex items-center gap-4">
-                                <input type="text" placeholder="Search athletes..." class="form-input flex-1" />
-                                <select class="form-input">
+                                <input v-model="filters.athleteQuery" type="text" placeholder="Search athletes..." class="form-input flex-1" />
+                                <select v-model="filters.athleteStatus" class="form-input">
                                     <option>All Status</option>
                                     <option>Active</option>
                                     <option>Inactive</option>
                                 </select>
-                                <button class="btn-secondary btn-small">Apply Filters</button>
+                                <button @click="applyAthleteFilters" class="btn-secondary btn-small">Apply Filters</button>
                             </div>
 
                             <!-- Table -->
@@ -831,7 +843,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="athlete in recentAthletes" :key="athlete.id">
+                                        <tr v-for="athlete in filteredAthletes" :key="athlete.id">
                                             <td class="font-medium text-gray-900 dark:text-white">{{ athlete.name }}</td>
                                             <td>{{ athlete.team }}</td>
                                             <td>{{ athlete.event }}</td>
@@ -895,6 +907,63 @@
                         </div>
                     </div>
 
+                    <!-- Results Management -->
+                    <div v-if="currentPage === 'results'" class="space-y-6 animate-fade-in">
+                        <div class="card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Results Management</h3>
+                                <div class="flex gap-2">
+                                    <button @click="loadResults" class="btn-secondary btn-small">
+                                        <i class="fas fa-sync"></i> Refresh
+                                    </button>
+                                    <button @click="exportResultsCsv" class="btn-primary btn-small">
+                                        <i class="fas fa-download"></i> Export CSV
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg flex items-center gap-4">
+                                <input v-model="filters.resultsQuery" type="text" placeholder="Search results..." class="form-input flex-1" />
+                                <select v-model="filters.resultsEvent" class="form-input">
+                                    <option>All Events</option>
+                                    <option>100m</option>
+                                    <option>200m</option>
+                                    <option>400m</option>
+                                    <option>800m</option>
+                                    <option>1500m</option>
+                                    <option>Marathon</option>
+                                </select>
+                                <button @click="applyResultsFilters" class="btn-secondary btn-small">Apply Filters</button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Athlete</th>
+                                            <th>Event</th>
+                                            <th>Time</th>
+                                            <th>Position</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="result in filteredResults" :key="result.id">
+                                            <td class="font-medium text-gray-900 dark:text-white">{{ result.athlete }}</td>
+                                            <td>{{ result.event }}</td>
+                                            <td>{{ result.time }}</td>
+                                            <td>
+                                                <span class="badge badge-info">#{{ result.position }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="filteredResults.length === 0">
+                                            <td colspan="4" class="text-center text-gray-500 py-6">No results found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Audit Logs -->
                     <div v-if="currentPage === 'audit'" class="space-y-6 animate-fade-in">
                         <div class="card p-6">
@@ -902,18 +971,20 @@
 
                             <!-- Filters -->
                             <div class="mb-6 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg flex items-center gap-4">
-                                <select class="form-input">
+                                <select v-model="filters.auditAction" class="form-input">
                                     <option>All Actions</option>
-                                    <option>Create</option>
-                                    <option>Update</option>
-                                    <option>Delete</option>
+                                    <option>CREATE</option>
+                                    <option>UPDATE</option>
+                                    <option>DELETE</option>
+                                    <option>LOGIN</option>
+                                    <option>LOGOUT</option>
                                 </select>
-                                <select class="form-input">
+                                <select v-model="filters.auditUser" class="form-input">
                                     <option>All Users</option>
                                     <option>Admin</option>
                                     <option>Coach</option>
                                 </select>
-                                <button class="btn-secondary btn-small">Apply Filters</button>
+                                <button @click="applyAuditFilters" class="btn-secondary btn-small">Apply Filters</button>
                             </div>
 
                             <div class="overflow-x-auto">
@@ -928,12 +999,196 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="log in auditLogs" :key="log.id">
+                                        <tr v-for="log in filteredAuditLogs" :key="log.id">
                                             <td class="text-sm">{{ log.timestamp }}</td>
                                             <td class="font-medium">{{ log.user }}</td>
                                             <td><span class="badge badge-info">{{ log.action }}</span></td>
                                             <td>{{ log.resource }}</td>
                                             <td class="text-gray-600 dark:text-slate-400 text-sm">{{ log.details }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backups -->
+                    <div v-if="currentPage === 'backups'" class="space-y-6 animate-fade-in">
+                        <div class="card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Backups</h3>
+                                <button @click="createBackup" class="btn-primary btn-small">
+                                    <i class="fas fa-database"></i> Create Backup
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Backup ID</th>
+                                            <th>Created</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="backup in backups" :key="backup.id">
+                                            <td class="font-medium text-gray-900 dark:text-white">{{ backup.id }}</td>
+                                            <td>{{ backup.created_at }}</td>
+                                            <td>
+                                                <span :class="['badge', backup.status === 'completed' ? 'badge-success' : 'badge-warning']">{{ backup.status }}</span>
+                                            </td>
+                                            <td>
+                                                <button @click="downloadBackup(backup.id)" class="text-orange-600 hover:text-orange-700 text-sm font-medium">Download</button>
+                                                <span class="text-gray-300"> • </span>
+                                                <button @click="restoreBackup(backup.id)" class="text-red-600 hover:text-red-700 text-sm font-medium">Restore</button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="backups.length === 0">
+                                            <td colspan="4" class="text-center text-gray-500 py-6">No backups available.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- App Requests -->
+                    <div v-if="currentPage === 'app-requests'" class="space-y-6 animate-fade-in">
+                        <div class="card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">App Build Requests</h3>
+                            </div>
+
+                            <!-- Filters -->
+                            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Search</label>
+                                        <input v-model="filters.appRequestQuery" type="text" placeholder="Search requests..." class="form-input w-full" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Status</label>
+                                        <select v-model="filters.appRequestStatus" class="form-input w-full">
+                                            <option>All Status</option>
+                                            <option>Pending</option>
+                                            <option>Approved</option>
+                                            <option>Rejected</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="isLoading.appRequests" class="text-center py-8">
+                                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                                <p class="mt-2 text-gray-600 dark:text-gray-400">Loading requests...</p>
+                            </div>
+
+                            <div v-else class="overflow-x-auto">
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Requested By</th>
+                                            <th>Priority</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="req in filteredAppRequests" :key="req.id">
+                                            <td class="font-medium text-gray-900 dark:text-white">{{ req.title }}</td>
+                                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ req.requested_by }}</td>
+                                            <td>
+                                                <span :class="['badge', req.priority === 'high' ? 'badge-danger' : req.priority === 'medium' ? 'badge-warning' : 'badge-info']">
+                                                    {{ req.priority }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span :class="['badge', req.status === 'approved' ? 'badge-success' : req.status === 'rejected' ? 'badge-danger' : 'badge-warning']">
+                                                    {{ req.status }}
+                                                </span>
+                                            </td>
+                                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ req.created_at }}</td>
+                                            <td>
+                                                <button v-if="req.status === 'pending'" @click="approveAppRequest(req.id)" class="text-green-600 hover:text-green-700 text-sm font-medium">Approve</button>
+                                                <button v-if="req.status === 'pending'" @click="rejectAppRequest(req.id)" class="text-red-600 hover:text-red-700 text-sm font-medium ml-3">Reject</button>
+                                                <span v-else class="text-gray-500 text-sm">No actions</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="filteredAppRequests.length === 0">
+                                            <td colspan="6" class="text-center text-gray-500 py-6">No app requests found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Marking -->
+                    <div v-if="currentPage === 'form-marking'" class="space-y-6 animate-fade-in">
+                        <div class="card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Form Submissions</h3>
+                            </div>
+
+                            <!-- Filters -->
+                            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Search</label>
+                                        <input v-model="filters.formSubmissionQuery" type="text" placeholder="Search submissions..." class="form-input w-full" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Status</label>
+                                        <select v-model="filters.formSubmissionStatus" class="form-input w-full">
+                                            <option>All Status</option>
+                                            <option>Pending</option>
+                                            <option>Approved</option>
+                                            <option>Rejected</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="isLoading.formSubmissions" class="text-center py-8">
+                                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                                <p class="mt-2 text-gray-600 dark:text-gray-400">Loading submissions...</p>
+                            </div>
+
+                            <div v-else class="overflow-x-auto">
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Form Name</th>
+                                            <th>Submitted By</th>
+                                            <th>Submitted Date</th>
+                                            <th>Status</th>
+                                            <th>Notes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="form in filteredFormSubmissions" :key="form.id">
+                                            <td class="font-medium text-gray-900 dark:text-white">{{ form.form_name }}</td>
+                                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ form.submitted_by }}</td>
+                                            <td class="text-sm text-gray-600 dark:text-gray-400">{{ form.submitted_at }}</td>
+                                            <td>
+                                                <span :class="['badge', form.status === 'approved' ? 'badge-success' : form.status === 'rejected' ? 'badge-danger' : 'badge-warning']">
+                                                    {{ form.status }}
+                                                </span>
+                                            </td>
+                                            <td class="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">{{ form.notes || '-' }}</td>
+                                            <td>
+                                                <button v-if="form.status === 'pending'" @click="approveFormSubmission(form.id)" class="text-green-600 hover:text-green-700 text-sm font-medium">Approve</button>
+                                                <button v-if="form.status === 'pending'" @click="rejectFormSubmission(form.id)" class="text-red-600 hover:text-red-700 text-sm font-medium ml-3">Reject</button>
+                                                <span v-else class="text-gray-500 text-sm">No actions</span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="filteredFormSubmissions.length === 0">
+                                            <td colspan="6" class="text-center text-gray-500 py-6">No form submissions found.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -953,15 +1208,15 @@
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">System Name</label>
-                                            <input type="text" value="AthSys - Athletics Management" class="form-input w-full" />
+                                            <input v-model="settings.system_name" type="text" class="form-input w-full" />
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Organization</label>
-                                            <input type="text" value="Athletics Organization" class="form-input w-full" />
+                                            <input v-model="settings.organization" type="text" class="form-input w-full" />
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Primary Color</label>
-                                            <input type="color" value="#ff6b35" class="form-input w-24" />
+                                            <input v-model="settings.primary_color" type="color" class="form-input w-24" />
                                         </div>
                                     </div>
                                 </div>
@@ -972,13 +1227,13 @@
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">SMTP Server</label>
-                                            <input type="text" value="smtp.example.com" class="form-input w-full" />
+                                            <input v-model="settings.smtp_server" type="text" class="form-input w-full" />
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">SMTP Port</label>
-                                            <input type="number" value="587" class="form-input w-full" />
+                                            <input v-model.number="settings.smtp_port" type="number" class="form-input w-full" />
                                         </div>
-                                        <button class="btn-primary">
+                                        <button @click="saveSettings" class="btn-primary">
                                             <i class="fas fa-save"></i> Save Settings
                                         </button>
                                     </div>
@@ -1095,6 +1350,34 @@
                 const showSuccessMessage = ref(false);
                 const successMessage = ref('');
 
+                const isLoading = ref({
+                    races: false,
+                    athletes: false,
+                    users: false,
+                    results: false,
+                    stats: false,
+                    settings: false,
+                    audit: false,
+                    health: false,
+                    backups: false,
+                    appRequests: false,
+                    formSubmissions: false
+                });
+
+                const errors = ref({
+                    races: '',
+                    athletes: '',
+                    users: '',
+                    results: '',
+                    stats: '',
+                    settings: '',
+                    audit: '',
+                    health: '',
+                    backups: '',
+                    appRequests: '',
+                    formSubmissions: ''
+                });
+
                 const menuItems = [
                     { id: 'dashboard', label: 'Dashboard', icon: 'fa-chart-line' },
                     { id: 'races', label: 'Races', icon: 'fa-flag' },
@@ -1102,49 +1385,613 @@
                     { id: 'results', label: 'Results', icon: 'fa-trophy' },
                     { id: 'users', label: 'Users', icon: 'fa-users' },
                     { id: 'audit', label: 'Audit Logs', icon: 'fa-file-alt' },
-                    { id: 'settings', label: 'Settings', icon: 'fa-cog' },
+                    { id: 'app-requests', label: 'App Requests', icon: 'fa-code' },
+                    { id: 'form-marking', label: 'Form Marking', icon: 'fa-check-square' },
+                    { id: 'backups', label: 'Backups', icon: 'fa-database' },
+                    { id: 'settings', label: 'Settings', icon: 'fa-cog' }
                 ];
+
+                const filters = ref({
+                    raceQuery: '',
+                    raceStatus: 'All Status',
+                    athleteQuery: '',
+                    athleteStatus: 'All Status',
+                    auditAction: 'All Actions',
+                    auditUser: 'All Users',
+                    resultsQuery: '',
+                    resultsEvent: 'All Events',
+                    appRequestQuery: '',
+                    appRequestStatus: 'All Status',
+                    formSubmissionQuery: '',
+                    formSubmissionStatus: 'All Status'
+                });
 
                 const formData = ref({
                     name: '', email: '', date: '', location: '', team: '', event: '', role: 'Admin'
                 });
 
-                const recentRaces = ref([
+                const stats = ref({
+                    total_events: 0,
+                    total_athletes: 0,
+                    total_results: 0,
+                    active_competitions: 0,
+                    system_status: 'unknown',
+                    system_status_label: '--',
+                    total_athletes_delta: 'No trend'
+                });
+
+                const health = ref({
+                    api_status: 'unknown',
+                    api_status_label: 'Unknown',
+                    db_status: 'unknown',
+                    db_status_label: 'Unknown',
+                    last_checked: '-'
+                });
+
+                const settings = ref({
+                    system_name: 'AthSys - Athletics Management',
+                    organization: 'Athletics Organization',
+                    primary_color: '#ff6b35',
+                    smtp_server: 'smtp.example.com',
+                    smtp_port: 587
+                });
+
+                const demoRaces = [
                     { id: 1, name: 'City Marathon 2026', date: 'Mar 15, 2026', location: 'Central Park', status: 'active' },
                     { id: 2, name: 'Sprint Championship', date: 'Apr 2, 2026', location: 'Olympic Stadium', status: 'upcoming' },
-                    { id: 3, name: 'Relay Finals', date: 'May 10, 2026', location: 'Sports Complex', status: 'completed' },
-                ]);
+                    { id: 3, name: 'Relay Finals', date: 'May 10, 2026', location: 'Sports Complex', status: 'completed' }
+                ];
 
-                const recentAthletes = ref([
+                const demoAthletes = [
                     { id: 1, name: 'John Smith', team: 'Team A', event: '100m', status: 'active' },
                     { id: 2, name: 'Jane Doe', team: 'Team B', event: '400m', status: 'active' },
-                    { id: 3, name: 'Mike Brown', team: 'Team C', event: 'Relay', status: 'active' },
-                ]);
-
-                const users = ref([
-                    { id: 1, name: 'Admin User', email: 'admin@athsys.com', role: 'Admin', status: 'active' },
-                    { id: 2, name: 'Coach John', email: 'coach@athsys.com', role: 'Coach', status: 'active' },
-                    { id: 3, name: 'John Referee', email: 'referee@athsys.com', role: 'Referee', status: 'active' },
-                ]);
-
-                const notifications = ref([
-                    { id: 1, title: 'New Registration', message: '5 new athletes registered for upcoming event', read: false },
-                    { id: 2, title: 'Event Starting Soon', message: 'City Marathon starts in 2 hours', read: false },
-                    { id: 3, title: 'System Update', message: 'System backup completed successfully', read: true },
-                ]);
-
-                const recentActivities = [
-                    { id: 1, description: 'New race "City Marathon" created', time: '2 hours ago' },
-                    { id: 2, description: 'Athlete "John Smith" registered', time: '4 hours ago' },
-                    { id: 3, description: 'System backup completed', time: '6 hours ago' },
-                    { id: 4, description: 'User permissions updated', time: '1 day ago' },
+                    { id: 3, name: 'Mike Brown', team: 'Team C', event: 'Relay', status: 'active' }
                 ];
 
-                const auditLogs = [
-                    { id: 1, timestamp: '2026-02-22 10:30 AM', user: 'Admin', action: 'Create', resource: 'Race', details: 'Created new race event' },
-                    { id: 2, timestamp: '2026-02-22 09:45 AM', user: 'Coach', action: 'Update', resource: 'Athlete', details: 'Updated athlete profile' },
-                    { id: 3, timestamp: '2026-02-22 08:15 AM', user: 'Admin', action: 'Delete', resource: 'User', details: 'Removed inactive user' },
+                const demoResults = [
+                    { id: 1, athlete: 'Eliud Kipchoge', event: 'Marathon', time: '2:01:39', position: 1 },
+                    { id: 2, athlete: 'Faith Kipyegon', event: '1500m', time: '3:50.37', position: 1 },
+                    { id: 3, athlete: 'Usain Bolt', event: '100m', time: '9.58', position: 1 }
                 ];
+
+                const recentRaces = ref([]);
+                const recentAthletes = ref([]);
+                const users = ref([]);
+                const results = ref([]);
+                const backups = ref([]);
+                const auditLogs = ref([]);
+                const appRequests = ref([]);
+                const formSubmissions = ref([]);
+
+                const notifications = ref([]);
+                const recentActivities = ref([]);
+
+                const currentUser = ref({
+                    name: 'Admin User',
+                    email: '',
+                    role: 'admin',
+                    roleLabel: 'Administrator'
+                });
+
+                const API_BASE = window.AthSysConfig?.apiBase || '/api';
+
+                const getAuthToken = () => localStorage.getItem('authToken') || localStorage.getItem('token');
+
+                const normalizeRole = (role) => (role || '').toString().trim().toLowerCase();
+
+                const roleToLabel = (role) => {
+                    const normalized = normalizeRole(role);
+                    if (!normalized) return 'Administrator';
+                    return normalized.split('_').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+                };
+
+                const hydrateCurrentUser = () => {
+                    const rawUser = localStorage.getItem('user');
+                    if (!rawUser) return;
+
+                    try {
+                        const parsed = JSON.parse(rawUser);
+                        const normalizedRole = normalizeRole(parsed?.role);
+                        currentUser.value = {
+                            name: parsed?.name || parsed?.email || 'Admin User',
+                            email: parsed?.email || '',
+                            role: normalizedRole || 'admin',
+                            roleLabel: roleToLabel(normalizedRole)
+                        };
+                    } catch (error) {
+                        currentUser.value = {
+                            name: 'Admin User',
+                            email: '',
+                            role: 'admin',
+                            roleLabel: 'Administrator'
+                        };
+                    }
+                };
+
+                const enforceAdminAccess = () => {
+                    const token = getAuthToken();
+                    if (!token) {
+                        window.location.href = '/';
+                        return false;
+                    }
+
+                    const rawUser = localStorage.getItem('user');
+                    if (!rawUser) {
+                        window.location.href = '/';
+                        return false;
+                    }
+
+                    try {
+                        const parsed = JSON.parse(rawUser);
+                        const role = normalizeRole(parsed?.role);
+                        const adminRoles = ['admin', 'chief_registrar'];
+                        if (!adminRoles.includes(role)) {
+                            window.location.href = '/athlete.html';
+                            return false;
+                        }
+                    } catch (error) {
+                        window.location.href = '/';
+                        return false;
+                    }
+
+                    return true;
+                };
+
+                const apiRequest = async (path, options = {}) => {
+                    const token = getAuthToken();
+                    const headers = Object.assign(
+                        { 'Accept': 'application/json' },
+                        options.headers || {}
+                    );
+
+                    if (options.body && !headers['Content-Type']) {
+                        headers['Content-Type'] = 'application/json';
+                    }
+
+                    if (token && !headers['Authorization']) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+
+                    const response = await fetch(`${API_BASE}${path}`, { ...options, headers });
+                    const contentType = response.headers.get('content-type') || '';
+                    const payload = contentType.includes('application/json')
+                        ? await response.json()
+                        : await response.text();
+
+                    if (!response.ok) {
+                        const message = typeof payload === 'string'
+                            ? payload
+                            : (payload?.message || payload?.error || 'Request failed');
+                        throw new Error(message);
+                    }
+
+                    return payload;
+                };
+
+                const extractList = (payload, keys) => {
+                    if (Array.isArray(payload)) return payload;
+                    if (!payload) return [];
+                    for (const key of keys) {
+                        if (Array.isArray(payload[key])) return payload[key];
+                    }
+                    return [];
+                };
+
+                const applyRaceFilters = () => showSuccess('Race filters applied');
+                const applyAthleteFilters = () => showSuccess('Athlete filters applied');
+                const applyAuditFilters = () => showSuccess('Audit filters applied');
+                const applyResultsFilters = () => showSuccess('Results filters applied');
+
+                const filteredRaces = computed(() => {
+                    const query = filters.value.raceQuery.trim().toLowerCase();
+                    const status = filters.value.raceStatus;
+                    return recentRaces.value.filter(race => {
+                        const matchesQuery = !query ||
+                            [race.name, race.location, race.date].some(val => String(val || '').toLowerCase().includes(query));
+                        const matchesStatus = status === 'All Status' || String(race.status || '').toLowerCase() === status.toLowerCase();
+                        return matchesQuery && matchesStatus;
+                    });
+                });
+
+                const filteredAthletes = computed(() => {
+                    const query = filters.value.athleteQuery.trim().toLowerCase();
+                    const status = filters.value.athleteStatus;
+                    return recentAthletes.value.filter(athlete => {
+                        const matchesQuery = !query ||
+                            [athlete.name, athlete.team, athlete.event].some(val => String(val || '').toLowerCase().includes(query));
+                        const matchesStatus = status === 'All Status' || String(athlete.status || '').toLowerCase() === status.toLowerCase();
+                        return matchesQuery && matchesStatus;
+                    });
+                });
+
+                const filteredAuditLogs = computed(() => {
+                    const action = filters.value.auditAction;
+                    const user = filters.value.auditUser;
+                    return auditLogs.value.filter(log => {
+                        const matchesAction = action === 'All Actions' || String(log.action || '').toUpperCase() === action;
+                        const matchesUser = user === 'All Users' || String(log.user || '').toLowerCase().includes(user.toLowerCase());
+                        return matchesAction && matchesUser;
+                    });
+                });
+
+                const filteredResults = computed(() => {
+                    const query = filters.value.resultsQuery.trim().toLowerCase();
+                    const eventFilter = filters.value.resultsEvent;
+                    return results.value.filter(result => {
+                        const matchesQuery = !query ||
+                            [result.athlete, result.event, result.time].some(val => String(val || '').toLowerCase().includes(query));
+                        const matchesEvent = eventFilter === 'All Events' || String(result.event || '').toLowerCase() === eventFilter.toLowerCase();
+                        return matchesQuery && matchesEvent;
+                    });
+                });
+
+                const filteredAppRequests = computed(() => {
+                    const query = filters.value.appRequestQuery.trim().toLowerCase();
+                    const status = filters.value.appRequestStatus;
+                    return appRequests.value.filter(req => {
+                        const matchesQuery = !query || [req.title, req.requested_by, req.description].some(val => String(val || '').toLowerCase().includes(query));
+                        const matchesStatus = status === 'All Status' || (req.status || 'pending') === status.toLowerCase();
+                        return matchesQuery && matchesStatus;
+                    });
+                });
+
+                const filteredFormSubmissions = computed(() => {
+                    const query = filters.value.formSubmissionQuery.trim().toLowerCase();
+                    const status = filters.value.formSubmissionStatus;
+                    return formSubmissions.value.filter(form => {
+                        const matchesQuery = !query || [form.form_name, form.submitted_by].some(val => String(val || '').toLowerCase().includes(query));
+                        const matchesStatus = status === 'All Status' || (form.status || 'pending') === status.toLowerCase();
+                        return matchesQuery && matchesStatus;
+                    });
+                });
+
+                const loadStats = async () => {
+                    isLoading.value.stats = true;
+                    errors.value.stats = '';
+                    try {
+                        const payload = await apiRequest('/stats');
+                        stats.value = {
+                            total_events: payload.total_events ?? 0,
+                            total_athletes: payload.total_athletes ?? 0,
+                            total_results: payload.total_results ?? 0,
+                            active_competitions: payload.active_competitions ?? 0,
+                            system_status: payload.system_status || 'operational',
+                            system_status_label: payload.system_status ? payload.system_status.toUpperCase() : 'OK',
+                            total_athletes_delta: payload.total_athletes_delta || 'Updated'
+                        };
+                    } catch (error) {
+                        errors.value.stats = error.message;
+                        stats.value = {
+                            ...stats.value,
+                            total_events: recentRaces.value.length,
+                            total_athletes: recentAthletes.value.length,
+                            total_results: results.value.length,
+                            active_competitions: 0,
+                            system_status: 'unknown',
+                            system_status_label: 'N/A',
+                            total_athletes_delta: 'Fallback'
+                        };
+                    } finally {
+                        isLoading.value.stats = false;
+                    }
+                };
+
+                const loadRaces = async () => {
+                    isLoading.value.races = true;
+                    errors.value.races = '';
+                    try {
+                        const payload = await apiRequest('/races');
+                        const data = extractList(payload, ['races', 'data', 'items']);
+                        recentRaces.value = data.length ? data : demoRaces;
+                    } catch (error) {
+                        errors.value.races = error.message;
+                        recentRaces.value = demoRaces;
+                    } finally {
+                        isLoading.value.races = false;
+                    }
+                };
+
+                const loadAthletes = async () => {
+                    isLoading.value.athletes = true;
+                    errors.value.athletes = '';
+                    try {
+                        const payload = await apiRequest('/athletes');
+                        const data = extractList(payload, ['athletes', 'data', 'items']);
+                        recentAthletes.value = data.length ? data : demoAthletes;
+                    } catch (error) {
+                        errors.value.athletes = error.message;
+                        recentAthletes.value = demoAthletes;
+                    } finally {
+                        isLoading.value.athletes = false;
+                    }
+                };
+
+                const loadUsers = async () => {
+                    isLoading.value.users = true;
+                    errors.value.users = '';
+                    try {
+                        const payload = await apiRequest('/admin/users');
+                        users.value = extractList(payload, ['users', 'data', 'items']);
+                    } catch (error) {
+                        errors.value.users = error.message;
+                    } finally {
+                        isLoading.value.users = false;
+                    }
+                };
+
+                const loadResults = async () => {
+                    isLoading.value.results = true;
+                    errors.value.results = '';
+                    try {
+                        const payload = await apiRequest('/results');
+                        const data = extractList(payload, ['results', 'data', 'items']);
+                        const mapped = data.map((item, index) => ({
+                            id: item.id || index,
+                            athlete: item.athlete || item.athlete_name || 'Unknown',
+                            event: item.event || item.event_name || 'Event',
+                            time: item.time || item.time_seconds || 'N/A',
+                            position: item.position || item.rank || 0
+                        }));
+                        results.value = mapped.length ? mapped : demoResults;
+                    } catch (error) {
+                        errors.value.results = error.message;
+                        results.value = demoResults;
+                    } finally {
+                        isLoading.value.results = false;
+                    }
+                };
+
+                const loadAuditLogs = async () => {
+                    isLoading.value.audit = true;
+                    errors.value.audit = '';
+                    try {
+                        const payload = await apiRequest('/logs');
+                        const logs = extractList(payload, ['logs', 'data', 'items']);
+                        auditLogs.value = logs.map((log, index) => ({
+                            id: log.id || index,
+                            timestamp: log.timestamp || log.time || 'N/A',
+                            user: log.user || log.user_email || 'System',
+                            action: (log.action || log.level || 'INFO').toString().toUpperCase(),
+                            resource: log.resource || log.resource_type || 'system',
+                            details: log.details || log.message || ''
+                        }));
+                        recentActivities.value = auditLogs.value.slice(0, 4).map(log => ({
+                            id: log.id,
+                            description: `${log.action} ${log.resource}`.trim(),
+                            time: log.timestamp
+                        }));
+                    } catch (error) {
+                        errors.value.audit = error.message;
+                    } finally {
+                        isLoading.value.audit = false;
+                    }
+                };
+
+                const loadSettings = async () => {
+                    isLoading.value.settings = true;
+                    errors.value.settings = '';
+                    try {
+                        const payload = await apiRequest('/settings');
+                        if (payload?.settings) {
+                            settings.value = Object.assign({}, settings.value, payload.settings);
+                        }
+                    } catch (error) {
+                        errors.value.settings = error.message;
+                    } finally {
+                        isLoading.value.settings = false;
+                    }
+                };
+
+                const saveSettings = async () => {
+                    isLoading.value.settings = true;
+                    errors.value.settings = '';
+                    try {
+                        await apiRequest('/settings', {
+                            method: 'PUT',
+                            body: JSON.stringify(settings.value)
+                        });
+                        showSuccess('Settings saved successfully');
+                    } catch (error) {
+                        errors.value.settings = error.message;
+                        showSuccess('Failed to save settings');
+                    } finally {
+                        isLoading.value.settings = false;
+                    }
+                };
+
+                const refreshHealth = async () => {
+                    isLoading.value.health = true;
+                    errors.value.health = '';
+                    try {
+                        const base = API_BASE.endsWith('/api') ? API_BASE.replace(/\/api$/, '') : API_BASE;
+                        const response = await fetch(`${base}/health`);
+                        health.value = {
+                            api_status: response.ok ? 'online' : 'offline',
+                            api_status_label: response.ok ? 'Online' : 'Offline',
+                            db_status: response.ok ? 'online' : 'offline',
+                            db_status_label: response.ok ? 'Connected' : 'Disconnected',
+                            last_checked: new Date().toLocaleString()
+                        };
+                    } catch (error) {
+                        errors.value.health = error.message;
+                        health.value = {
+                            api_status: 'offline',
+                            api_status_label: 'Offline',
+                            db_status: 'offline',
+                            db_status_label: 'Disconnected',
+                            last_checked: new Date().toLocaleString()
+                        };
+                    } finally {
+                        isLoading.value.health = false;
+                    }
+                };
+
+                const loadBackups = async () => {
+                    isLoading.value.backups = true;
+                    errors.value.backups = '';
+                    try {
+                        const payload = await apiRequest('/admin/backups');
+                        backups.value = extractList(payload, ['backups', 'data', 'items']);
+                    } catch (error) {
+                        errors.value.backups = error.message;
+                        backups.value = [];
+                    } finally {
+                        isLoading.value.backups = false;
+                    }
+                };
+
+                const createBackup = async () => {
+                    try {
+                        await apiRequest('/admin/backups', { method: 'POST' });
+                        showSuccess('Backup started');
+                        await loadBackups();
+                    } catch (error) {
+                        showSuccess('Backup failed');
+                    }
+                };
+
+                const downloadBackup = async (backupId) => {
+                    try {
+                        window.location.href = `${API_BASE}/admin/backups/${backupId}/download`;
+                    } catch (error) {
+                        showSuccess('Download failed');
+                    }
+                };
+
+                const restoreBackup = async (backupId) => {
+                    if (!confirm('Restore this backup?')) return;
+                    try {
+                        await apiRequest(`/admin/backups/${backupId}/restore`, { method: 'POST' });
+                        showSuccess('Backup restored');
+                    } catch (error) {
+                        showSuccess('Restore failed');
+                    }
+                };
+
+                const exportResultsCsv = () => {
+                    if (!results.value.length) {
+                        showSuccess('No results to export');
+                        return;
+                    }
+
+                    const rows = [
+                        ['Athlete', 'Event', 'Time', 'Position'],
+                        ...results.value.map(r => [r.athlete, r.event, r.time, r.position])
+                    ];
+
+                    const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `results-${new Date().toISOString().slice(0, 10)}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                };
+
+                const loadAppRequests = async () => {
+                    isLoading.value.appRequests = true;
+                    errors.value.appRequests = '';
+                    try {
+                        const payload = await apiRequest('/admin/app-requests');
+                        appRequests.value = extractList(payload, ['requests', 'data', 'items']);
+                        if (!appRequests.value.length) {
+                            appRequests.value = [
+                                { id: 1, title: 'School Events Tracker', requested_by: 'coach@school.edu', description: 'Track school-wide athletic events', priority: 'high', status: 'pending', created_at: '2024-01-15' },
+                                { id: 2, title: 'Athlete Health Dashboard', requested_by: 'admin@athsys.com', description: 'Monitor athlete health metrics', priority: 'medium', status: 'approved', created_at: '2024-01-10', approved_by: 'admin@athsys.com', approved_at: '2024-01-12' }
+                            ];
+                        }
+                    } catch (error) {
+                        errors.value.appRequests = error.message;
+                        appRequests.value = [
+                            { id: 1, title: 'School Events Tracker', requested_by: 'coach@school.edu', description: 'Track school-wide athletic events', priority: 'high', status: 'pending', created_at: '2024-01-15' },
+                            { id: 2, title: 'Athlete Health Dashboard', requested_by: 'admin@athsys.com', description: 'Monitor athlete health metrics', priority: 'medium', status: 'approved', created_at: '2024-01-10', approved_by: 'admin@athsys.com', approved_at: '2024-01-12' }
+                        ];
+                    } finally {
+                        isLoading.value.appRequests = false;
+                    }
+                };
+
+                const loadFormSubmissions = async () => {
+                    isLoading.value.formSubmissions = true;
+                    errors.value.formSubmissions = '';
+                    try {
+                        const payload = await apiRequest('/admin/form-submissions');
+                        formSubmissions.value = extractList(payload, ['submissions', 'data', 'items']);
+                        if (!formSubmissions.value.length) {
+                            formSubmissions.value = [
+                                { id: 1, form_name: 'Athlete Registration', submitted_by: 'athlete@example.com', submitted_at: '2024-01-20', status: 'pending', notes: '' },
+                                { id: 2, form_name: 'Event Participation', submitted_by: 'coach@school.edu', submitted_at: '2024-01-18', status: 'approved', notes: 'Approved - all documents verified' }
+                            ];
+                        }
+                    } catch (error) {
+                        errors.value.formSubmissions = error.message;
+                        formSubmissions.value = [
+                            { id: 1, form_name: 'Athlete Registration', submitted_by: 'athlete@example.com', submitted_at: '2024-01-20', status: 'pending', notes: '' },
+                            { id: 2, form_name: 'Event Participation', submitted_by: 'coach@school.edu', submitted_at: '2024-01-18', status: 'approved', notes: 'Approved - all documents verified' }
+                        ];
+                    } finally {
+                        isLoading.value.formSubmissions = false;
+                    }
+                };
+
+                const approveAppRequest = async (requestId) => {
+                    try {
+                        await apiRequest(`/admin/app-requests/${requestId}/approve`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ approved_by: 'admin@athsys.com' })
+                        });
+                        showSuccess('✅ App request approved');
+                        await loadAppRequests();
+                    } catch (error) {
+                        showSuccess('❌ Failed to approve request');
+                    }
+                };
+
+                const rejectAppRequest = async (requestId) => {
+                    const reason = prompt('Enter rejection reason:');
+                    if (!reason) return;
+                    try {
+                        await apiRequest(`/admin/app-requests/${requestId}/reject`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ rejected_reason: reason })
+                        });
+                        showSuccess('✅ App request rejected');
+                        await loadAppRequests();
+                    } catch (error) {
+                        showSuccess('❌ Failed to reject request');
+                    }
+                };
+
+                const approveFormSubmission = async (submissionId) => {
+                    const notes = prompt('Enter approval notes:');
+                    if (!notes) return;
+                    try {
+                        await apiRequest(`/admin/form-submissions/${submissionId}/approve`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ notes })
+                        });
+                        showSuccess('✅ Form submission approved');
+                        await loadFormSubmissions();
+                    } catch (error) {
+                        showSuccess('❌ Failed to approve submission');
+                    }
+                };
+
+                const rejectFormSubmission = async (submissionId) => {
+                    const notes = prompt('Enter rejection notes:');
+                    if (!notes) return;
+                    try {
+                        await apiRequest(`/admin/form-submissions/${submissionId}/reject`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ notes })
+                        });
+                        showSuccess('✅ Form submission rejected');
+                        await loadFormSubmissions();
+                    } catch (error) {
+                        showSuccess('❌ Failed to reject submission');
+                    }
+                };
 
                 // ===== RACE METHODS =====
                 const createRace = () => {
@@ -1161,30 +2008,42 @@
                     showModal.value = true;
                 };
 
-                const deleteRace = (id) => {
-                    if (confirm('Are you sure you want to delete this race?')) {
+                const deleteRace = async (id) => {
+                    if (!confirm('Are you sure you want to delete this race?')) return;
+                    try {
+                        await apiRequest(`/races/${id}`, { method: 'DELETE' });
                         recentRaces.value = recentRaces.value.filter(r => r.id !== id);
                         showSuccess('Race deleted successfully');
+                    } catch (error) {
+                        showSuccess('Delete failed');
                     }
                 };
 
                 const saveRace = async () => {
-                    // TODO: Replace with API call
-                    // const response = await fetch('/api/races', {
-                    //     method: editingId.value ? 'PUT' : 'POST',
-                    //     headers: { 'Content-Type': 'application/json' },
-                    //     body: JSON.stringify(formData.value)
-                    // });
-                    
-                    if (editingId.value) {
-                        const idx = recentRaces.value.findIndex(r => r.id === editingId.value);
-                        recentRaces.value[idx] = { ...recentRaces.value[idx], name: formData.value.name, date: formData.value.date, location: formData.value.location };
-                        showSuccess('Race updated successfully');
-                    } else {
-                        recentRaces.value.push({ id: Date.now(), name: formData.value.name, date: formData.value.date, location: formData.value.location, status: 'upcoming' });
-                        showSuccess('Race created successfully');
+                    try {
+                        if (editingId.value) {
+                            const payload = await apiRequest(`/races/${editingId.value}`, {
+                                method: 'PUT',
+                                body: JSON.stringify(formData.value)
+                            });
+                            const idx = recentRaces.value.findIndex(r => r.id === editingId.value);
+                            const updated = payload?.race || payload;
+                            if (idx >= 0) recentRaces.value[idx] = { ...recentRaces.value[idx], ...updated };
+                            showSuccess('Race updated successfully');
+                        } else {
+                            const payload = await apiRequest('/races', {
+                                method: 'POST',
+                                body: JSON.stringify(formData.value)
+                            });
+                            const created = payload?.race || payload;
+                            if (created) recentRaces.value.unshift(created);
+                            showSuccess('Race created successfully');
+                        }
+                    } catch (error) {
+                        showSuccess('Save failed');
+                    } finally {
+                        showModal.value = false;
                     }
-                    showModal.value = false;
                 };
 
                 // ===== ATHLETE METHODS =====
@@ -1202,24 +2061,42 @@
                     showModal.value = true;
                 };
 
-                const deleteAthlete = (id) => {
-                    if (confirm('Are you sure you want to delete this athlete?')) {
+                const deleteAthlete = async (id) => {
+                    if (!confirm('Are you sure you want to delete this athlete?')) return;
+                    try {
+                        await apiRequest(`/athletes/${id}`, { method: 'DELETE' });
                         recentAthletes.value = recentAthletes.value.filter(a => a.id !== id);
                         showSuccess('Athlete deleted successfully');
+                    } catch (error) {
+                        showSuccess('Delete failed');
                     }
                 };
 
                 const saveAthlete = async () => {
-                    // TODO: Replace with API call
-                    if (editingId.value) {
-                        const idx = recentAthletes.value.findIndex(a => a.id === editingId.value);
-                        recentAthletes.value[idx] = { ...recentAthletes.value[idx], name: formData.value.name, team: formData.value.team, event: formData.value.event };
-                        showSuccess('Athlete updated successfully');
-                    } else {
-                        recentAthletes.value.push({ id: Date.now(), name: formData.value.name, team: formData.value.team, event: formData.value.event, status: 'active' });
-                        showSuccess('Athlete registered successfully');
+                    try {
+                        if (editingId.value) {
+                            const payload = await apiRequest(`/athletes/${editingId.value}`, {
+                                method: 'PUT',
+                                body: JSON.stringify(formData.value)
+                            });
+                            const idx = recentAthletes.value.findIndex(a => a.id === editingId.value);
+                            const updated = payload?.athlete || payload;
+                            if (idx >= 0) recentAthletes.value[idx] = { ...recentAthletes.value[idx], ...updated };
+                            showSuccess('Athlete updated successfully');
+                        } else {
+                            const payload = await apiRequest('/athletes', {
+                                method: 'POST',
+                                body: JSON.stringify(formData.value)
+                            });
+                            const created = payload?.athlete || payload;
+                            if (created) recentAthletes.value.unshift(created);
+                            showSuccess('Athlete registered successfully');
+                        }
+                    } catch (error) {
+                        showSuccess('Save failed');
+                    } finally {
+                        showModal.value = false;
                     }
-                    showModal.value = false;
                 };
 
                 // ===== USER METHODS =====
@@ -1237,24 +2114,42 @@
                     showModal.value = true;
                 };
 
-                const deleteUser = (id) => {
-                    if (confirm('Are you sure you want to delete this user?')) {
+                const deleteUser = async (id) => {
+                    if (!confirm('Are you sure you want to delete this user?')) return;
+                    try {
+                        await apiRequest(`/admin/users/${id}`, { method: 'DELETE' });
                         users.value = users.value.filter(u => u.id !== id);
                         showSuccess('User deleted successfully');
+                    } catch (error) {
+                        showSuccess('Delete failed');
                     }
                 };
 
                 const saveUser = async () => {
-                    // TODO: Replace with API call
-                    if (editingId.value) {
-                        const idx = users.value.findIndex(u => u.id === editingId.value);
-                        users.value[idx] = { ...users.value[idx], name: formData.value.name, email: formData.value.email, role: formData.value.role };
-                        showSuccess('User updated successfully');
-                    } else {
-                        users.value.push({ id: Date.now(), name: formData.value.name, email: formData.value.email, role: formData.value.role, status: 'active' });
-                        showSuccess('User created successfully');
+                    try {
+                        if (editingId.value) {
+                            const payload = await apiRequest(`/admin/users/${editingId.value}`, {
+                                method: 'PUT',
+                                body: JSON.stringify(formData.value)
+                            });
+                            const idx = users.value.findIndex(u => u.id === editingId.value);
+                            const updated = payload?.user || payload;
+                            if (idx >= 0) users.value[idx] = { ...users.value[idx], ...updated };
+                            showSuccess('User updated successfully');
+                        } else {
+                            const payload = await apiRequest('/admin/users', {
+                                method: 'POST',
+                                body: JSON.stringify(formData.value)
+                            });
+                            const created = payload?.user || payload;
+                            if (created) users.value.unshift(created);
+                            showSuccess('User created successfully');
+                        }
+                    } catch (error) {
+                        showSuccess('Save failed');
+                    } finally {
+                        showModal.value = false;
                     }
-                    showModal.value = false;
                 };
 
                 const getPageTitle = () => {
@@ -1274,7 +2169,10 @@
 
                 const logout = () => {
                     if (confirm('Are you sure you want to logout?')) {
-                        window.location.href = '/login';
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/';
                     }
                 };
 
@@ -1284,72 +2182,185 @@
                     setTimeout(() => { showSuccessMessage.value = false; }, 3000);
                 };
 
-                // Initialize
-                setTimeout(() => {
-                    appReady.value = true;
-                    setTimeout(() => initializeCharts(), 500);
-                }, 2000);
+                let trendChart = null;
+                let distChart = null;
 
-                const initializeCharts = () => {
+                const updateCharts = () => {
                     const trendCtx = document.getElementById('trendChart');
+                    const distCtx = document.getElementById('distributionChart');
+
+                    const trendLabels = ['Athletes', 'Events', 'Results', 'Active'];
+                    const trendValues = [
+                        stats.value.total_athletes,
+                        stats.value.total_events,
+                        stats.value.total_results,
+                        stats.value.active_competitions
+                    ];
+
+                    const distribution = results.value.reduce((acc, item) => {
+                        const key = item.event || 'Other';
+                        acc[key] = (acc[key] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    const distLabels = Object.keys(distribution).length ? Object.keys(distribution) : ['No Data'];
+                    const distValues = Object.keys(distribution).length ? Object.values(distribution) : [1];
+
                     if (trendCtx) {
-                        new Chart(trendCtx, {
-                            type: 'line',
-                            data: {
-                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                                datasets: [{
-                                    label: 'Participation',
-                                    data: [120, 190, 150, 220, 280, 320],
-                                    borderColor: '#ff6b35',
-                                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                                    tension: 0.4,
-                                    fill: true,
-                                    pointRadius: 5,
-                                    pointBackgroundColor: '#ff6b35',
-                                    pointBorderColor: 'white',
-                                    pointBorderWidth: 2,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: { legend: { display: false } },
-                                scales: { y: { beginAtZero: true } }
-                            }
-                        });
+                        if (trendChart) {
+                            trendChart.data.labels = trendLabels;
+                            trendChart.data.datasets[0].data = trendValues;
+                            trendChart.update();
+                        } else {
+                            trendChart = new Chart(trendCtx, {
+                                type: 'line',
+                                data: {
+                                    labels: trendLabels,
+                                    datasets: [{
+                                        label: 'Participation',
+                                        data: trendValues,
+                                        borderColor: '#ff6b35',
+                                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                                        tension: 0.4,
+                                        fill: true,
+                                        pointRadius: 5,
+                                        pointBackgroundColor: '#ff6b35',
+                                        pointBorderColor: 'white',
+                                        pointBorderWidth: 2
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: { y: { beginAtZero: true } }
+                                }
+                            });
+                        }
                     }
 
-                    const distCtx = document.getElementById('distributionChart');
                     if (distCtx) {
-                        new Chart(distCtx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Marathon', 'Sprint', 'Relay', 'Other'],
-                                datasets: [{
-                                    data: [40, 25, 20, 15],
-                                    backgroundColor: ['#ff6b35', '#06d6a0', '#f39c12', '#3498db'],
-                                    borderColor: 'white',
-                                    borderWidth: 3,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: { legend: { display: true, position: 'bottom' } }
-                            }
-                        });
+                        if (distChart) {
+                            distChart.data.labels = distLabels;
+                            distChart.data.datasets[0].data = distValues;
+                            distChart.update();
+                        } else {
+                            distChart = new Chart(distCtx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: distLabels,
+                                    datasets: [{
+                                        data: distValues,
+                                        backgroundColor: ['#ff6b35', '#06d6a0', '#f39c12', '#3498db', '#9b59b6'],
+                                        borderColor: 'white',
+                                        borderWidth: 3
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: true, position: 'bottom' } }
+                                }
+                            });
+                        }
                     }
                 };
 
+                const initializeApp = async () => {
+                    if (!enforceAdminAccess()) {
+                        return;
+                    }
+
+                    hydrateCurrentUser();
+
+                    const minDelay = new Promise(resolve => setTimeout(resolve, 800));
+                    await Promise.all([
+                        loadStats(),
+                        loadRaces(),
+                        loadAthletes(),
+                        loadUsers(),
+                        loadResults(),
+                        loadSettings(),
+                        loadAuditLogs(),
+                        refreshHealth(),
+                        loadBackups(),
+                        loadAppRequests(),
+                        loadFormSubmissions(),
+                        minDelay
+                    ]);
+                    appReady.value = true;
+                    setTimeout(updateCharts, 300);
+                };
+
+                initializeApp();
+
                 return {
-                    appReady, currentPage, sidebarExpanded, isDarkMode,
-                    showNotifications, showUserMenu, showModal, modalType, formData,
-                    showSuccessMessage, successMessage,
-                    menuItems, recentRaces, recentAthletes, users, notifications, recentActivities, auditLogs,
-                    createRace, editRace, deleteRace, saveRace,
-                    registerAthlete, editAthlete, deleteAthlete, saveAthlete,
-                    addUser, editUser, deleteUser, saveUser,
-                    getPageTitle, toggleTheme, clearNotifications, logout
+                    appReady,
+                    currentPage,
+                    sidebarExpanded,
+                    isDarkMode,
+                    showNotifications,
+                    showUserMenu,
+                    showModal,
+                    modalType,
+                    formData,
+                    showSuccessMessage,
+                    successMessage,
+                    menuItems,
+                    filters,
+                    stats,
+                    health,
+                    settings,
+                    recentRaces,
+                    recentAthletes,
+                    users,
+                    results,
+                    backups,
+                    notifications,
+                    currentUser,
+                    recentActivities,
+                    auditLogs,
+                    filteredRaces,
+                    filteredAthletes,
+                    filteredAuditLogs,
+                    filteredResults,
+                    applyRaceFilters,
+                    applyAthleteFilters,
+                    applyAuditFilters,
+                    applyResultsFilters,
+                    loadResults,
+                    exportResultsCsv,
+                    appRequests,
+                    formSubmissions,
+                    filteredAppRequests,
+                    filteredFormSubmissions,
+                    loadAppRequests,
+                    loadFormSubmissions,
+                    approveAppRequest,
+                    rejectAppRequest,
+                    approveFormSubmission,
+                    rejectFormSubmission,
+                    createRace,
+                    editRace,
+                    deleteRace,
+                    saveRace,
+                    registerAthlete,
+                    editAthlete,
+                    deleteAthlete,
+                    saveAthlete,
+                    addUser,
+                    editUser,
+                    deleteUser,
+                    saveUser,
+                    createBackup,
+                    downloadBackup,
+                    restoreBackup,
+                    getPageTitle,
+                    toggleTheme,
+                    clearNotifications,
+                    refreshHealth,
+                    saveSettings,
+                    logout
                 };
             }
         }).mount('#app');

@@ -1347,9 +1347,10 @@
 
                 bulkDeleteRaces() {
                     if (!confirm(`Delete ${this.selectedRaces.length} races?`)) return;
+                    const deletedCount = this.selectedRaces.length;
                     this.races = this.races.filter(r => !this.selectedRaces.includes(r.id));
                     this.selectedRaces = [];
-                    this.addNotification(`${this.selectedRaces.length} races deleted`, '✓ Bulk Delete', 'success');
+                    this.addNotification(`${deletedCount} races deleted`, '✓ Bulk Delete', 'success');
                 },
 
                 bulkApproveAthletes() {
@@ -1489,7 +1490,9 @@
                 },
 
                 logout() {
-                    localStorage.clear();
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
                     window.location.href = 'index.html';
                 }
             },

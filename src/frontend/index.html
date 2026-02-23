@@ -485,9 +485,12 @@
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
-                    // Redirect based on role
-                    if (data.user.role === 'admin') {
-                        window.location.href = '/admin.html';
+                    // Redirect based on normalized role
+                    const userRole = (data?.user?.role || '').toString().toLowerCase();
+                    const adminRoles = ['admin', 'chief_registrar'];
+
+                    if (adminRoles.includes(userRole)) {
+                        window.location.href = '/admin-pro-complete';
                     } else {
                         window.location.href = '/athlete.html';
                     }
@@ -530,7 +533,7 @@
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ name, email, password, role: 'athlete' })
                 });
 
                 if (response.ok) {
