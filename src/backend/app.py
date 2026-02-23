@@ -678,6 +678,12 @@ def health():
     return jsonify(health_status), status_code
 
 
+@app.route('/api/health')
+def api_health():
+    """Health alias for API clients expecting /api/health."""
+    return health()
+
+
 @app.route('/livez')
 def livez():
     """Lightweight liveness probe endpoint for container orchestration"""

@@ -375,9 +375,9 @@
                     </div>
 
                     <div class="mt-5 flex flex-wrap gap-3 text-xs text-gray-300">
-                        <span class="px-3 py-1 rounded-full border border-orange-400/30 bg-orange-500/10">V3 Enterprise</span>
+                        <span id="platformBadge" class="px-3 py-1 rounded-full border border-orange-400/30 bg-orange-500/10">V3 Enterprise</span>
                         <span class="px-3 py-1 rounded-full border border-green-400/30 bg-green-500/10">JWT + RBAC</span>
-                        <span class="px-3 py-1 rounded-full border border-blue-400/30 bg-blue-500/10">Audit Ready</span>
+                        <span id="healthBadge" class="px-3 py-1 rounded-full border border-blue-400/30 bg-blue-500/10">System Checking…</span>
                     </div>
 
                     <!-- Trust Badges -->
@@ -718,6 +718,52 @@
     </footer>
 
     <script>
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000'
+            : '';
+
+        async function hydratePlatformBadges() {
+            const platformBadge = document.getElementById('platformBadge');
+            const healthBadge = document.getElementById('healthBadge');
+
+            try {
+                const [versionRes, healthRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/version`),
+                    fetch(`${API_BASE}/health`)
+                ]);
+
+                const versionData = await versionRes.json().catch(() => ({}));
+                const healthData = await healthRes.json().catch(() => ({}));
+
+                const platformVersion = versionData.platform_version || versionData.version || versionData.meta?.version;
+                const phase = versionData.phase || 'Enterprise';
+                if (platformVersion && platformBadge) {
+                    platformBadge.textContent = `v${platformVersion} • ${phase}`;
+                }
+
+                if (healthBadge) {
+                    const status = String(healthData.status || '').toLowerCase();
+                    if (status === 'healthy' || status === 'operational' || status === 'running') {
+                        healthBadge.textContent = 'System Healthy';
+                        healthBadge.className = 'px-3 py-1 rounded-full border border-green-400/30 bg-green-500/10';
+                    } else if (status === 'degraded') {
+                        healthBadge.textContent = 'System Degraded';
+                        healthBadge.className = 'px-3 py-1 rounded-full border border-yellow-400/30 bg-yellow-500/10';
+                    } else {
+                        healthBadge.textContent = 'System Unknown';
+                        healthBadge.className = 'px-3 py-1 rounded-full border border-blue-400/30 bg-blue-500/10';
+                    }
+                }
+            } catch (error) {
+                if (healthBadge) {
+                    healthBadge.textContent = 'System Unreachable';
+                    healthBadge.className = 'px-3 py-1 rounded-full border border-red-400/30 bg-red-500/10';
+                }
+            }
+        }
+
+        hydratePlatformBadges();
+
         // Smooth scroll for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {

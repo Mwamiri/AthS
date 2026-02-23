@@ -239,11 +239,23 @@
             for (const path of paths) {
                 try {
                     const response = await fetch(`${API_BASE}${path}`);
-                    if (!response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        lastError = new Error(`Unexpected response type for ${path}`);
+                        continue;
+                    }
+
+                    const payload = await response.json();
+
+                    if (response.status >= 500 && !payload?.status) {
                         lastError = new Error(`HTTP ${response.status} for ${path}`);
                         continue;
                     }
-                    return await response.json();
+
+                    return {
+                        ...payload,
+                        _http_status: response.status
+                    };
                 } catch (error) {
                     lastError = error;
                 }
@@ -287,7 +299,9 @@
             const mainCard = createStatusCard(
                 'System Status',
                 data.status || 'unknown',
-                ['healthy', 'operational', 'running'].includes(String(data.status || '').toLowerCase()) ? 'healthy' : 'error',
+                ['healthy', 'operational', 'running'].includes(String(data.status || '').toLowerCase())
+                    ? 'healthy'
+                    : (String(data.status || '').toLowerCase() === 'degraded' ? 'warning' : 'error'),
                 `Service: ${data.service}<br>Version: ${data.version}`
             );
             statusGrid.appendChild(mainCard);
