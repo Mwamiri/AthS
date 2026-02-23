@@ -1158,7 +1158,7 @@
                                                 </p>
                                             </td>
                                             <td>
-                                                <span class="badge badge-info">{{ plugin.category || 'general' }}</span>
+                                                <span class="badge badge-info">{{ plugin.category_label || plugin.category || 'general' }}</span>
                                                 <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">{{ plugin.module || plugin.plugin_id || 'n/a' }}</p>
                                                 <p v-if="plugin.plugin_id" class="text-xs text-gray-400 dark:text-slate-500">ID: {{ plugin.plugin_id }}</p>
                                             </td>

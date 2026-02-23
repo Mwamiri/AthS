@@ -4,7 +4,7 @@ Main application entry point with enhanced UX features
 Production-ready with PostgreSQL and Redis
 """
 
-from flask import Flask, jsonify, request, send_from_directory, make_response, send_file, redirect
+from flask import Flask, jsonify, request, send_from_directory, make_response, send_file, redirect, has_request_context
 from flask_cors import CORS
 import os
 import time
@@ -179,6 +179,7 @@ app.config['JWT_ALGORITHM'] = os.getenv('JWT_ALGORITHM', 'HS256')
 app.config['JWT_ACCESS_EXPIRES_SECONDS'] = int(os.getenv('JWT_ACCESS_EXPIRES_SECONDS', 3600))
 app.config['JWT_REFRESH_EXPIRES_SECONDS'] = int(os.getenv('JWT_REFRESH_EXPIRES_SECONDS', 604800))
 app.config['IDEMPOTENCY_TTL_SECONDS'] = int(os.getenv('IDEMPOTENCY_TTL_SECONDS', 600))
+app.config['AUDIT_ALL_API_REQUESTS'] = os.getenv('AUDIT_ALL_API_REQUESTS', 'True') == 'True'
 
 # Initialize connections on startup (Flask 3.0+ compatible)
 def initialize():
@@ -242,6 +243,54 @@ APP_NAME = 'AthSys - Athletics Management System'
 # Request counter for demo purposes
 REQUEST_COUNT = 0
 RACE_CONTROL_STATE = {}
+
+COUNTRY_HEADER_CANDIDATES = (
+    'CF-IPCountry',
+    'X-Country-Code',
+    'X-AppEngine-Country',
+    'X-Azure-ClientCountry',
+    'X-Geo-Country'
+)
+
+
+def _extract_client_ip_address():
+    forwarded_for = request.headers.get('X-Forwarded-For', '')
+    if forwarded_for:
+        first_ip = forwarded_for.split(',', 1)[0].strip()
+        if first_ip:
+            return first_ip
+
+    real_ip = request.headers.get('X-Real-IP', '').strip()
+    if real_ip:
+        return real_ip
+
+    return request.remote_addr
+
+
+def _normalize_country_code(raw_code):
+    candidate = str(raw_code or '').strip().upper()
+    if len(candidate) == 2 and candidate.isalpha():
+        return candidate
+    return 'UNK'
+
+
+def _resolve_country_code():
+    for header_name in COUNTRY_HEADER_CANDIDATES:
+        header_value = request.headers.get(header_name, '').strip()
+        if header_value:
+            return _normalize_country_code(header_value)
+    return 'UNK'
+
+
+def _build_request_audit_context():
+    return {
+        'request_id': getattr(request, 'request_id', ''),
+        'method': request.method,
+        'path': request.path,
+        'endpoint': request.endpoint,
+        'client_ip': getattr(request, 'client_ip', request.remote_addr),
+        'country_code': getattr(request, 'country_code', 'UNK')
+    }
 
 # Rate limiting decorator
 def rate_limit(max_requests=100, window=3600):
@@ -308,32 +357,45 @@ def authenticate_request(roles=None):
     """Authenticate request from Authorization Bearer JWT access token."""
     auth_header = request.headers.get('Authorization', '').strip()
     if not auth_header or not auth_header.lower().startswith('bearer '):
+        log_audit('auth_failed', 'auth', details={'reason': 'missing_authorization_header'})
         return None, 'No authorization header', 401
 
     token = auth_header.split(' ', 1)[1].strip()
     if not token:
+        log_audit('auth_failed', 'auth', details={'reason': 'empty_bearer_token'})
         return None, 'Invalid token', 401
 
     try:
         payload = jwt.decode(token, app.config['JWT_SECRET'], algorithms=[app.config['JWT_ALGORITHM']])
         if payload.get('type') != 'access':
+            log_audit('auth_failed', 'auth', details={'reason': 'invalid_token_type'})
             return None, 'Invalid token type', 401
 
         user_id = int(payload.get('sub'))
         session = SessionManager.get_session(user_id)
         if not session:
+            log_audit('auth_failed', 'auth', details={'reason': 'expired_or_invalid_session', 'user_id': user_id})
             return None, 'Invalid or expired session', 401
     except jwt.ExpiredSignatureError:
+        log_audit('auth_failed', 'auth', details={'reason': 'access_token_expired'})
         return None, 'Access token expired', 401
     except jwt.InvalidTokenError:
+        log_audit('auth_failed', 'auth', details={'reason': 'invalid_access_token'})
         return None, 'Invalid token', 401
     except (TypeError, ValueError):
+        log_audit('auth_failed', 'auth', details={'reason': 'malformed_access_token'})
         return None, 'Invalid token', 401
 
     if roles:
         role = normalize_role(session.get('role'))
         allowed_roles = {normalize_role(r) for r in roles}
         if role not in allowed_roles:
+            log_audit('access_denied', 'auth', details={
+                'reason': 'insufficient_permissions',
+                'user_id': user_id,
+                'role': role,
+                'required_roles': sorted(list(allowed_roles))
+            })
             return None, 'Insufficient permissions', 403
 
     request.user = session
@@ -410,16 +472,31 @@ def log_audit(action, entity_type, entity_id=None, details=None):
     """Log action to audit trail"""
     try:
         db = next(get_db())
-        user_id = getattr(request, 'user', {}).get('id')
+        user_id = getattr(request, 'user', {}).get('id') if has_request_context() else None
+
+        request_context = _build_request_audit_context() if has_request_context() else {}
+        if isinstance(details, dict):
+            merged_details = {**details, **request_context}
+        elif details is None:
+            merged_details = request_context
+        else:
+            merged_details = {
+                'message': str(details),
+                **request_context
+            }
+
+        details_json = json.dumps(merged_details, default=str)
+        ip_address = request_context.get('client_ip') if has_request_context() else None
+        user_agent_value = ((request.user_agent.string or '')[:255]) if has_request_context() else ''
         
         audit = AuditLog(
             user_id=user_id,
             action=action,
             entity_type=entity_type,
             entity_id=entity_id,
-            details=details,
-            ip_address=request.remote_addr,
-            user_agent=request.user_agent.string
+            details=details_json,
+            ip_address=ip_address,
+            user_agent=user_agent_value
         )
         db.add(audit)
         db.commit()
@@ -1225,6 +1302,8 @@ def before_request():
     request.start_time = time.time()
     incoming_request_id = request.headers.get('X-Request-ID', '').strip()
     request.request_id = incoming_request_id or f"req_{uuid.uuid4().hex[:12]}"
+    request.client_ip = _extract_client_ip_address()
+    request.country_code = _resolve_country_code()
 
     request.idempotency_key = request.headers.get('Idempotency-Key', '').strip()
     request.idempotency_cache_key = None
@@ -1251,6 +1330,33 @@ def after_request(response):
     if hasattr(request, 'start_time'):
         elapsed = time.time() - request.start_time
         response.headers['X-Response-Time'] = f'{elapsed*1000:.2f}ms'
+    else:
+        elapsed = 0
+
+    try:
+        if request.path.startswith('/api/') and request.method != 'OPTIONS':
+            user_id = getattr(request, 'user', {}).get('id') if hasattr(request, 'user') else None
+            get_log_manager().log_api_request(
+                request.method,
+                request.path,
+                response.status_code,
+                user_id=user_id,
+                duration_ms=elapsed * 1000
+            )
+
+            if app.config.get('AUDIT_ALL_API_REQUESTS', True):
+                log_audit(
+                    'api_access',
+                    'endpoint',
+                    details={
+                        'status_code': response.status_code,
+                        'duration_ms': round(elapsed * 1000, 2),
+                        'query': request.args.to_dict(flat=True),
+                        'idempotency_replayed': response.headers.get('X-Idempotency-Replayed') == 'true'
+                    }
+                )
+    except Exception:
+        pass
 
     if getattr(request, 'idempotency_key', None):
         response.headers['X-Idempotency-Key'] = request.idempotency_key
@@ -1295,6 +1401,7 @@ def after_request(response):
             pass
     
     response.headers['X-Request-ID'] = getattr(request, 'request_id', f'req_{uuid.uuid4().hex[:12]}')
+    response.headers['X-Country-Code'] = getattr(request, 'country_code', 'UNK')
     response.headers['X-Powered-By'] = 'AthSys'
     response.headers['X-API-Version'] = f'v{APP_VERSION}'
     return response

@@ -12,6 +12,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+CATEGORY_LABELS = {
+    'core': 'Core System',
+    'enterprise': 'Enterprise',
+    'features': 'Feature Module',
+    'infrastructure': 'Infrastructure',
+    'security': 'Security'
+}
+
 
 class PluginRegistry:
     """Central registry for all system plugins/modules"""
@@ -497,7 +505,10 @@ class PluginManager:
             return None
         
         plugin_info = PluginRegistry.AVAILABLE_PLUGINS[plugin_id].copy()
+        plugin_category = str(plugin_info.get('category', '')).strip().lower() or 'features'
         plugin_info['plugin_id'] = plugin_id
+        plugin_info['category'] = plugin_category
+        plugin_info['category_label'] = CATEGORY_LABELS.get(plugin_category, plugin_category.replace('_', ' ').title())
         plugin_info['is_loaded'] = self.is_loaded(plugin_id)
         plugin_info['dependencies'] = plugin_info.get('dependencies', [])
         plugin_info['disable_blockers'] = self.get_disable_blockers(plugin_id)
