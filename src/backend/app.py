@@ -241,6 +241,7 @@ APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
 REQUEST_COUNT = 0
+RACE_CONTROL_STATE = {}
 
 # Rate limiting decorator
 def rate_limit(max_requests=100, window=3600):
@@ -490,6 +491,48 @@ def _get_team_photos_map(db):
         return parsed if isinstance(parsed, dict) else {}
     except Exception:
         return {}
+
+
+def _file_manager_root_dir():
+    file_root = os.path.abspath(os.path.join(PROJECT_ROOT, 'uploads', 'files'))
+    os.makedirs(file_root, exist_ok=True)
+    return file_root
+
+
+def _safe_storage_path(relative_path=''):
+    root = _file_manager_root_dir()
+    candidate = os.path.abspath(os.path.join(root, (relative_path or '').strip().replace('\\', '/').lstrip('/')))
+    if not candidate.startswith(root):
+        raise ValueError('Invalid file path')
+    return candidate
+
+
+def _sanitize_upload_filename(filename):
+    raw = os.path.basename(str(filename or '').strip())
+    if not raw:
+        return ''
+    safe_name = ''.join(ch for ch in raw if ch.isalnum() or ch in ('-', '_', '.'))
+    return safe_name[:120].strip('.')
+
+
+def _list_file_manager_items(subpath=''):
+    target_dir = _safe_storage_path(subpath)
+    if not os.path.isdir(target_dir):
+        return []
+
+    items = []
+    for entry in sorted(os.listdir(target_dir)):
+        full_path = os.path.join(target_dir, entry)
+        stats = os.stat(full_path)
+        rel_path = os.path.relpath(full_path, _file_manager_root_dir()).replace('\\', '/')
+        items.append({
+            'name': entry,
+            'path': rel_path,
+            'isDirectory': os.path.isdir(full_path),
+            'size': stats.st_size if os.path.isfile(full_path) else 0,
+            'modifiedAt': datetime.fromtimestamp(stats.st_mtime).isoformat()
+        })
+    return items
 
 # Password validation helper
 def validate_password_strength(password):
@@ -775,6 +818,99 @@ FRONTPAGE_CHAMPIONSHIP_DATA = {
     ]
 }
 
+FRONTPAGE_MARKETING_DEFAULTS = {
+    'hero': {
+        'headline': 'Manage Athletics with Precision & Speed',
+        'subheadline': 'From race planning to live results, AthSys gives teams one operational command center.',
+        'primaryCta': {'label': 'Start Free Trial', 'action': 'trial'},
+        'secondaryCta': {'label': 'Book Demo', 'action': 'book-demo'}
+    },
+    'demo_video': {
+        'title': 'AthSys Product Demo',
+        'description': 'Explore race management, athlete registry, live timing, analytics, and admin controls.',
+        'embed_url': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        'thumbnail_url': '',
+        'duration': '03:48'
+    },
+    'testimonials': [
+        {
+            'name': 'Sarah Johnson',
+            'role': 'Athletics Director',
+            'rating': 5,
+            'quote': 'AthSys transformed how we coordinate championships and communicate results.'
+        },
+        {
+            'name': 'Michael Chen',
+            'role': 'Track & Field Coach',
+            'rating': 5,
+            'quote': 'Our coaches rely on AthSys analytics every training cycle.'
+        },
+        {
+            'name': 'Emily Rodriguez',
+            'role': 'Event Coordinator',
+            'rating': 5,
+            'quote': 'Managing thousands of athletes is simpler and more transparent with AthSys.'
+        }
+    ],
+    'plans': [
+        {
+            'plan_key': 'starter',
+            'name': 'Starter',
+            'price_monthly': 29,
+            'currency': 'USD',
+            'trial_days': 14,
+            'featured': False,
+            'features': ['Up to 5 events', '500 athletes', 'Basic reporting']
+        },
+        {
+            'plan_key': 'professional',
+            'name': 'Professional',
+            'price_monthly': 99,
+            'currency': 'USD',
+            'trial_days': 14,
+            'featured': True,
+            'features': ['Unlimited events', '10,000 athletes', 'Live timing + exports']
+        },
+        {
+            'plan_key': 'enterprise',
+            'name': 'Enterprise',
+            'price_monthly': None,
+            'currency': 'USD',
+            'trial_days': 30,
+            'featured': False,
+            'features': ['Multi-tenant controls', 'Compliance reporting', 'Priority support']
+        }
+    ],
+    'faq': [
+        {
+            'question': 'Can we start with a trial first?',
+            'answer': 'Yes. Every paid plan supports a free trial period.'
+        },
+        {
+            'question': 'Can we book a live product walkthrough?',
+            'answer': 'Yes. Use the demo booking form and our team confirms your slot.'
+        }
+    ],
+    'appointment_plugin': {
+        'enabled': True,
+        'name': 'Appointment Scheduler',
+        'status': 'active'
+    }
+}
+
+DEMO_APPOINTMENTS = []
+DEMO_TRIAL_SUBSCRIPTIONS = []
+DEMO_FRONT_CTA_EVENTS = []
+DEMO_SAAS_CLIENTS = []
+DEMO_SAAS_SUBSCRIPTIONS = []
+DEMO_SAAS_PAYMENTS = []
+
+SUPPORTED_PAYMENT_METHODS = [
+    {'key': 'paypal', 'label': 'PayPal'},
+    {'key': 'visa', 'label': 'Visa / Card'},
+    {'key': 'mpesa', 'label': 'M-Pesa'}
+]
+
 
 def _build_frontpage_past_races(limit=8):
     """Build past races from persisted race archive (completed or already elapsed)."""
@@ -889,10 +1025,16 @@ def _build_frontpage_medal_table(limit=20):
             ranked_rows.append({
                 'rank': index,
                 'team_group': row['team_group'],
+                'team_name': row['team_group'],
+                'group_name': row['team_group'],
                 'gold': row['gold'],
+                'medals_gold': row['gold'],
                 'silver': row['silver'],
+                'medals_silver': row['silver'],
                 'bronze': row['bronze'],
-                'total': row['total']
+                'medals_bronze': row['bronze'],
+                'total': row['total'],
+                'medals_total': row['total']
             })
 
         return ranked_rows
@@ -1252,6 +1394,548 @@ def frontpage_event_calendar():
         'calendar': filtered,
         'count': len(filtered),
         'message': '✅ Frontpage event calendar data retrieved successfully'
+    })), 200
+
+
+def _get_frontend_config_value(key, default_value):
+    """Read public frontend config value by key with fallback."""
+    try:
+        db = next(get_db())
+        config = db.query(FrontendConfig).filter(FrontendConfig.key == key).first()
+        if not config or not config.value:
+            return default_value
+        parsed = json.loads(config.value)
+        return parsed if parsed is not None else default_value
+    except Exception:
+        return default_value
+
+
+def _get_marketing_plan(plan_key):
+    normalized_key = str(plan_key or '').strip().lower()
+    for plan in FRONTPAGE_MARKETING_DEFAULTS.get('plans', []):
+        if str(plan.get('plan_key', '')).strip().lower() == normalized_key:
+            return plan
+    return None
+
+
+def _next_demo_id(items):
+    return len(items) + 1
+
+
+@app.route('/api/frontpage/marketing', methods=['GET'])
+def frontpage_marketing_data():
+    """Get backend-driven marketing payload for landing/front pages."""
+    payload = {
+        'hero': _get_frontend_config_value('frontpage_hero', FRONTPAGE_MARKETING_DEFAULTS['hero']),
+        'demo_video': _get_frontend_config_value('frontpage_demo_video', FRONTPAGE_MARKETING_DEFAULTS['demo_video']),
+        'testimonials': _get_frontend_config_value('frontpage_testimonials', FRONTPAGE_MARKETING_DEFAULTS['testimonials']),
+        'plans': _get_frontend_config_value('frontpage_plans', FRONTPAGE_MARKETING_DEFAULTS['plans']),
+        'faq': _get_frontend_config_value('frontpage_faq', FRONTPAGE_MARKETING_DEFAULTS['faq']),
+        'appointment_plugin': _get_frontend_config_value('frontpage_appointment_plugin', FRONTPAGE_MARKETING_DEFAULTS['appointment_plugin'])
+    }
+
+    return jsonify(add_metadata({
+        'data': payload,
+        'message': '✅ Frontpage marketing data retrieved successfully'
+    })), 200
+
+
+@app.route('/api/frontpage/trial/activate', methods=['POST'])
+def activate_trial_subscription():
+    """Activate trial subscription from frontpage CTA."""
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip().lower()
+    plan_key = (data.get('plan_key') or 'professional').strip().lower()
+
+    if not email:
+        return jsonify({'error': 'Validation error', 'message': 'email is required'}), 400
+
+    existing = next((item for item in DEMO_TRIAL_SUBSCRIPTIONS if item.get('email') == email), None)
+    if existing:
+        return jsonify(add_metadata({
+            'message': '✅ Trial already active',
+            'trial': existing
+        })), 200
+
+    trial_days = 14
+    for plan in FRONTPAGE_MARKETING_DEFAULTS.get('plans', []):
+        if str(plan.get('plan_key', '')).lower() == plan_key:
+            trial_days = int(plan.get('trial_days') or 14)
+            break
+
+    now = datetime.utcnow()
+    trial = {
+        'id': len(DEMO_TRIAL_SUBSCRIPTIONS) + 1,
+        'name': name or 'New Trial User',
+        'email': email,
+        'plan_key': plan_key,
+        'status': 'active',
+        'started_at': now.isoformat(),
+        'ends_at': (now + timedelta(days=trial_days)).isoformat(),
+        'trial_days': trial_days
+    }
+    DEMO_TRIAL_SUBSCRIPTIONS.append(trial)
+
+    return jsonify(add_metadata({
+        'message': '✅ Trial activated successfully',
+        'trial': trial
+    })), 201
+
+
+@app.route('/api/frontpage/appointments', methods=['POST'])
+def create_frontpage_appointment():
+    """Book a demo appointment from landing/front page."""
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    email = (data.get('email') or '').strip().lower()
+    organization = (data.get('organization') or '').strip()
+    preferred_datetime = (data.get('preferred_datetime') or '').strip()
+    message = (data.get('message') or '').strip()
+
+    if not name or not email or not preferred_datetime:
+        return jsonify({'error': 'Validation error', 'message': 'name, email and preferred_datetime are required'}), 400
+
+    appointment = {
+        'id': len(DEMO_APPOINTMENTS) + 1,
+        'name': name,
+        'email': email,
+        'organization': organization,
+        'preferred_datetime': preferred_datetime,
+        'message': message,
+        'status': 'pending',
+        'created_at': datetime.utcnow().isoformat()
+    }
+    DEMO_APPOINTMENTS.append(appointment)
+
+    return jsonify(add_metadata({
+        'message': '✅ Demo appointment booked successfully',
+        'appointment': appointment
+    })), 201
+
+
+@app.route('/api/admin/frontpage/appointments', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def list_frontpage_appointments():
+    """List booked demo appointments for admin follow-up."""
+    return jsonify(add_metadata({
+        'appointments': DEMO_APPOINTMENTS,
+        'count': len(DEMO_APPOINTMENTS),
+        'message': '✅ Frontpage appointments retrieved successfully'
+    })), 200
+
+
+@app.route('/api/frontpage/track-cta', methods=['POST'])
+def track_frontpage_cta():
+    """Track CTA click events for frontpage conversion analytics."""
+    data = request.get_json() or {}
+    event_name = (data.get('event_name') or 'cta_click').strip()
+    source_page = (data.get('source_page') or 'frontpage').strip()
+    details = data.get('details') if isinstance(data.get('details'), dict) else {}
+
+    event = {
+        'id': len(DEMO_FRONT_CTA_EVENTS) + 1,
+        'event_name': event_name,
+        'source_page': source_page,
+        'details': details,
+        'created_at': datetime.utcnow().isoformat()
+    }
+    DEMO_FRONT_CTA_EVENTS.append(event)
+
+    return jsonify(add_metadata({
+        'message': '✅ CTA event tracked',
+        'event': event
+    })), 201
+
+
+@app.route('/api/admin/frontpage/metrics', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def get_frontpage_metrics():
+    """Get summary metrics for marketing CTA and conversion performance."""
+    summary = {}
+    for event in DEMO_FRONT_CTA_EVENTS:
+        key = event.get('event_name', 'unknown')
+        summary[key] = summary.get(key, 0) + 1
+
+    return jsonify(add_metadata({
+        'metrics': {
+            'cta_events': summary,
+            'trials_active': len(DEMO_TRIAL_SUBSCRIPTIONS),
+            'appointments_pending': len([item for item in DEMO_APPOINTMENTS if item.get('status') == 'pending'])
+        },
+        'message': '✅ Frontpage conversion metrics retrieved successfully'
+    })), 200
+
+
+@app.route('/api/saas/clients/register', methods=['POST'])
+def register_saas_client():
+    """Register a SaaS client organization with company details."""
+    data = request.get_json() or {}
+    company_name = (data.get('company_name') or data.get('companyName') or '').strip()
+    contact_name = (data.get('contact_name') or data.get('contactName') or '').strip()
+    email = (data.get('email') or '').strip().lower()
+
+    if not company_name or not contact_name or not email:
+        return jsonify({
+            'error': 'Validation error',
+            'message': 'company_name, contact_name and email are required'
+        }), 400
+
+    existing_client = next((item for item in DEMO_SAAS_CLIENTS if item.get('email') == email), None)
+    if existing_client:
+        return jsonify(add_metadata({
+            'message': '✅ Client already registered',
+            'client': existing_client,
+            'plans': FRONTPAGE_MARKETING_DEFAULTS.get('plans', []),
+            'payment_methods': SUPPORTED_PAYMENT_METHODS
+        })), 200
+
+    new_client = {
+        'id': _next_demo_id(DEMO_SAAS_CLIENTS),
+        'company_name': company_name,
+        'contact_name': contact_name,
+        'email': email,
+        'phone': (data.get('phone') or '').strip(),
+        'country': (data.get('country') or 'KEN').strip().upper()[:3],
+        'address': (data.get('address') or '').strip(),
+        'tax_id': (data.get('tax_id') or data.get('taxId') or '').strip(),
+        'status': 'active',
+        'created_at': datetime.utcnow().isoformat()
+    }
+    DEMO_SAAS_CLIENTS.append(new_client)
+
+    log_audit('create', 'saas_client', new_client['id'], f"Registered SaaS client: {company_name}")
+
+    return jsonify(add_metadata({
+        'message': '✅ SaaS client registered successfully',
+        'client': new_client,
+        'plans': FRONTPAGE_MARKETING_DEFAULTS.get('plans', []),
+        'payment_methods': SUPPORTED_PAYMENT_METHODS
+    })), 201
+
+
+@app.route('/api/admin/clients', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def list_saas_clients():
+    """List registered SaaS clients for management."""
+    status_filter = (request.args.get('status') or '').strip().lower()
+    clients = DEMO_SAAS_CLIENTS
+    if status_filter:
+        clients = [item for item in clients if str(item.get('status', '')).lower() == status_filter]
+
+    return jsonify(add_metadata({
+        'clients': clients,
+        'count': len(clients),
+        'message': '✅ Clients retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/clients/<int:client_id>', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def update_saas_client(client_id):
+    """Update SaaS client company/contact details and status."""
+    data = request.get_json() or {}
+    client = next((item for item in DEMO_SAAS_CLIENTS if item.get('id') == client_id), None)
+    if not client:
+        return jsonify({'error': 'Not found', 'message': 'Client not found'}), 404
+
+    allowed_updates = {
+        'company_name', 'contact_name', 'email', 'phone', 'country', 'address', 'tax_id', 'status'
+    }
+    for key in allowed_updates:
+        if key in data and data.get(key) is not None:
+            value = data.get(key)
+            if key == 'country':
+                value = str(value).strip().upper()[:3]
+            elif key in {'company_name', 'contact_name', 'email', 'phone', 'address', 'tax_id', 'status'}:
+                value = str(value).strip()
+                if key == 'email':
+                    value = value.lower()
+            client[key] = value
+
+    client['updated_at'] = datetime.utcnow().isoformat()
+    log_audit('update', 'saas_client', client_id, f"Updated SaaS client: {client.get('company_name')}")
+
+    return jsonify(add_metadata({
+        'message': '✅ Client updated successfully',
+        'client': client
+    })), 200
+
+
+@app.route('/api/saas/subscriptions/checkout', methods=['POST'])
+def saas_checkout_subscription():
+    """Create SaaS subscription checkout using selected plan and payment method."""
+    data = request.get_json() or {}
+    client_id = data.get('client_id')
+    plan_key = (data.get('plan_key') or '').strip().lower()
+    payment_method = (data.get('payment_method') or '').strip().lower()
+    billing_cycle = (data.get('billing_cycle') or 'monthly').strip().lower()
+
+    if not client_id or not plan_key or not payment_method:
+        return jsonify({
+            'error': 'Validation error',
+            'message': 'client_id, plan_key and payment_method are required'
+        }), 400
+
+    if billing_cycle not in {'monthly', 'annual'}:
+        return jsonify({'error': 'Validation error', 'message': 'billing_cycle must be monthly or annual'}), 400
+
+    plan = _get_marketing_plan(plan_key)
+    if not plan:
+        return jsonify({'error': 'Validation error', 'message': 'Invalid plan_key'}), 400
+
+    supported_methods = {item['key'] for item in SUPPORTED_PAYMENT_METHODS}
+    if payment_method not in supported_methods:
+        return jsonify({'error': 'Validation error', 'message': 'Unsupported payment method'}), 400
+
+    client = next((item for item in DEMO_SAAS_CLIENTS if item.get('id') == int(client_id)), None)
+    if not client:
+        return jsonify({'error': 'Not found', 'message': 'Client not found'}), 404
+
+    if str(client.get('status', 'active')).lower() != 'active':
+        return jsonify({'error': 'Validation error', 'message': 'Client is not active'}), 400
+
+    price_monthly = plan.get('price_monthly')
+    if price_monthly is None:
+        amount_due = 0
+    else:
+        amount_due = float(price_monthly)
+        if billing_cycle == 'annual':
+            amount_due = round(amount_due * 12 * 0.9, 2)
+
+    checkout_reference = f"CHK-{uuid.uuid4().hex[:10].upper()}"
+
+    subscription = {
+        'id': _next_demo_id(DEMO_SAAS_SUBSCRIPTIONS),
+        'client_id': client['id'],
+        'company_name': client.get('company_name'),
+        'plan_key': plan_key,
+        'plan_name': plan.get('name'),
+        'billing_cycle': billing_cycle,
+        'currency': plan.get('currency', 'USD'),
+        'amount_due': amount_due,
+        'status': 'pending_payment',
+        'payment_method': payment_method,
+        'checkout_reference': checkout_reference,
+        'created_at': datetime.utcnow().isoformat()
+    }
+    DEMO_SAAS_SUBSCRIPTIONS.append(subscription)
+
+    payment = {
+        'id': _next_demo_id(DEMO_SAAS_PAYMENTS),
+        'subscription_id': subscription['id'],
+        'client_id': client['id'],
+        'payment_method': payment_method,
+        'amount': amount_due,
+        'currency': subscription['currency'],
+        'status': 'pending',
+        'reference': checkout_reference,
+        'created_at': datetime.utcnow().isoformat()
+    }
+    DEMO_SAAS_PAYMENTS.append(payment)
+
+    log_audit('create', 'saas_subscription', subscription['id'], f"Subscription checkout created: {checkout_reference}")
+
+    return jsonify(add_metadata({
+        'message': '✅ Subscription checkout created',
+        'subscription': subscription,
+        'payment': payment,
+        'next_step': f'Complete payment via {payment_method.upper()} and confirm using /api/saas/payments/confirm'
+    })), 201
+
+
+@app.route('/api/saas/plans', methods=['GET'])
+def list_saas_plans():
+    """Public plan catalog for subscription manager checkout."""
+    return jsonify(add_metadata({
+        'plans': FRONTPAGE_MARKETING_DEFAULTS.get('plans', []),
+        'payment_methods': SUPPORTED_PAYMENT_METHODS,
+        'message': '✅ SaaS plans retrieved successfully'
+    })), 200
+
+
+@app.route('/api/saas/payments/confirm', methods=['POST'])
+def confirm_saas_payment():
+    """Confirm a pending SaaS payment and activate subscription."""
+    data = request.get_json() or {}
+    reference = (data.get('reference') or '').strip()
+    provider_txn_id = (data.get('provider_txn_id') or data.get('providerTxnId') or '').strip()
+
+    if not reference:
+        return jsonify({'error': 'Validation error', 'message': 'reference is required'}), 400
+
+    payment = next((item for item in DEMO_SAAS_PAYMENTS if item.get('reference') == reference), None)
+    if not payment:
+        return jsonify({'error': 'Not found', 'message': 'Payment reference not found'}), 404
+
+    if payment.get('status') == 'paid':
+        return jsonify(add_metadata({'message': '✅ Payment already confirmed', 'payment': payment})), 200
+
+    payment['status'] = 'paid'
+    payment['provider_txn_id'] = provider_txn_id or f"TXN-{uuid.uuid4().hex[:8].upper()}"
+    payment['confirmed_at'] = datetime.utcnow().isoformat()
+
+    subscription = next((item for item in DEMO_SAAS_SUBSCRIPTIONS if item.get('id') == payment.get('subscription_id')), None)
+    if subscription:
+        subscription['status'] = 'active'
+        subscription['activated_at'] = datetime.utcnow().isoformat()
+
+    log_audit('update', 'saas_payment', payment['id'], f"Payment confirmed: {reference}")
+
+    return jsonify(add_metadata({
+        'message': '✅ Payment confirmed and subscription activated',
+        'payment': payment,
+        'subscription': subscription
+    })), 200
+
+
+@app.route('/api/admin/subscriptions', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def list_saas_subscriptions():
+    """List SaaS subscriptions for admin management."""
+    status_filter = (request.args.get('status') or '').strip().lower()
+    subscriptions = DEMO_SAAS_SUBSCRIPTIONS
+    if status_filter:
+        subscriptions = [item for item in subscriptions if str(item.get('status', '')).lower() == status_filter]
+
+    return jsonify(add_metadata({
+        'subscriptions': subscriptions,
+        'count': len(subscriptions),
+        'message': '✅ Subscriptions retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/subscriptions/<int:subscription_id>', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def get_saas_subscription(subscription_id):
+    """Get a single SaaS subscription with linked client/payment details."""
+    subscription = next((item for item in DEMO_SAAS_SUBSCRIPTIONS if item.get('id') == subscription_id), None)
+    if not subscription:
+        return jsonify({'error': 'Not found', 'message': 'Subscription not found'}), 404
+
+    client = next((item for item in DEMO_SAAS_CLIENTS if item.get('id') == subscription.get('client_id')), None)
+    payments = [item for item in DEMO_SAAS_PAYMENTS if item.get('subscription_id') == subscription_id]
+
+    return jsonify(add_metadata({
+        'subscription': subscription,
+        'client': client,
+        'payments': payments,
+        'message': '✅ Subscription details retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/subscriptions/<int:subscription_id>', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def update_saas_subscription(subscription_id):
+    """Update SaaS subscription status, billing cycle, or plan."""
+    data = request.get_json() or {}
+    subscription = next((item for item in DEMO_SAAS_SUBSCRIPTIONS if item.get('id') == subscription_id), None)
+    if not subscription:
+        return jsonify({'error': 'Not found', 'message': 'Subscription not found'}), 404
+
+    if 'plan_key' in data and data.get('plan_key'):
+        new_plan_key = str(data.get('plan_key')).strip().lower()
+        plan = _get_marketing_plan(new_plan_key)
+        if not plan:
+            return jsonify({'error': 'Validation error', 'message': 'Invalid plan_key'}), 400
+        subscription['plan_key'] = new_plan_key
+        subscription['plan_name'] = plan.get('name')
+        subscription['currency'] = plan.get('currency', subscription.get('currency', 'USD'))
+
+        if plan.get('price_monthly') is None:
+            subscription['amount_due'] = 0
+        else:
+            base = float(plan.get('price_monthly'))
+            if subscription.get('billing_cycle') == 'annual':
+                base = round(base * 12 * 0.9, 2)
+            subscription['amount_due'] = base
+
+    if 'billing_cycle' in data and data.get('billing_cycle'):
+        billing_cycle = str(data.get('billing_cycle')).strip().lower()
+        if billing_cycle not in {'monthly', 'annual'}:
+            return jsonify({'error': 'Validation error', 'message': 'billing_cycle must be monthly or annual'}), 400
+        subscription['billing_cycle'] = billing_cycle
+
+    if 'status' in data and data.get('status'):
+        new_status = str(data.get('status')).strip().lower()
+        allowed_statuses = {'pending_payment', 'active', 'paused', 'canceled', 'expired'}
+        if new_status not in allowed_statuses:
+            return jsonify({'error': 'Validation error', 'message': 'Invalid subscription status'}), 400
+        subscription['status'] = new_status
+
+    subscription['updated_at'] = datetime.utcnow().isoformat()
+    log_audit('update', 'saas_subscription', subscription_id, f"Updated subscription: {subscription.get('checkout_reference')}")
+
+    return jsonify(add_metadata({
+        'message': '✅ Subscription updated successfully',
+        'subscription': subscription
+    })), 200
+
+
+@app.route('/api/admin/subscriptions/<int:subscription_id>/action', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def action_saas_subscription(subscription_id):
+    """Run subscription lifecycle actions: activate, pause, resume, cancel."""
+    data = request.get_json() or {}
+    action = str(data.get('action') or '').strip().lower()
+    if action not in {'activate', 'pause', 'resume', 'cancel'}:
+        return jsonify({'error': 'Validation error', 'message': 'action must be activate, pause, resume, or cancel'}), 400
+
+    subscription = next((item for item in DEMO_SAAS_SUBSCRIPTIONS if item.get('id') == subscription_id), None)
+    if not subscription:
+        return jsonify({'error': 'Not found', 'message': 'Subscription not found'}), 404
+
+    current_status = str(subscription.get('status', '')).lower()
+    if action == 'activate':
+        subscription['status'] = 'active'
+        subscription['activated_at'] = datetime.utcnow().isoformat()
+    elif action == 'pause':
+        if current_status not in {'active'}:
+            return jsonify({'error': 'Validation error', 'message': 'Only active subscriptions can be paused'}), 400
+        subscription['status'] = 'paused'
+        subscription['paused_at'] = datetime.utcnow().isoformat()
+    elif action == 'resume':
+        if current_status not in {'paused'}:
+            return jsonify({'error': 'Validation error', 'message': 'Only paused subscriptions can be resumed'}), 400
+        subscription['status'] = 'active'
+        subscription['resumed_at'] = datetime.utcnow().isoformat()
+    elif action == 'cancel':
+        subscription['status'] = 'canceled'
+        subscription['canceled_at'] = datetime.utcnow().isoformat()
+
+    subscription['updated_at'] = datetime.utcnow().isoformat()
+    reason = str(data.get('reason') or '').strip()
+    log_audit('update', 'saas_subscription', subscription_id, {
+        'action': action,
+        'reason': reason,
+        'previous_status': current_status,
+        'new_status': subscription.get('status')
+    })
+
+    return jsonify(add_metadata({
+        'message': f'✅ Subscription {action}d successfully' if action != 'cancel' else '✅ Subscription canceled successfully',
+        'subscription': subscription
+    })), 200
+
+
+@app.route('/api/admin/payments', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def list_saas_payments():
+    """List SaaS payments with optional method/status filters."""
+    status_filter = (request.args.get('status') or '').strip().lower()
+    method_filter = (request.args.get('method') or '').strip().lower()
+
+    payments = DEMO_SAAS_PAYMENTS
+    if status_filter:
+        payments = [item for item in payments if str(item.get('status', '')).lower() == status_filter]
+    if method_filter:
+        payments = [item for item in payments if str(item.get('payment_method', '')).lower() == method_filter]
+
+    return jsonify(add_metadata({
+        'payments': payments,
+        'count': len(payments),
+        'payment_methods': SUPPORTED_PAYMENT_METHODS,
+        'message': '✅ Payments retrieved successfully'
     })), 200
 
 
@@ -1857,6 +2541,121 @@ def delete_gallery_photo():
         'message': '✅ Photo removed successfully',
         'removedUrl': removed_url
     })), 200
+
+
+@app.route('/api/admin/files', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def list_files():
+    """List files/directories from managed file explorer root."""
+    try:
+        subpath = (request.args.get('path') or '').strip()
+        items = _list_file_manager_items(subpath)
+        return jsonify(add_metadata({
+            'message': '✅ Files retrieved successfully',
+            'path': subpath,
+            'items': items,
+            'count': len(items)
+        })), 200
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': f'Failed to list files: {e}'}), 500
+
+
+@app.route('/api/admin/files/upload', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def upload_file_manager_file():
+    """Upload a file into managed file explorer storage."""
+    data = request.get_json() or {}
+    file_name = _sanitize_upload_filename(data.get('fileName'))
+    file_data = data.get('fileData')
+    target_path = (data.get('path') or '').strip()
+
+    if not file_name:
+        return jsonify({'error': 'Validation error', 'message': 'fileName is required'}), 400
+    if not file_data:
+        return jsonify({'error': 'Validation error', 'message': 'fileData is required'}), 400
+
+    try:
+        payload = str(file_data).strip()
+        if payload.startswith('data:') and ';base64,' in payload:
+            payload = payload.split(';base64,', 1)[1]
+
+        content = base64.b64decode(payload)
+        destination_dir = _safe_storage_path(target_path)
+        os.makedirs(destination_dir, exist_ok=True)
+        destination_file = os.path.join(destination_dir, file_name)
+
+        with open(destination_file, 'wb') as uploaded_file:
+            uploaded_file.write(content)
+
+        relative_file_path = os.path.relpath(destination_file, _file_manager_root_dir()).replace('\\', '/')
+        log_audit('upload', 'file_manager', details=f'Uploaded file: {relative_file_path}')
+
+        return jsonify(add_metadata({
+            'message': '✅ File uploaded successfully',
+            'file': {
+                'name': file_name,
+                'path': relative_file_path,
+                'size': len(content)
+            }
+        })), 201
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': f'Failed to upload file: {e}'}), 500
+
+
+@app.route('/api/admin/files/download', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def download_file_manager_file():
+    """Download a file from managed file explorer storage."""
+    file_path = (request.args.get('path') or '').strip()
+    if not file_path:
+        return jsonify({'error': 'Validation error', 'message': 'path is required'}), 400
+
+    try:
+        absolute_path = _safe_storage_path(file_path)
+        if not os.path.isfile(absolute_path):
+            return jsonify({'error': 'Not found', 'message': 'File not found'}), 404
+
+        log_audit('download', 'file_manager', details=f'Downloaded file: {file_path}')
+        return send_file(absolute_path, as_attachment=True)
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': f'Failed to download file: {e}'}), 500
+
+
+@app.route('/api/admin/files', methods=['DELETE'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def delete_file_manager_item():
+    """Delete a file or empty directory from managed file explorer storage."""
+    data = request.get_json() or {}
+    target_path = (data.get('path') or '').strip()
+
+    if not target_path:
+        return jsonify({'error': 'Validation error', 'message': 'path is required'}), 400
+
+    try:
+        absolute_path = _safe_storage_path(target_path)
+        if os.path.isfile(absolute_path):
+            os.remove(absolute_path)
+            log_audit('delete', 'file_manager', details=f'Deleted file: {target_path}')
+            return jsonify(add_metadata({'message': '✅ File deleted successfully', 'path': target_path})), 200
+
+        if os.path.isdir(absolute_path):
+            if os.listdir(absolute_path):
+                return jsonify({'error': 'Validation error', 'message': 'Directory is not empty'}), 400
+            os.rmdir(absolute_path)
+            log_audit('delete', 'file_manager', details=f'Deleted directory: {target_path}')
+            return jsonify(add_metadata({'message': '✅ Directory deleted successfully', 'path': target_path})), 200
+
+        return jsonify({'error': 'Not found', 'message': 'File or directory not found'}), 404
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': f'Failed to delete file: {e}'}), 500
 
 
 # ============ ATHLETE PROFILE ENDPOINTS ============
@@ -3191,7 +3990,14 @@ def get_races():
         # Query from database
         db = next(get_db())
         races = db.query(Race).order_by(Race.date.desc()).all()
-        races_data = [race.to_dict() for race in races]
+        races_data = []
+        for race in races:
+            race_payload = race.to_dict()
+            control_state = RACE_CONTROL_STATE.get(race.id, {})
+            race_payload['startedAt'] = control_state.get('started_at')
+            race_payload['stoppedAt'] = control_state.get('stopped_at')
+            race_payload['lastControlBy'] = control_state.get('last_control_by')
+            races_data.append(race_payload)
         
         # Cache results for 5 minutes
         RedisCache.set(cache_key, races_data, expiry=300)
@@ -3308,6 +4114,94 @@ def delete_race(race_id):
 
     return jsonify(add_metadata({
         'message': '✅ Race deleted successfully'
+    })), 200
+
+
+@app.route('/api/races/<int:race_id>/start', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar', 'starter', 'official'])
+def start_race_control(race_id):
+    """Official/starter control: mark race as ongoing (START)."""
+    db = next(get_db())
+    race = db.query(Race).filter(Race.id == race_id).first()
+    if not race:
+        return jsonify({'error': 'Race not found'}), 404
+
+    current_status = str(race.status or '').lower()
+    if current_status == 'completed':
+        return jsonify({'error': 'Validation error', 'message': 'Completed race cannot be started again'}), 400
+
+    race.status = 'ongoing'
+    race.registration_open = False
+    db.commit()
+    db.refresh(race)
+    RedisCache.delete('races:all')
+
+    operator = getattr(request, 'user', {}) or {}
+    operator_name = operator.get('name') or operator.get('email') or f"user-{operator.get('id', 'unknown')}"
+    control_entry = RACE_CONTROL_STATE.get(race.id, {})
+    control_entry['started_at'] = datetime.utcnow().isoformat()
+    control_entry['last_control_by'] = operator_name
+    RACE_CONTROL_STATE[race.id] = control_entry
+
+    log_audit('start_race', 'race', race.id, {
+        'race_name': race.name,
+        'status': race.status,
+        'operator': operator_name
+    })
+
+    race_payload = race.to_dict()
+    race_payload['startedAt'] = control_entry.get('started_at')
+    race_payload['stoppedAt'] = control_entry.get('stopped_at')
+    race_payload['lastControlBy'] = control_entry.get('last_control_by')
+
+    return jsonify(add_metadata({
+        'message': '✅ Race START signal recorded',
+        'race': race_payload
+    })), 200
+
+
+@app.route('/api/races/<int:race_id>/stop', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar', 'starter', 'official'])
+def stop_race_control(race_id):
+    """Official/starter control: mark race as completed (STOP)."""
+    db = next(get_db())
+    race = db.query(Race).filter(Race.id == race_id).first()
+    if not race:
+        return jsonify({'error': 'Race not found'}), 404
+
+    current_status = str(race.status or '').lower()
+    if current_status == 'cancelled':
+        return jsonify({'error': 'Validation error', 'message': 'Cancelled race cannot be stopped'}), 400
+
+    race.status = 'completed'
+    race.registration_open = False
+    db.commit()
+    db.refresh(race)
+    RedisCache.delete('races:all')
+
+    operator = getattr(request, 'user', {}) or {}
+    operator_name = operator.get('name') or operator.get('email') or f"user-{operator.get('id', 'unknown')}"
+    control_entry = RACE_CONTROL_STATE.get(race.id, {})
+    if not control_entry.get('started_at'):
+        control_entry['started_at'] = datetime.utcnow().isoformat()
+    control_entry['stopped_at'] = datetime.utcnow().isoformat()
+    control_entry['last_control_by'] = operator_name
+    RACE_CONTROL_STATE[race.id] = control_entry
+
+    log_audit('stop_race', 'race', race.id, {
+        'race_name': race.name,
+        'status': race.status,
+        'operator': operator_name
+    })
+
+    race_payload = race.to_dict()
+    race_payload['startedAt'] = control_entry.get('started_at')
+    race_payload['stoppedAt'] = control_entry.get('stopped_at')
+    race_payload['lastControlBy'] = control_entry.get('last_control_by')
+
+    return jsonify(add_metadata({
+        'message': '✅ Race STOP signal recorded',
+        'race': race_payload
     })), 200
 
 

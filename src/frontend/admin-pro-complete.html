@@ -818,6 +818,10 @@
                                             <td>
                                                 <button @click="editRace(race)" class="text-orange-600 hover:text-orange-700 text-sm font-medium">Edit</button>
                                                 <span class="text-gray-300"> • </span>
+                                                <button @click="startRace(race)" class="text-green-600 hover:text-green-700 text-sm font-medium">Start</button>
+                                                <span class="text-gray-300"> • </span>
+                                                <button @click="stopRace(race)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Stop</button>
+                                                <span class="text-gray-300"> • </span>
                                                 <button @click="deleteRace(race.id)" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
                                             </td>
                                         </tr>
@@ -1077,11 +1081,7 @@
                                 <input v-model="pluginSearch" type="text" placeholder="Search plugin name or module..." class="form-input w-full" />
                                 <select v-model="pluginCategory" title="Filter plugins by category" class="form-input w-full">
                                     <option value="all">All Categories</option>
-                                    <option value="core">Core</option>
-                                    <option value="enterprise">Enterprise</option>
-                                    <option value="infrastructure">Infrastructure</option>
-                                    <option value="security">Security</option>
-                                    <option value="features">Features</option>
+                                    <option v-for="category in pluginCategoryOptions" :key="`cat-${category}`" :value="category">{{ formatRole(category) }}</option>
                                 </select>
                                 <select v-model="pluginStatusFilter" title="Filter plugins by status" class="form-input w-full">
                                     <option value="all">All Status</option>
@@ -1133,7 +1133,7 @@
                                                 <input type="checkbox" title="Select all visible plugins" :checked="allVisiblePluginsSelected" @change="toggleSelectAllPlugins($event.target.checked)" />
                                             </th>
                                             <th>Plugin</th>
-                                            <th>Category</th>
+                                            <th>Category / Module</th>
                                             <th>Version</th>
                                             <th>Status</th>
                                             <th>Actions</th>
@@ -1159,6 +1159,8 @@
                                             </td>
                                             <td>
                                                 <span class="badge badge-info">{{ plugin.category || 'general' }}</span>
+                                                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">{{ plugin.module || plugin.plugin_id || 'n/a' }}</p>
+                                                <p v-if="plugin.plugin_id" class="text-xs text-gray-400 dark:text-slate-500">ID: {{ plugin.plugin_id }}</p>
                                             </td>
                                             <td>{{ plugin.version || 'n/a' }}</td>
                                             <td>
@@ -1187,6 +1189,195 @@
                                         </tr>
                                         <tr v-if="filteredPlugins.length === 0">
                                             <td colspan="6" class="text-center text-gray-500 py-6">No plugins found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subscription Manager -->
+                    <div v-if="currentPage === 'subscriptions'" class="space-y-6 animate-fade-in">
+                        <div class="card p-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">SaaS Subscription Manager</h3>
+                                    <p class="text-sm text-gray-600 dark:text-slate-400 mt-1">All SaaS operations in one place: clients, plans, subscriptions, and payments.</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button @click="createSaasClient" class="btn-primary btn-small">
+                                        <i class="fas fa-building"></i> Register Client
+                                    </button>
+                                    <button @click="createSubscriptionCheckout" class="btn-secondary btn-small">
+                                        <i class="fas fa-credit-card"></i> New Checkout
+                                    </button>
+                                    <button @click="loadSaasManager" class="btn-secondary btn-small">
+                                        <i class="fas fa-sync"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-6 p-2 bg-gray-100 dark:bg-slate-900 rounded-lg inline-flex gap-2 flex-wrap">
+                                <button @click="saasTab = 'clients'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', saasTab === 'clients' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">Clients</button>
+                                <button @click="saasTab = 'subscriptions'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', saasTab === 'subscriptions' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">Subscriptions</button>
+                                <button @click="saasTab = 'payments'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', saasTab === 'payments' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">Payments</button>
+                                <button @click="saasTab = 'plans'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', saasTab === 'plans' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">Plans</button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Clients</p>
+                                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ saasClients.length }}</p>
+                                </div>
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Subscriptions</p>
+                                    <p class="text-2xl font-bold text-blue-600">{{ saasSubscriptions.length }}</p>
+                                </div>
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Active</p>
+                                    <p class="text-2xl font-bold text-green-600">{{ saasSubscriptions.filter(item => item.status === 'active').length }}</p>
+                                </div>
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Payments (Pending)</p>
+                                    <p class="text-2xl font-bold text-amber-600">{{ saasPayments.filter(item => item.status === 'pending').length }}</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4" v-if="saasTab !== 'plans'">
+                                <select v-model="saasFilters.subscriptionStatus" class="form-input w-full">
+                                    <option value="all">All Subscription Status</option>
+                                    <option value="pending_payment">Pending Payment</option>
+                                    <option value="active">Active</option>
+                                    <option value="paused">Paused</option>
+                                    <option value="canceled">Canceled</option>
+                                    <option value="expired">Expired</option>
+                                </select>
+                                <select v-model="saasFilters.paymentStatus" class="form-input w-full">
+                                    <option value="all">All Payment Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="paid">Paid</option>
+                                </select>
+                                <select v-model="saasFilters.paymentMethod" class="form-input w-full">
+                                    <option value="all">All Methods</option>
+                                    <option v-for="method in saasPaymentMethods" :key="method.key" :value="method.key">{{ method.label }}</option>
+                                </select>
+                                <div class="flex items-center text-sm text-gray-600 dark:text-slate-400">
+                                    <span v-if="saasTab === 'clients'">{{ saasClients.length }} client(s) shown</span>
+                                    <span v-else-if="saasTab === 'subscriptions'">{{ filteredSaasSubscriptions.length }} subscription(s) shown</span>
+                                    <span v-else>{{ filteredSaasPayments.length }} payment(s) shown</span>
+                                </div>
+                            </div>
+
+                            <div v-if="saasTab === 'clients'" class="overflow-x-auto">
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Clients</h4>
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Company</th>
+                                            <th>Contact</th>
+                                            <th>Status</th>
+                                            <th>Country</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="client in saasClients" :key="`client-${client.id}`">
+                                            <td class="font-medium text-gray-900 dark:text-white">{{ client.company_name }}</td>
+                                            <td>
+                                                <div>{{ client.contact_name }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-slate-400">{{ client.email }}</div>
+                                            </td>
+                                            <td><span :class="['badge', client.status === 'active' ? 'badge-success' : 'badge-warning']">{{ client.status }}</span></td>
+                                            <td>{{ client.country || '-' }}</td>
+                                        </tr>
+                                        <tr v-if="saasClients.length === 0">
+                                            <td colspan="4" class="text-center text-gray-500 py-6">No clients found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div v-if="saasTab === 'subscriptions'" class="overflow-x-auto">
+                                    <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Subscriptions</h4>
+                                    <table class="table-modern">
+                                        <thead>
+                                            <tr>
+                                                <th>Company</th>
+                                                <th>Plan</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="subscription in filteredSaasSubscriptions" :key="`sub-${subscription.id}`">
+                                                <td class="font-medium text-gray-900 dark:text-white">{{ subscription.company_name }}</td>
+                                                <td>
+                                                    <div>{{ subscription.plan_name }} ({{ subscription.billing_cycle }})</div>
+                                                    <div class="text-xs text-gray-500 dark:text-slate-400">{{ subscription.currency }} {{ subscription.amount_due }}</div>
+                                                </td>
+                                                <td><span :class="['badge', subscription.status === 'active' ? 'badge-success' : subscription.status === 'pending_payment' ? 'badge-warning' : 'badge-info']">{{ subscription.status }}</span></td>
+                                                <td>
+                                                    <button @click="applySubscriptionAction(subscription, 'activate')" class="text-green-600 hover:text-green-700 text-sm font-medium">Activate</button>
+                                                    <span class="text-gray-300"> • </span>
+                                                    <button @click="applySubscriptionAction(subscription, 'pause')" class="text-amber-600 hover:text-amber-700 text-sm font-medium">Pause</button>
+                                                    <span class="text-gray-300"> • </span>
+                                                    <button @click="applySubscriptionAction(subscription, 'cancel')" class="text-red-600 hover:text-red-700 text-sm font-medium">Cancel</button>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="filteredSaasSubscriptions.length === 0">
+                                                <td colspan="4" class="text-center text-gray-500 py-6">No subscriptions found.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+
+                            <div v-if="saasTab === 'payments'" class="overflow-x-auto">
+                                    <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Payments</h4>
+                                    <table class="table-modern">
+                                        <thead>
+                                            <tr>
+                                                <th>Reference</th>
+                                                <th>Method</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="payment in filteredSaasPayments" :key="`pay-${payment.id}`">
+                                                <td class="font-medium text-gray-900 dark:text-white">{{ payment.reference }}</td>
+                                                <td>{{ payment.payment_method }}</td>
+                                                <td><span :class="['badge', payment.status === 'paid' ? 'badge-success' : 'badge-warning']">{{ payment.status }}</span></td>
+                                                <td>
+                                                    <button v-if="payment.status !== 'paid'" @click="confirmSubscriptionPayment(payment)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">Confirm</button>
+                                                    <span v-else class="text-gray-500 text-sm">Confirmed</span>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="filteredSaasPayments.length === 0">
+                                                <td colspan="4" class="text-center text-gray-500 py-6">No payments found.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+
+                            <div v-if="saasTab === 'plans'" class="overflow-x-auto">
+                                <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Plan Catalog</h4>
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th>Plan</th>
+                                            <th>Monthly</th>
+                                            <th>Trial</th>
+                                            <th>Features</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="plan in saasPlans" :key="`plan-${plan.plan_key}`">
+                                            <td class="font-medium text-gray-900 dark:text-white">{{ plan.name }}</td>
+                                            <td>{{ plan.price_monthly == null ? 'Custom' : `${plan.currency || 'USD'} ${plan.price_monthly}` }}</td>
+                                            <td>{{ plan.trial_days || 0 }} days</td>
+                                            <td class="text-sm text-gray-600 dark:text-slate-400">{{ (plan.features || []).join(', ') }}</td>
+                                        </tr>
+                                        <tr v-if="saasPlans.length === 0">
+                                            <td colspan="4" class="text-center text-gray-500 py-6">No plans found.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1490,6 +1681,21 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="p-4 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/40 space-y-4">
+                                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Canvas Studio (System Settings)</h5>
+                                        <p class="text-sm text-gray-600 dark:text-slate-400">Launch visual builders directly from backend settings: application maker, form creation canvas, and improved theme maker.</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <a href="application-builder.html" class="btn-secondary btn-small flex items-center justify-center gap-2">
+                                                <i class="fas fa-layer-group"></i> Canvas Application Maker
+                                            </a>
+                                            <a href="form-canvas.html" class="btn-secondary btn-small flex items-center justify-center gap-2">
+                                                <i class="fas fa-pen-ruler"></i> Form Creation Canvas
+                                            </a>
+                                            <a href="theme-customizer.html" class="btn-secondary btn-small flex items-center justify-center gap-2">
+                                                <i class="fas fa-palette"></i> Improved Theme Maker
+                                            </a>
+                                        </div>
+                                    </div>
                                     <button @click="saveSettings" class="btn-primary">
                                         <i class="fas fa-paint-brush"></i> Save Theme Settings
                                     </button>
@@ -1741,6 +1947,7 @@
                     athletes: false,
                     users: false,
                     plugins: false,
+                    saas: false,
                     results: false,
                     stats: false,
                     settings: false,
@@ -1756,6 +1963,7 @@
                     athletes: '',
                     users: '',
                     plugins: '',
+                    saas: '',
                     results: '',
                     stats: '',
                     settings: '',
@@ -1771,6 +1979,7 @@
                     { id: 'races', label: 'Races', icon: 'fa-flag' },
                     { id: 'athletes', label: 'Athletes', icon: 'fa-person-running' },
                     { id: 'results', label: 'Results', icon: 'fa-trophy' },
+                    { id: 'subscriptions', label: 'SaaS Manager', icon: 'fa-layer-group' },
                     { id: 'users', label: 'Users', icon: 'fa-users' },
                     { id: 'plugins', label: 'Plugins', icon: 'fa-puzzle-piece' },
                     { id: 'audit', label: 'Audit Logs', icon: 'fa-file-alt' },
@@ -1890,6 +2099,17 @@
                 const auditLogs = ref([]);
                 const appRequests = ref([]);
                 const formSubmissions = ref([]);
+                const saasClients = ref([]);
+                const saasSubscriptions = ref([]);
+                const saasPayments = ref([]);
+                const saasPlans = ref([]);
+                const saasPaymentMethods = ref([]);
+                const saasTab = ref('clients');
+                const saasFilters = ref({
+                    subscriptionStatus: 'all',
+                    paymentStatus: 'all',
+                    paymentMethod: 'all'
+                });
 
                 const notifications = ref([]);
                 const recentActivities = ref([]);
@@ -2126,6 +2346,15 @@
                     });
                 });
 
+                const pluginCategoryOptions = computed(() => {
+                    const categories = new Set(
+                        plugins.value
+                            .map(plugin => String(plugin.category || '').toLowerCase().trim())
+                            .filter(Boolean)
+                    );
+                    return Array.from(categories).sort();
+                });
+
                 const allVisiblePluginsSelected = computed(() => {
                     if (!filteredPlugins.value.length) return false;
                     return filteredPlugins.value.every(plugin => selectedPluginIds.value.includes(plugin.plugin_id));
@@ -2148,6 +2377,23 @@
                         const matchesQuery = !query || [form.form_name, form.submitted_by].some(val => String(val || '').toLowerCase().includes(query));
                         const matchesStatus = status === 'All Status' || (form.status || 'pending') === status.toLowerCase();
                         return matchesQuery && matchesStatus;
+                    });
+                });
+
+                const filteredSaasSubscriptions = computed(() => {
+                    const status = String(saasFilters.value.subscriptionStatus || 'all').toLowerCase();
+                    return saasSubscriptions.value.filter(item => {
+                        return status === 'all' || String(item.status || '').toLowerCase() === status;
+                    });
+                });
+
+                const filteredSaasPayments = computed(() => {
+                    const status = String(saasFilters.value.paymentStatus || 'all').toLowerCase();
+                    const method = String(saasFilters.value.paymentMethod || 'all').toLowerCase();
+                    return saasPayments.value.filter(item => {
+                        const matchesStatus = status === 'all' || String(item.status || '').toLowerCase() === status;
+                        const matchesMethod = method === 'all' || String(item.payment_method || '').toLowerCase() === method;
+                        return matchesStatus && matchesMethod;
                     });
                 });
 
@@ -2593,6 +2839,123 @@
                     }
                 };
 
+                const loadSaasManager = async () => {
+                    isLoading.value.saas = true;
+                    errors.value.saas = '';
+                    try {
+                        const [clientsPayload, subscriptionsPayload, paymentsPayload, plansPayload] = await Promise.all([
+                            apiRequest('/admin/clients'),
+                            apiRequest('/admin/subscriptions'),
+                            apiRequest('/admin/payments'),
+                            apiRequest('/saas/plans')
+                        ]);
+
+                        saasClients.value = extractList(clientsPayload, ['clients', 'data', 'items']);
+                        saasSubscriptions.value = extractList(subscriptionsPayload, ['subscriptions', 'data', 'items']);
+                        saasPayments.value = extractList(paymentsPayload, ['payments', 'data', 'items']);
+                        saasPlans.value = extractList(plansPayload, ['plans', 'data', 'items']);
+                        saasPaymentMethods.value = extractList(plansPayload, ['payment_methods'])
+                            .concat(extractList(paymentsPayload, ['payment_methods']));
+
+                        if (!saasPaymentMethods.value.length) {
+                            saasPaymentMethods.value = [
+                                { key: 'paypal', label: 'PayPal' },
+                                { key: 'visa', label: 'Visa / Card' },
+                                { key: 'mpesa', label: 'M-Pesa' }
+                            ];
+                        }
+                    } catch (error) {
+                        errors.value.saas = error.message;
+                        showSuccess(error.message || 'Failed to load SaaS manager data');
+                    } finally {
+                        isLoading.value.saas = false;
+                    }
+                };
+
+                const createSaasClient = async () => {
+                    const companyName = prompt('Company name');
+                    if (!companyName) return;
+                    const contactName = prompt('Contact person');
+                    if (!contactName) return;
+                    const email = prompt('Contact email');
+                    if (!email) return;
+
+                    try {
+                        await apiRequest('/saas/clients/register', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                company_name: companyName,
+                                contact_name: contactName,
+                                email
+                            })
+                        });
+                        showSuccess('Client registered successfully');
+                        await loadSaasManager();
+                        saasTab.value = 'clients';
+                    } catch (error) {
+                        showSuccess(error.message || 'Client registration failed');
+                    }
+                };
+
+                const createSubscriptionCheckout = async () => {
+                    if (!saasClients.value.length) {
+                        showSuccess('Register a client first');
+                        return;
+                    }
+
+                    const clientId = Number(prompt(`Client ID (${saasClients.value.map(c => `${c.id}:${c.company_name}`).join(', ')})`));
+                    if (!clientId) return;
+                    const planKey = prompt('Plan key (starter/professional/enterprise)', 'professional');
+                    if (!planKey) return;
+                    const paymentMethod = prompt('Payment method (paypal/visa/mpesa)', 'paypal');
+                    if (!paymentMethod) return;
+
+                    try {
+                        await apiRequest('/saas/subscriptions/checkout', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                client_id: clientId,
+                                plan_key: planKey,
+                                payment_method: paymentMethod,
+                                billing_cycle: 'monthly'
+                            })
+                        });
+                        showSuccess('Subscription checkout created');
+                        await loadSaasManager();
+                        saasTab.value = 'subscriptions';
+                    } catch (error) {
+                        showSuccess(error.message || 'Checkout failed');
+                    }
+                };
+
+                const applySubscriptionAction = async (subscription, action) => {
+                    if (!subscription?.id) return;
+                    try {
+                        await apiRequest(`/admin/subscriptions/${subscription.id}/action`, {
+                            method: 'POST',
+                            body: JSON.stringify({ action })
+                        });
+                        showSuccess(`Subscription ${action} action applied`);
+                        await loadSaasManager();
+                    } catch (error) {
+                        showSuccess(error.message || 'Subscription action failed');
+                    }
+                };
+
+                const confirmSubscriptionPayment = async (payment) => {
+                    if (!payment?.reference) return;
+                    try {
+                        await apiRequest('/saas/payments/confirm', {
+                            method: 'POST',
+                            body: JSON.stringify({ reference: payment.reference })
+                        });
+                        showSuccess('Payment confirmed successfully');
+                        await loadSaasManager();
+                    } catch (error) {
+                        showSuccess(error.message || 'Payment confirmation failed');
+                    }
+                };
+
                 const approveAppRequest = async (requestId) => {
                     try {
                         await apiRequest(`/admin/app-requests/${requestId}/approve`, {
@@ -2701,6 +3064,30 @@
                         showSuccess('Save failed');
                     } finally {
                         showModal.value = false;
+                    }
+                };
+
+                const startRace = async (race) => {
+                    if (!race?.id) return;
+                    if (!confirm(`Send START signal for "${race.name}"?`)) return;
+                    try {
+                        await apiRequest(`/races/${race.id}/start`, { method: 'POST' });
+                        showSuccess('Race started successfully');
+                        await loadRaces();
+                    } catch (error) {
+                        showSuccess(error.message || 'Failed to start race');
+                    }
+                };
+
+                const stopRace = async (race) => {
+                    if (!race?.id) return;
+                    if (!confirm(`Send STOP signal for "${race.name}"?`)) return;
+                    try {
+                        await apiRequest(`/races/${race.id}/stop`, { method: 'POST' });
+                        showSuccess('Race stopped successfully');
+                        await loadRaces();
+                    } catch (error) {
+                        showSuccess(error.message || 'Failed to stop race');
                     }
                 };
 
@@ -2971,6 +3358,7 @@
                         loadAthletes(),
                         loadUsers(),
                         loadPlugins(),
+                        loadSaasManager(),
                         loadResults(),
                         loadSettings(),
                         loadAuditLogs(),
@@ -3028,6 +3416,7 @@
                     filteredResults,
                     filteredUsers,
                     filteredPlugins,
+                    pluginCategoryOptions,
                     allVisiblePluginsSelected,
                     applyRaceFilters,
                     applyAthleteFilters,
@@ -3037,10 +3426,24 @@
                     exportResultsCsv,
                     appRequests,
                     formSubmissions,
+                    saasTab,
+                    saasFilters,
+                    saasClients,
+                    saasSubscriptions,
+                    saasPayments,
+                    saasPlans,
+                    saasPaymentMethods,
                     filteredAppRequests,
                     filteredFormSubmissions,
+                    filteredSaasSubscriptions,
+                    filteredSaasPayments,
                     loadAppRequests,
                     loadFormSubmissions,
+                    loadSaasManager,
+                    createSaasClient,
+                    createSubscriptionCheckout,
+                    applySubscriptionAction,
+                    confirmSubscriptionPayment,
                     approveAppRequest,
                     rejectAppRequest,
                     approveFormSubmission,
@@ -3049,6 +3452,8 @@
                     editRace,
                     deleteRace,
                     saveRace,
+                    startRace,
+                    stopRace,
                     registerAthlete,
                     editAthlete,
                     deleteAthlete,

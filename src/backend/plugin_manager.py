@@ -181,6 +181,36 @@ class PluginRegistry:
             'category': 'features',
             'module': 'reports',
             'dependencies': ['race_management']
+        },
+        'gallery_manager': {
+            'name': 'Gallery & Photo Manager',
+            'description': 'Manage athlete/team photos and media assignments from backend.',
+            'version': '3.0.3',
+            'enabled': True,
+            'required': False,
+            'category': 'features',
+            'module': 'gallery_manager',
+            'dependencies': ['user_management']
+        },
+        'file_manager': {
+            'name': 'File Explorer / File Manager',
+            'description': 'Browse, upload, download, and delete managed files from backend.',
+            'version': '3.0.3',
+            'enabled': True,
+            'required': False,
+            'category': 'infrastructure',
+            'module': 'file_manager',
+            'dependencies': ['user_management']
+        },
+        'subscription_manager': {
+            'name': 'SaaS Subscription Manager',
+            'description': 'Manage client subscriptions, plans, lifecycle actions, and payment states.',
+            'version': '3.0.3',
+            'enabled': True,
+            'required': False,
+            'category': 'enterprise',
+            'module': 'subscription_manager',
+            'dependencies': ['user_management']
         }
     }
 
