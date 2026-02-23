@@ -17,9 +17,7 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            scroll-behavior: smooth;
         }
 
         .container {
@@ -29,6 +27,7 @@
             border-radius: 14px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
             overflow: hidden;
+            margin: 0 auto;
         }
 
         .topbar {
@@ -170,6 +169,301 @@
             background: #fafafa;
         }
 
+        .section {
+            padding: 0 28px 28px;
+        }
+
+        .section h2 {
+            color: #2c2c2c;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .wa-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .wa-card {
+            border: 1px solid #e7e7e7;
+            border-radius: 10px;
+            padding: 14px;
+            background: #fff;
+        }
+
+        .wa-card h3 {
+            color: #2f2f2f;
+            font-size: 0.98rem;
+            margin-bottom: 6px;
+        }
+
+        .wa-card p {
+            color: #666;
+            font-size: 0.89rem;
+            line-height: 1.45;
+        }
+
+        .mini-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .championship-hub {
+            border: 1px solid #e7e7e7;
+            border-radius: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+            margin-bottom: 12px;
+        }
+
+        .countdown-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(70px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .countdown-box {
+            text-align: center;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            background: #fff;
+            padding: 10px 8px;
+        }
+
+        .countdown-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1d4ed8;
+        }
+
+        .countdown-label {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .panel {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .panel h3 {
+            font-size: 0.96rem;
+            color: #111827;
+            padding: 10px 12px;
+            border-bottom: 1px solid #ececec;
+            background: #fafafa;
+        }
+
+        .panel-body {
+            padding: 10px 12px;
+        }
+
+        .compact-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .compact-item {
+            border: 1px solid #ececec;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .compact-item strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 3px;
+            font-size: 0.9rem;
+        }
+
+        .compact-item span {
+            color: #6b7280;
+            font-size: 0.82rem;
+            line-height: 1.4;
+        }
+
+        .medal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+        }
+
+        .medal-table th,
+        .medal-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ececec;
+            text-align: left;
+        }
+
+        .medal-table th {
+            color: #374151;
+            background: #f9fafb;
+        }
+
+        .discipline-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(260px, 1fr));
+            gap: 10px;
+        }
+
+        .discipline-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .discipline-name {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .discipline-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .tag-men { background: #dbeafe; color: #1d4ed8; }
+        .tag-women { background: #fce7f3; color: #be185d; }
+        .tag-mixed { background: #dcfce7; color: #166534; }
+
+        .timetable-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .toggle-btn {
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .toggle-btn.active {
+            background: #eef2ff;
+            color: #4338ca;
+            border-color: #c7d2fe;
+        }
+
+        .day-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .mt-12 {
+            margin-top: 12px;
+        }
+
+        .day-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .day-item strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 4px;
+            font-size: 0.88rem;
+        }
+
+        .day-item span {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+
+        .past-races {
+            display: grid;
+            gap: 8px;
+        }
+
+        .past-race-item {
+            border: 1px solid #ececec;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .past-race-item a {
+            color: #4f46e5;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .past-race-meta {
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+        }
+
+        .calendar-table th,
+        .calendar-table td {
+            padding: 9px;
+            border-bottom: 1px solid #ececec;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .calendar-table th {
+            background: #f9fafb;
+            color: #374151;
+        }
+
+        .calendar-links {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -288,6 +582,22 @@
                 gap: 10px;
                 flex-direction: column;
             }
+
+            .wa-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .countdown-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .discipline-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -296,13 +606,21 @@
         <div class="topbar">
             <div class="brand">🏃 AthSys v3.0</div>
             <div class="topbar-links">
+                <a class="link-btn" href="#overview">🏠 Overview</a>
+                <a class="link-btn" href="#championship">⏱️ Championship Hub</a>
+                <a class="link-btn" href="#world-athletics">🌍 World Athletics</a>
+                <a class="link-btn" href="#frontline-data">📊 Medals & Results</a>
+                <a class="link-btn" href="#timetable">🗓️ Timetable</a>
+                <a class="link-btn" href="#event-calendar">📅 Event Calendar</a>
+                <a class="link-btn" href="#modules">🧩 Modules</a>
                 <a class="link-btn" href="status.html">🏥 Status</a>
                 <a class="link-btn" href="landing.html">✨ Landing</a>
+                <a class="link-btn" href="records-rankings.html">🏆 Records</a>
                 <a class="link-btn" href="/admin">🛡️ Admin Pro</a>
             </div>
         </div>
 
-        <div class="hero">
+        <div id="overview" class="hero">
             <h1>Elite Athletics Management, Clean & Fast</h1>
             <p>
                 Manage athletes, races, registrations, and results from a single platform with enterprise security,
@@ -312,6 +630,170 @@
             <div class="actions">
                 <button class="btn btn-primary" onclick="openLoginModal()">🔐 Login / Admin</button>
                 <button class="btn btn-secondary" onclick="openLoginModal(); switchToRegister();">🏃 Athlete Register</button>
+                <a class="btn btn-secondary" href="records-rankings.html">🏆 View Rankings & Standards</a>
+            </div>
+        </div>
+
+        <div id="world-athletics" class="section">
+            <div class="mini-nav">
+                <a class="link-btn" href="records-rankings.html">Open Records Browser</a>
+                <a class="link-btn" href="docs/RECORDS_README.md">Records Docs</a>
+            </div>
+            <h2>World Athletics Standards Integration</h2>
+            <p class="section-subtitle">
+                AthSys includes the captured World Athletics-style records system: rankings, personal bests, country records,
+                and championship qualifying standards with race-result integration.
+            </p>
+            <div class="wa-grid">
+                <div class="wa-card">
+                    <h3>🏆 Rankings & Leaderboards</h3>
+                    <p>National, seasonal, and all-time ranking views by event and country.</p>
+                </div>
+                <div class="wa-card">
+                    <h3>⭐ Personal & Season Bests</h3>
+                    <p>Automatic PB/SB tracking tied to race results for each athlete.</p>
+                </div>
+                <div class="wa-card">
+                    <h3>🇰🇪 Country & World Records</h3>
+                    <p>Reference record sets with country-level and world-level record visibility.</p>
+                </div>
+                <div class="wa-card">
+                    <h3>📋 Qualifying Standards</h3>
+                    <p>Championship standards tracking for qualification pathways and readiness.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="championship" class="section">
+            <h2>Championship Hub</h2>
+            <p class="section-subtitle">A focused competition view inspired by global championship pages.</p>
+            <div class="championship-hub">
+                <strong id="championshipName">AthSys Championship 2026</strong>
+                <div class="status-meta">Competition readiness timeline</div>
+                <div class="countdown-row" id="countdownGrid">
+                    <div class="countdown-box"><div class="countdown-value" id="cdDays">--</div><div class="countdown-label">Days</div></div>
+                    <div class="countdown-box"><div class="countdown-value" id="cdHours">--</div><div class="countdown-label">Hours</div></div>
+                    <div class="countdown-box"><div class="countdown-value" id="cdMinutes">--</div><div class="countdown-label">Minutes</div></div>
+                    <div class="countdown-box"><div class="countdown-value" id="cdSeconds">--</div><div class="countdown-label">Seconds</div></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Highlights</h3>
+                <div id="highlightsList" class="panel-body compact-list"></div>
+            </div>
+
+            <div class="panel mt-12">
+                <h3>Past Races</h3>
+                <div id="pastRacesList" class="panel-body past-races"></div>
+            </div>
+        </div>
+
+        <div id="frontline-data" class="section">
+            <h2>Medals, Results & News</h2>
+            <p class="section-subtitle">Competition-first information hierarchy: medal standings, event winners, and latest updates.</p>
+
+            <div class="data-grid">
+                <div class="panel">
+                    <h3>Medal Table Snapshot</h3>
+                    <div class="panel-body">
+                        <table class="medal-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Country</th>
+                                    <th>G</th>
+                                    <th>S</th>
+                                    <th>B</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medalTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Results Spotlight</h3>
+                    <div class="panel-body compact-list" id="resultsSpotlight"></div>
+                </div>
+            </div>
+
+            <div class="panel mt-12">
+                <h3>Latest Updates</h3>
+                <div class="panel-body mini-nav">
+                    <a class="link-btn" href="records-rankings.html">🏆 Rankings Updates</a>
+                    <a class="link-btn" href="public-results.html">📈 Live Results Board</a>
+                    <a class="link-btn" href="status.html">🛠️ System Health Updates</a>
+                    <a class="link-btn" href="docs/RECORDS_SYSTEM.md">📚 Records System Docs</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="timetable" class="section">
+            <h2>Timetable</h2>
+            <p class="section-subtitle">Browse competition schedule by day or by discipline, matching championship timetable patterns.</p>
+            <div class="mini-nav">
+                <a class="link-btn" href="public-results.html">By Day Results</a>
+                <a class="link-btn" href="records-rankings.html">By Discipline Records</a>
+                <a class="link-btn" href="races-results.html">Race Timetable Board</a>
+            </div>
+
+            <div class="timetable-controls">
+                <button id="viewByDayBtn" class="toggle-btn" onclick="switchTimetableView('day')">By Day</button>
+                <button id="viewByDisciplineBtn" class="toggle-btn active" onclick="switchTimetableView('discipline')">By Discipline</button>
+                <select id="disciplineFilter" class="link-btn" title="Filter disciplines" onchange="renderTimetable()">
+                    <option value="all">All Disciplines</option>
+                    <option value="track">Track</option>
+                    <option value="field">Field</option>
+                    <option value="road">Road</option>
+                    <option value="relay">Relay</option>
+                </select>
+            </div>
+
+            <div id="disciplineGrid" class="discipline-grid"></div>
+            <div id="dayList" class="day-list hidden"></div>
+        </div>
+
+        <div id="event-calendar" class="section">
+            <h2>Event Calendar (Past Races)</h2>
+            <p class="section-subtitle">Historical and upcoming races in calendar format with quick links to results and updates.</p>
+            <div class="timetable-controls">
+                <select id="calendarYearFilter" class="link-btn" title="Filter by year" onchange="renderEventCalendar()">
+                    <option value="all">All Years</option>
+                </select>
+                <select id="calendarCountryFilter" class="link-btn" title="Filter by country" onchange="renderEventCalendar()">
+                    <option value="all">All Countries</option>
+                </select>
+                <input id="calendarSearch" class="link-btn" type="text" placeholder="Search event or city..." oninput="renderEventCalendar()" />
+            </div>
+            <div class="panel">
+                <h3>Calendar List</h3>
+                <div class="panel-body">
+                    <table class="calendar-table">
+                        <thead>
+                            <tr>
+                                <th>Date Range</th>
+                                <th>Event</th>
+                                <th>Host</th>
+                                <th>Links</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventCalendarBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="modules" class="section">
+            <h2>Platform Modules</h2>
+            <p class="section-subtitle">Quick access to core platform capabilities.</p>
+            <div class="mini-nav">
+                <a class="link-btn" href="records-rankings.html">Records & Rankings</a>
+                <a class="link-btn" href="public-results.html">Public Results</a>
+                <a class="link-btn" href="races.html">Races</a>
+                <a class="link-btn" href="athletes.html">Athletes</a>
+                <a class="link-btn" href="users.html">Users</a>
             </div>
         </div>
 
@@ -588,7 +1070,343 @@
             }
         });
 
-        hydrateFrontStatus();
+        let competitionHubData = null;
+        let championshipCountdownTarget = '2026-08-15T08:00:00Z';
+        let EVENT_CALENDAR = [];
+
+        const FALLBACK_HIGHLIGHTS = [
+            { title: 'Records pipeline enabled', summary: 'Race results now feed personal bests, rankings, and standards tracking.' },
+            { title: 'Admin compliance workflow live', summary: 'ITIL-aligned controls now cover access review, incident SLA, and change approval settings.' },
+            { title: 'Progressive front-end UX', summary: 'System-wide responsive baseline and progressive loading bar active across pages.' }
+        ];
+
+        const FALLBACK_PAST_RACES = [
+            { name: 'City Marathon Finals 2025', date: '2025-09-21', location: 'Nairobi', link: '/races-results.html' },
+            { name: 'National Sprint Trials 2025', date: '2025-07-12', location: 'Kasarani Stadium', link: '/public-results.html' },
+            { name: 'Regional Relay Championship 2024', date: '2024-11-03', location: 'Eldoret', link: '/records-rankings.html' }
+        ];
+
+        const FALLBACK_EVENT_CALENDAR = [
+            {
+                date_range: '15 Aug 2026 - 19 Aug 2026',
+                event: 'AthSys Championship 2026',
+                city: 'Nairobi',
+                country: 'KEN',
+                results_link: '/public-results.html',
+                news_link: '/landing.html'
+            },
+            {
+                date_range: '21 Sep 2025 - 24 Sep 2025',
+                event: 'City Marathon Finals 2025',
+                city: 'Nairobi',
+                country: 'KEN',
+                results_link: '/races-results.html',
+                news_link: '/landing.html'
+            },
+            {
+                date_range: '12 Jul 2025 - 14 Jul 2025',
+                event: 'National Sprint Trials 2025',
+                city: 'Kasarani',
+                country: 'KEN',
+                results_link: '/public-results.html',
+                news_link: '/status.html'
+            }
+        ];
+
+        let MEDAL_DATA = [
+            { rank: 1, country: 'USA', gold: 16, silver: 5, bronze: 5, total: 26 },
+            { rank: 2, country: 'KEN', gold: 7, silver: 2, bronze: 2, total: 11 },
+            { rank: 3, country: 'CAN', gold: 3, silver: 1, bronze: 1, total: 5 },
+            { rank: 4, country: 'NED', gold: 2, silver: 2, bronze: 2, total: 6 },
+            { rank: 5, country: 'NZL', gold: 2, silver: 0, bronze: 1, total: 3 }
+        ];
+
+        let RESULTS_SPOTLIGHT = [
+            { event: '100m', winner: 'Oblique Seville (JAM)', performance: '9.77' },
+            { event: '200m', winner: 'Noah Lyles (USA)', performance: '19.52' },
+            { event: '1500m', winner: 'Faith Kipyegon (KEN)', performance: '3:52.15' },
+            { event: 'Marathon', winner: 'Peres Jepchirchir (KEN)', performance: '2:24:43' },
+            { event: 'Pole Vault', winner: 'Armand Duplantis (SWE)', performance: '6.30' }
+        ];
+
+        let DISCIPLINE_TIMETABLE = [
+            { discipline: '100 Metres', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: '200 Metres', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: '400 Metres', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: '800 Metres', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: '1500 Metres', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: '5000 Metres', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: 'Marathon', men: true, women: true, mixed: false, category: 'road' },
+            { discipline: '20km Race Walk', men: true, women: true, mixed: false, category: 'road' },
+            { discipline: '400 Metres Hurdles', men: true, women: true, mixed: false, category: 'track' },
+            { discipline: 'High Jump', men: true, women: true, mixed: false, category: 'field' },
+            { discipline: 'Pole Vault', men: true, women: true, mixed: false, category: 'field' },
+            { discipline: '4x400 Metres Relay', men: true, women: true, mixed: true, category: 'relay' }
+        ];
+
+        let TIMETABLE_BY_DAY = [
+            { day: 'Day 1', date: '15 Aug 2026', sessions: '100m Heats, Shot Put Finals, Mixed Relay' },
+            { day: 'Day 2', date: '16 Aug 2026', sessions: '200m Heats, Pole Vault Qualifiers, 1500m Heats' },
+            { day: 'Day 3', date: '17 Aug 2026', sessions: '400m Semis, Long Jump Final, 10,000m Final' },
+            { day: 'Day 4', date: '18 Aug 2026', sessions: '800m Heats, Discus Final, 100m Finals' },
+            { day: 'Day 5', date: '19 Aug 2026', sessions: 'Relay Finals, Marathon, Championship Closing Session' }
+        ];
+
+        let timetableView = 'discipline';
+
+        async function loadCompetitionHubData() {
+            try {
+                const [hubResponse, calendarResponse] = await Promise.all([
+                    fetch('/api/frontpage/competition-hub'),
+                    fetch('/api/frontpage/event-calendar')
+                ]);
+
+                if (!hubResponse.ok) {
+                    throw new Error('Failed to fetch competition hub data');
+                }
+
+                const payload = await hubResponse.json().catch(() => ({}));
+                const data = payload?.data || {};
+                competitionHubData = data;
+
+                if (Array.isArray(data.medal_table) && data.medal_table.length) {
+                    MEDAL_DATA = data.medal_table;
+                }
+                if (Array.isArray(data.results_spotlight) && data.results_spotlight.length) {
+                    RESULTS_SPOTLIGHT = data.results_spotlight;
+                }
+                if (Array.isArray(data.discipline_timetable) && data.discipline_timetable.length) {
+                    DISCIPLINE_TIMETABLE = data.discipline_timetable;
+                }
+                if (Array.isArray(data.timetable_by_day) && data.timetable_by_day.length) {
+                    TIMETABLE_BY_DAY = data.timetable_by_day;
+                }
+
+                championshipCountdownTarget = data.countdown_target || championshipCountdownTarget;
+
+                const championshipName = document.getElementById('championshipName');
+                if (championshipName) {
+                    championshipName.textContent = data.championship_name || 'AthSys Championship 2026';
+                }
+
+                if (calendarResponse.ok) {
+                    const calendarPayload = await calendarResponse.json().catch(() => ({}));
+                    EVENT_CALENDAR = Array.isArray(calendarPayload?.calendar) ? calendarPayload.calendar : [];
+                }
+            } catch (error) {
+                competitionHubData = null;
+                EVENT_CALENDAR = [];
+            }
+        }
+
+        function hydrateCompetitionBlocks() {
+            const medalTableBody = document.getElementById('medalTableBody');
+            const resultsSpotlight = document.getElementById('resultsSpotlight');
+            const highlightsList = document.getElementById('highlightsList');
+            const pastRacesList = document.getElementById('pastRacesList');
+            const highlights = (competitionHubData && Array.isArray(competitionHubData.highlights) && competitionHubData.highlights.length)
+                ? competitionHubData.highlights
+                : FALLBACK_HIGHLIGHTS;
+            const pastRaces = (competitionHubData && Array.isArray(competitionHubData.past_races) && competitionHubData.past_races.length)
+                ? competitionHubData.past_races
+                : FALLBACK_PAST_RACES;
+            const eventCalendar = (competitionHubData && Array.isArray(competitionHubData.event_calendar) && competitionHubData.event_calendar.length)
+                ? competitionHubData.event_calendar
+                : FALLBACK_EVENT_CALENDAR;
+
+            EVENT_CALENDAR = EVENT_CALENDAR.length ? EVENT_CALENDAR : eventCalendar;
+
+            highlightsList.innerHTML = highlights.map(item => `
+                <div class="compact-item">
+                    <strong>${item.title || 'Update'}</strong>
+                    <span>${item.summary || ''}</span>
+                </div>
+            `).join('');
+
+            pastRacesList.innerHTML = pastRaces.map(item => `
+                <div class="past-race-item">
+                    <a href="${item.link || '/races-results.html'}">${item.name || 'Past Race'}</a>
+                    <div class="past-race-meta">${item.date || 'N/A'} · ${item.location || 'Unknown location'}</div>
+                </div>
+            `).join('');
+
+            hydrateCalendarFilters(EVENT_CALENDAR);
+            renderEventCalendar();
+
+            medalTableBody.innerHTML = MEDAL_DATA.map(row => `
+                <tr>
+                    <td>${row.rank}</td>
+                    <td><strong>${row.country}</strong></td>
+                    <td>${row.gold}</td>
+                    <td>${row.silver}</td>
+                    <td>${row.bronze}</td>
+                    <td><strong>${row.total}</strong></td>
+                </tr>
+            `).join('');
+
+            resultsSpotlight.innerHTML = RESULTS_SPOTLIGHT.map(item => `
+                <div class="compact-item">
+                    <strong>${item.event}</strong>
+                    <span>${item.winner} — ${item.performance}</span>
+                </div>
+            `).join('');
+
+            renderTimetable();
+        }
+
+        function hydrateCalendarFilters(calendarItems) {
+            const yearSelect = document.getElementById('calendarYearFilter');
+            const countrySelect = document.getElementById('calendarCountryFilter');
+            if (!yearSelect || !countrySelect) return;
+
+            const years = new Set();
+            const countries = new Set();
+
+            calendarItems.forEach(item => {
+                const dateRange = String(item.date_range || '');
+                const yearMatch = dateRange.match(/(19|20)\d{2}/g);
+                if (yearMatch && yearMatch.length) {
+                    yearMatch.forEach(year => years.add(year));
+                }
+                const country = String(item.country || '').toUpperCase();
+                if (country) {
+                    countries.add(country);
+                }
+            });
+
+            const currentYear = yearSelect.value || 'all';
+            const currentCountry = countrySelect.value || 'all';
+
+            yearSelect.innerHTML = '<option value="all">All Years</option>' +
+                Array.from(years).sort((a, b) => Number(b) - Number(a)).map(year => `<option value="${year}">${year}</option>`).join('');
+            countrySelect.innerHTML = '<option value="all">All Countries</option>' +
+                Array.from(countries).sort().map(country => `<option value="${country}">${country}</option>`).join('');
+
+            yearSelect.value = Array.from(yearSelect.options).some(o => o.value === currentYear) ? currentYear : 'all';
+            countrySelect.value = Array.from(countrySelect.options).some(o => o.value === currentCountry) ? currentCountry : 'all';
+        }
+
+        function renderEventCalendar() {
+            const eventCalendarBody = document.getElementById('eventCalendarBody');
+            const yearFilter = document.getElementById('calendarYearFilter')?.value || 'all';
+            const countryFilter = document.getElementById('calendarCountryFilter')?.value || 'all';
+            const query = (document.getElementById('calendarSearch')?.value || '').trim().toLowerCase();
+
+            const filtered = EVENT_CALENDAR.filter(item => {
+                const dateRange = String(item.date_range || '');
+                const country = String(item.country || '').toUpperCase();
+                const haystack = `${item.event || ''} ${item.city || ''} ${country} ${dateRange}`.toLowerCase();
+
+                const matchesYear = yearFilter === 'all' || dateRange.includes(yearFilter);
+                const matchesCountry = countryFilter === 'all' || country === countryFilter;
+                const matchesQuery = !query || haystack.includes(query);
+
+                return matchesYear && matchesCountry && matchesQuery;
+            });
+
+            eventCalendarBody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>${item.date_range || 'N/A'}</td>
+                    <td><strong>${item.event || 'Race Event'}</strong></td>
+                    <td>${item.city || 'Unknown'} · ${item.country || '--'}</td>
+                    <td>
+                        <div class="calendar-links">
+                            <a class="link-btn" href="${item.results_link || '/public-results.html'}">Results</a>
+                            <a class="link-btn" href="${item.news_link || '/landing.html'}">News</a>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (!filtered.length) {
+                eventCalendarBody.innerHTML = '<tr><td colspan="4">No races found for this filter.</td></tr>';
+            }
+        }
+
+        function switchTimetableView(view) {
+            timetableView = view === 'day' ? 'day' : 'discipline';
+            renderTimetable();
+        }
+
+        function renderTimetable() {
+            const disciplineGrid = document.getElementById('disciplineGrid');
+            const dayList = document.getElementById('dayList');
+            const byDayBtn = document.getElementById('viewByDayBtn');
+            const byDisciplineBtn = document.getElementById('viewByDisciplineBtn');
+            const filter = document.getElementById('disciplineFilter')?.value || 'all';
+
+            if (timetableView === 'day') {
+                disciplineGrid.classList.add('hidden');
+                dayList.classList.remove('hidden');
+                byDayBtn.classList.add('active');
+                byDisciplineBtn.classList.remove('active');
+
+                dayList.innerHTML = TIMETABLE_BY_DAY.map(item => `
+                    <div class="day-item">
+                        <strong>${item.day} · ${item.date}</strong>
+                        <span>${item.sessions}</span>
+                    </div>
+                `).join('');
+                return;
+            }
+
+            disciplineGrid.classList.remove('hidden');
+            dayList.classList.add('hidden');
+            byDisciplineBtn.classList.add('active');
+            byDayBtn.classList.remove('active');
+
+            const filtered = filter === 'all'
+                ? DISCIPLINE_TIMETABLE
+                : DISCIPLINE_TIMETABLE.filter(item => item.category === filter);
+
+            disciplineGrid.innerHTML = filtered.map(item => `
+                <div class="discipline-card">
+                    <div class="discipline-name">${item.discipline}</div>
+                    <div class="discipline-tags">
+                        ${item.men ? '<span class="tag tag-men">Men</span>' : ''}
+                        ${item.women ? '<span class="tag tag-women">Women</span>' : ''}
+                        ${item.mixed ? '<span class="tag tag-mixed">Mixed</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            if (!filtered.length) {
+                disciplineGrid.innerHTML = '<div class="day-item"><strong>No disciplines</strong><span>Try a different timetable filter.</span></div>';
+            }
+        }
+
+        function startChampionshipCountdown() {
+            const target = new Date(championshipCountdownTarget).getTime();
+
+            const update = () => {
+                const now = Date.now();
+                const remaining = Math.max(0, target - now);
+                const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((remaining / (1000 * 60)) % 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+
+                document.getElementById('cdDays').textContent = String(days);
+                document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('cdMinutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('cdSeconds').textContent = String(seconds).padStart(2, '0');
+            };
+
+            update();
+            setInterval(update, 1000);
+        }
+
+        async function initializeFrontpage() {
+            await Promise.all([
+                hydrateFrontStatus(),
+                loadCompetitionHubData()
+            ]);
+
+            hydrateCompetitionBlocks();
+            startChampionshipCountdown();
+        }
+
+        initializeFrontpage();
     </script>
 </body>
 </html>

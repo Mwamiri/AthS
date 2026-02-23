@@ -424,6 +424,24 @@
                 height: 100%;
             }
             .nav-label { display: none; }
+
+            .top-bar {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .table-modern th,
+            .table-modern td {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+
+            .btn-primary,
+            .btn-secondary,
+            .btn-danger {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -492,9 +510,9 @@
             <div class="flex-1 flex flex-col overflow-hidden">
                 
                 <!-- Top Bar -->
-                <header class="top-bar h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-slate-700">
+                <header class="top-bar min-h-16 py-3 flex items-center justify-between px-4 sm:px-6 border-b border-gray-200 dark:border-slate-700 gap-3 flex-wrap">
                     <div class="flex items-center gap-4">
-                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ getPageTitle() }}</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{{ getPageTitle() }}</h2>
                         <div class="hidden md:flex items-center gap-2">
                             <span class="badge" :class="health.api_status === 'online' ? 'badge-success' : 'badge-danger'">
                                 <span class="status-dot" :class="health.api_status === 'online' ? 'online' : 'offline'"></span>
@@ -570,7 +588,7 @@
                 </header>
 
                 <!-- Page Content -->
-                <main class="flex-1 overflow-y-auto p-6">
+                <main class="flex-1 overflow-y-auto p-4 sm:p-6">
                     <!-- Dashboard Page -->
                     <div v-if="currentPage === 'dashboard'" class="space-y-6 animate-fade-in">
                         <!-- Welcome Card -->
@@ -865,14 +883,60 @@
                     <!-- Users Management -->
                     <div v-if="currentPage === 'users'" class="space-y-6 animate-fade-in">
                         <div class="card p-6">
-                            <div class="flex justify-between items-center mb-6">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">User Management</h3>
-                                <button @click="addUser" class="btn-primary">
+                                <button @click="addUser" class="btn-primary w-full sm:w-auto">
                                     <i class="fas fa-user-plus"></i> Add User
                                 </button>
                             </div>
 
-                            <div class="overflow-x-auto">
+                            <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input v-model="userFilters.query" type="text" placeholder="Search name or email..." class="form-input w-full" />
+                                <select v-model="userFilters.role" class="form-input w-full">
+                                    <option value="all">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="chief_registrar">Chief Registrar</option>
+                                    <option value="registrar">Registrar</option>
+                                    <option value="starter">Starter</option>
+                                    <option value="coach">Coach</option>
+                                    <option value="official">Official</option>
+                                    <option value="athlete">Athlete</option>
+                                    <option value="viewer">Viewer</option>
+                                </select>
+                                <select v-model="userFilters.status" class="form-input w-full">
+                                    <option value="all">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                </select>
+                            </div>
+
+                            <div class="md:hidden space-y-3">
+                                <div v-for="user in filteredUsers" :key="`mobile-${user.id}`" class="p-4 border rounded-lg dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <div class="flex items-start justify-between gap-3 mb-2">
+                                        <div>
+                                            <p class="font-semibold text-gray-900 dark:text-white">{{ user.name }}</p>
+                                            <p class="text-sm text-gray-600 dark:text-slate-400 break-all">{{ user.email }}</p>
+                                        </div>
+                                        <span :class="['badge', user.status === 'active' ? 'badge-success' : 'badge-warning']">{{ user.status }}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-slate-400 mb-3">
+                                        <p><span class="font-medium">Role:</span> {{ formatRole(user.role) }}</p>
+                                        <p><span class="font-medium">Last Login:</span> {{ user.lastLogin || 'Never' }}</p>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button @click="editUser(user)" class="btn-secondary btn-small w-auto"><i class="fas fa-pen"></i> Edit</button>
+                                        <button @click="toggleUserStatus(user)" class="btn-secondary btn-small w-auto">
+                                            <i class="fas" :class="user.status === 'active' ? 'fa-user-slash' : 'fa-user-check'"></i>
+                                            {{ user.status === 'active' ? 'Suspend' : 'Activate' }}
+                                        </button>
+                                        <button @click="deleteUser(user.id)" class="btn-danger btn-small w-auto"><i class="fas fa-trash"></i> Delete</button>
+                                    </div>
+                                </div>
+                                <div v-if="filteredUsers.length === 0" class="text-center text-gray-500 py-6 border rounded-lg dark:border-slate-700">No users found.</div>
+                            </div>
+
+                            <div class="hidden md:block overflow-x-auto">
                                 <table class="table-modern">
                                     <thead>
                                         <tr>
@@ -880,26 +944,35 @@
                                             <th>Email</th>
                                             <th>Role</th>
                                             <th>Status</th>
+                                            <th>Last Login</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="user in users" :key="user.id">
+                                        <tr v-for="user in filteredUsers" :key="user.id">
                                             <td class="font-medium text-gray-900 dark:text-white">{{ user.name }}</td>
                                             <td class="text-gray-600 dark:text-slate-400">{{ user.email }}</td>
                                             <td>
-                                                <span class="badge badge-info">{{ user.role }}</span>
+                                                <span class="badge badge-info">{{ formatRole(user.role) }}</span>
                                             </td>
                                             <td>
                                                 <span :class="['badge', user.status === 'active' ? 'badge-success' : 'badge-warning']">
                                                     {{ user.status }}
                                                 </span>
                                             </td>
+                                            <td class="text-sm text-gray-600 dark:text-slate-400">{{ user.lastLogin || 'Never' }}</td>
                                             <td>
                                                 <button @click="editUser(user)" class="text-orange-600 hover:text-orange-700 text-sm font-medium">Edit</button>
                                                 <span class="text-gray-300"> • </span>
+                                                <button @click="toggleUserStatus(user)" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                                    {{ user.status === 'active' ? 'Suspend' : 'Activate' }}
+                                                </button>
+                                                <span class="text-gray-300"> • </span>
                                                 <button @click="deleteUser(user.id)" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
                                             </td>
+                                        </tr>
+                                        <tr v-if="filteredUsers.length === 0">
+                                            <td colspan="6" class="text-center text-gray-500 py-6">No users found.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -957,6 +1030,163 @@
                                         </tr>
                                         <tr v-if="filteredResults.length === 0">
                                             <td colspan="4" class="text-center text-gray-500 py-6">No results found.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plugin Management -->
+                    <div v-if="currentPage === 'plugins'" class="space-y-6 animate-fade-in">
+                        <div class="card p-6">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Plugin & Module Management</h3>
+                                    <p class="text-sm text-gray-600 dark:text-slate-400 mt-1">WordPress/Joomla style module controls: enable or disable features safely.</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                                    <button @click="bulkTogglePlugins('activate')" :disabled="!selectedPluginIds.length || isLoading.plugins" class="btn-secondary btn-small">
+                                        <i class="fas fa-toggle-on"></i> Activate Selected
+                                    </button>
+                                    <button @click="bulkTogglePlugins('deactivate')" :disabled="!selectedPluginIds.length || isLoading.plugins" class="btn-secondary btn-small">
+                                        <i class="fas fa-toggle-off"></i> Deactivate Selected
+                                    </button>
+                                    <button @click="loadPlugins" class="btn-secondary btn-small">
+                                        <i class="fas fa-sync"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Total Plugins</p>
+                                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ pluginStats.total_plugins || 0 }}</p>
+                                </div>
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Enabled</p>
+                                    <p class="text-2xl font-bold text-green-600">{{ pluginStats.enabled_count || 0 }}</p>
+                                </div>
+                                <div class="p-4 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900/50">
+                                    <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400">Loaded In Memory</p>
+                                    <p class="text-2xl font-bold text-blue-600">{{ pluginStats.loaded_count || 0 }}</p>
+                                </div>
+                            </div>
+
+                            <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <input v-model="pluginSearch" type="text" placeholder="Search plugin name or module..." class="form-input w-full" />
+                                <select v-model="pluginCategory" title="Filter plugins by category" class="form-input w-full">
+                                    <option value="all">All Categories</option>
+                                    <option value="core">Core</option>
+                                    <option value="enterprise">Enterprise</option>
+                                    <option value="infrastructure">Infrastructure</option>
+                                    <option value="security">Security</option>
+                                    <option value="features">Features</option>
+                                </select>
+                                <select v-model="pluginStatusFilter" title="Filter plugins by status" class="form-input w-full">
+                                    <option value="all">All Status</option>
+                                    <option value="enabled">Enabled</option>
+                                    <option value="disabled">Disabled</option>
+                                    <option value="blocked">Blocked</option>
+                                </select>
+                                <div class="flex items-center text-sm text-gray-600 dark:text-slate-400">
+                                    <span>{{ filteredPlugins.length }} module(s) shown</span>
+                                </div>
+                            </div>
+
+                            <div v-if="bulkActionReport" class="mb-6 p-4 rounded-lg border dark:border-slate-700 bg-gray-50 dark:bg-slate-900/40">
+                                <div class="flex items-center justify-between gap-3 mb-2">
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+                                        Bulk {{ bulkActionReport.action }} Report
+                                    </h4>
+                                    <button @click="bulkActionReport = null" class="btn-secondary btn-small">Dismiss</button>
+                                </div>
+                                <p class="text-sm text-gray-700 dark:text-slate-300 mb-3">
+                                    {{ bulkActionReport.updated_count }} updated · {{ bulkActionReport.blocked_count }} blocked · {{ bulkActionReport.failed_count }} failed
+                                    <span class="text-xs text-gray-500 dark:text-slate-400">({{ bulkActionReport.timestamp }})</span>
+                                </p>
+
+                                <div v-if="bulkActionReport.blocked && bulkActionReport.blocked.length" class="mb-2">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300 mb-1">Blocked</p>
+                                    <ul class="text-xs text-amber-800 dark:text-amber-200 space-y-1">
+                                        <li v-for="item in bulkActionReport.blocked.slice(0, 8)" :key="`blocked-${item.plugin_id}`">
+                                            {{ item.plugin_id }} (depends in use by: {{ (item.blockers || []).join(', ') || 'dependency' }})
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div v-if="bulkActionReport.failed && bulkActionReport.failed.length">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300 mb-1">Failed</p>
+                                    <ul class="text-xs text-red-800 dark:text-red-200 space-y-1">
+                                        <li v-for="item in bulkActionReport.failed.slice(0, 8)" :key="`failed-${item.plugin_id}`">
+                                            {{ item.plugin_id }} ({{ item.reason || 'failed' }})
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="table-modern">
+                                    <thead>
+                                        <tr>
+                                            <th class="w-10">
+                                                <input type="checkbox" title="Select all visible plugins" :checked="allVisiblePluginsSelected" @change="toggleSelectAllPlugins($event.target.checked)" />
+                                            </th>
+                                            <th>Plugin</th>
+                                            <th>Category</th>
+                                            <th>Version</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="plugin in filteredPlugins" :key="plugin.plugin_id || plugin.module || plugin.name">
+                                            <td>
+                                                <input
+                                                    type="checkbox"
+                                                    title="Select plugin"
+                                                    :value="plugin.plugin_id"
+                                                    :checked="selectedPluginIds.includes(plugin.plugin_id)"
+                                                    @change="togglePluginSelection(plugin.plugin_id, $event.target.checked)"
+                                                />
+                                            </td>
+                                            <td>
+                                                <p class="font-semibold text-gray-900 dark:text-white">{{ plugin.name }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-slate-400">{{ plugin.description }}</p>
+                                                <p v-if="plugin.disable_blockers && plugin.disable_blockers.length" class="text-xs text-amber-600 mt-1">
+                                                    Depends in use by: {{ plugin.disable_blockers.join(', ') }}
+                                                </p>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info">{{ plugin.category || 'general' }}</span>
+                                            </td>
+                                            <td>{{ plugin.version || 'n/a' }}</td>
+                                            <td>
+                                                <span :class="['badge', plugin.enabled ? 'badge-success' : 'badge-warning']">
+                                                    {{ plugin.enabled ? 'enabled' : 'disabled' }}
+                                                </span>
+                                                <span v-if="plugin.required" class="badge badge-info ml-1">required</span>
+                                            </td>
+                                            <td>
+                                                <button
+                                                    @click="togglePlugin(plugin)"
+                                                    :disabled="plugin.required || isLoading.plugins || pluginRowLoadingIds.includes(plugin.plugin_id)"
+                                                    class="btn-secondary btn-small"
+                                                >
+                                                    <i
+                                                        class="fas"
+                                                        :class="pluginRowLoadingIds.includes(plugin.plugin_id)
+                                                            ? 'fa-spinner fa-spin'
+                                                            : (plugin.enabled ? 'fa-toggle-on' : 'fa-toggle-off')"
+                                                    ></i>
+                                                    {{ pluginRowLoadingIds.includes(plugin.plugin_id)
+                                                        ? 'Working...'
+                                                        : (plugin.enabled ? 'Deactivate' : 'Activate') }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="filteredPlugins.length === 0">
+                                            <td colspan="6" class="text-center text-gray-500 py-6">No plugins found.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1200,43 +1430,181 @@
                     <div v-if="currentPage === 'settings'" class="space-y-6 animate-fade-in">
                         <div class="card p-6">
                             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">System Settings</h3>
-                            
+
+                            <div class="mb-6 p-2 bg-gray-100 dark:bg-slate-900 rounded-lg inline-flex gap-2 flex-wrap">
+                                <button @click="settingsTab = 'general'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', settingsTab === 'general' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">General</button>
+                                <button @click="settingsTab = 'theme'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', settingsTab === 'theme' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">Theme Management</button>
+                                <button @click="settingsTab = 'users'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', settingsTab === 'users' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">User Management</button>
+                                <button @click="settingsTab = 'compliance'" :class="['px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap', settingsTab === 'compliance' ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-slate-300']">Compliance</button>
+                            </div>
+
                             <div class="space-y-6">
-                                <!-- General Settings -->
-                                <div>
-                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">General</h4>
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">System Name</label>
-                                            <input v-model="settings.system_name" type="text" class="form-input w-full" />
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Organization</label>
-                                            <input v-model="settings.organization" type="text" class="form-input w-full" />
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Primary Color</label>
-                                            <input v-model="settings.primary_color" type="color" class="form-input w-24" />
+                                <div v-if="settingsTab === 'general'" class="space-y-6">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">General</h4>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">System Name</label>
+                                                <input v-model="settings.system_name" type="text" class="form-input w-full" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Organization</label>
+                                                <input v-model="settings.organization" type="text" class="form-input w-full" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">SMTP Server</label>
+                                                <input v-model="settings.smtp_server" type="text" class="form-input w-full" />
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">SMTP Port</label>
+                                                <input v-model.number="settings.smtp_port" type="number" min="1" max="65535" class="form-input w-full" />
+                                            </div>
+                                            <button @click="saveSettings" class="btn-primary">
+                                                <i class="fas fa-save"></i> Save General Settings
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Email Configuration -->
-                                <div class="pt-6 border-t dark:border-slate-700">
-                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Email Configuration</h4>
-                                    <div class="space-y-4">
+                                <div v-if="settingsTab === 'theme'" class="space-y-5">
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Theme Management</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">SMTP Server</label>
-                                            <input v-model="settings.smtp_server" type="text" class="form-input w-full" />
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Primary Color</label>
+                                            <input v-model="settings.primary_color" type="color" class="form-input w-24 h-12" />
                                         </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">SMTP Port</label>
-                                            <input v-model.number="settings.smtp_port" type="number" class="form-input w-full" />
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Theme Mode</label>
+                                            <select v-model="settings.theme_mode" class="form-input w-full">
+                                                <option value="system">System Default</option>
+                                                <option value="light">Light</option>
+                                                <option value="dark">Dark</option>
+                                            </select>
                                         </div>
-                                        <button @click="saveSettings" class="btn-primary">
-                                            <i class="fas fa-save"></i> Save Settings
-                                        </button>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Density</label>
+                                            <select v-model="settings.density_mode" class="form-input w-full">
+                                                <option value="compact">Compact</option>
+                                                <option value="comfortable">Comfortable</option>
+                                                <option value="spacious">Spacious</option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    <button @click="saveSettings" class="btn-primary">
+                                        <i class="fas fa-paint-brush"></i> Save Theme Settings
+                                    </button>
+                                </div>
+
+                                <div v-if="settingsTab === 'users'" class="space-y-5">
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">User Management Standards</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Password Minimum Length</label>
+                                            <input v-model.number="settings.password_min_length" type="number" min="8" max="64" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Password Rotation (days)</label>
+                                            <input v-model.number="settings.password_rotation_days" type="number" min="30" max="365" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Session Timeout (minutes)</label>
+                                            <input v-model.number="settings.session_timeout_minutes" type="number" min="5" max="480" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Max Failed Logins</label>
+                                            <input v-model.number="settings.max_failed_logins" type="number" min="3" max="20" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Auto-disable Inactive Accounts (days)</label>
+                                            <input v-model.number="settings.auto_disable_inactive_days" type="number" min="30" max="365" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Access Review Frequency (days)</label>
+                                            <input v-model.number="settings.access_review_frequency_days" type="number" min="30" max="365" class="form-input w-full" />
+                                        </div>
+                                    </div>
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                                        <input v-model="settings.require_mfa_admin" type="checkbox" class="form-input w-4 h-4" />
+                                        Require MFA for admin roles
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                                        <input v-model="settings.user_access_recertification_required" type="checkbox" class="form-input w-4 h-4" />
+                                        Require formal user access recertification
+                                    </label>
+                                    <button @click="saveSettings" class="btn-primary">
+                                        <i class="fas fa-users-cog"></i> Save User Management Policy
+                                    </button>
+                                </div>
+
+                                <div v-if="settingsTab === 'compliance'" class="space-y-5">
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Compliance & ISO Readiness</h4>
+                                    <div class="p-4 rounded-lg border border-amber-300 bg-amber-50 dark:bg-slate-900 dark:border-amber-500/40 text-sm text-amber-900 dark:text-amber-200">
+                                        ISO certification cannot be self-declared in-app. This panel tracks readiness controls aligned to ISO/IEC 27001:2022.
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Framework</label>
+                                            <input v-model="settings.iso_framework" type="text" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Readiness Level</label>
+                                            <select v-model="settings.iso_readiness_level" class="form-input w-full">
+                                                <option value="not_started">Not Started</option>
+                                                <option value="in_progress">In Progress</option>
+                                                <option value="internal_audit_ready">Internal Audit Ready</option>
+                                                <option value="external_audit_ready">External Audit Ready</option>
+                                                <option value="certified">Certified</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">ITIL4 Practice Maturity</label>
+                                            <select v-model="settings.itil_practice_level" class="form-input w-full">
+                                                <option value="initial">Initial</option>
+                                                <option value="managed">Managed</option>
+                                                <option value="defined">Defined</option>
+                                                <option value="optimized">Optimized</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Audit Log Retention (days)</label>
+                                            <input v-model.number="settings.audit_log_retention_days" type="number" min="90" max="3650" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">PII Data Retention (days)</label>
+                                            <input v-model.number="settings.pii_data_retention_days" type="number" min="30" max="3650" class="form-input w-full" />
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Last Security Review Date</label>
+                                            <input v-model="settings.security_review_last_date" type="date" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Incident SLA (hours)</label>
+                                            <input v-model.number="settings.incident_sla_hours" type="number" min="1" max="168" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Service Request SLA (hours)</label>
+                                            <input v-model.number="settings.service_request_sla_hours" type="number" min="1" max="720" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Major Incident Escalation (minutes)</label>
+                                            <input v-model.number="settings.major_incident_escalation_minutes" type="number" min="5" max="240" class="form-input w-full" />
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Problem Review Cadence (days)</label>
+                                            <input v-model.number="settings.problem_review_cadence_days" type="number" min="7" max="180" class="form-input w-full" />
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Service Desk Contact</label>
+                                            <input v-model="settings.service_desk_contact" type="email" class="form-input w-full" />
+                                        </div>
+                                    </div>
+                                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                                        <input v-model="settings.change_approval_required" type="checkbox" class="form-input w-4 h-4" />
+                                        Require formal change approval before production release
+                                    </label>
+                                    <button @click="saveSettings" class="btn-primary">
+                                        <i class="fas fa-shield-alt"></i> Save Compliance Settings
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1311,11 +1679,27 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Role</label>
                             <select v-model="formData.role" class="form-input w-full">
-                                <option>Admin</option>
-                                <option>Coach</option>
-                                <option>Referee</option>
-                                <option>Organizer</option>
+                                <option value="admin">Admin</option>
+                                <option value="chief_registrar">Chief Registrar</option>
+                                <option value="registrar">Registrar</option>
+                                <option value="starter">Starter</option>
+                                <option value="coach">Coach</option>
+                                <option value="official">Official</option>
+                                <option value="athlete">Athlete</option>
+                                <option value="viewer">Viewer</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Status</label>
+                            <select v-model="formData.status" class="form-input w-full">
+                                <option value="active">active</option>
+                                <option value="inactive">inactive</option>
+                                <option value="suspended">suspended</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Temporary Password (optional)</label>
+                            <input v-model="formData.password" type="password" placeholder="Only set when resetting credentials" class="form-input w-full" />
                         </div>
                     </div>
 
@@ -1350,11 +1734,13 @@
                 const editingId = ref(null);
                 const showSuccessMessage = ref(false);
                 const successMessage = ref('');
+                const settingsTab = ref('general');
 
                 const isLoading = ref({
                     races: false,
                     athletes: false,
                     users: false,
+                    plugins: false,
                     results: false,
                     stats: false,
                     settings: false,
@@ -1369,6 +1755,7 @@
                     races: '',
                     athletes: '',
                     users: '',
+                    plugins: '',
                     results: '',
                     stats: '',
                     settings: '',
@@ -1385,6 +1772,7 @@
                     { id: 'athletes', label: 'Athletes', icon: 'fa-person-running' },
                     { id: 'results', label: 'Results', icon: 'fa-trophy' },
                     { id: 'users', label: 'Users', icon: 'fa-users' },
+                    { id: 'plugins', label: 'Plugins', icon: 'fa-puzzle-piece' },
                     { id: 'audit', label: 'Audit Logs', icon: 'fa-file-alt' },
                     { id: 'app-requests', label: 'App Requests', icon: 'fa-code' },
                     { id: 'form-marking', label: 'Form Marking', icon: 'fa-check-square' },
@@ -1408,7 +1796,7 @@
                 });
 
                 const formData = ref({
-                    name: '', email: '', date: '', location: '', team: '', event: '', role: 'Admin'
+                    name: '', email: '', date: '', location: '', team: '', event: '', role: 'admin', status: 'active', password: ''
                 });
 
                 const stats = ref({
@@ -1434,7 +1822,29 @@
                     organization: 'Athletics Organization',
                     primary_color: '#ff6b35',
                     smtp_server: 'smtp.example.com',
-                    smtp_port: 587
+                    smtp_port: 587,
+                    theme_mode: 'system',
+                    density_mode: 'comfortable',
+                    password_min_length: 12,
+                    password_rotation_days: 90,
+                    session_timeout_minutes: 30,
+                    max_failed_logins: 5,
+                    require_mfa_admin: true,
+                    auto_disable_inactive_days: 90,
+                    access_review_frequency_days: 90,
+                    user_access_recertification_required: true,
+                    iso_framework: 'ISO/IEC 27001:2022',
+                    iso_readiness_level: 'in_progress',
+                    itil_practice_level: 'managed',
+                    security_review_last_date: '',
+                    audit_log_retention_days: 365,
+                    pii_data_retention_days: 365,
+                    incident_sla_hours: 8,
+                    service_request_sla_hours: 24,
+                    major_incident_escalation_minutes: 30,
+                    problem_review_cadence_days: 30,
+                    change_approval_required: true,
+                    service_desk_contact: 'servicedesk@athsys.com'
                 });
 
                 const demoRaces = [
@@ -1458,6 +1868,23 @@
                 const recentRaces = ref([]);
                 const recentAthletes = ref([]);
                 const users = ref([]);
+                const plugins = ref([]);
+                const pluginStats = ref({
+                    total_plugins: 0,
+                    enabled_count: 0,
+                    loaded_count: 0
+                });
+                const pluginSearch = ref('');
+                const pluginCategory = ref('all');
+                const pluginStatusFilter = ref('all');
+                const selectedPluginIds = ref([]);
+                const bulkActionReport = ref(null);
+                const pluginRowLoadingIds = ref([]);
+                const userFilters = ref({
+                    query: '',
+                    role: 'all',
+                    status: 'all'
+                });
                 const results = ref([]);
                 const backups = ref([]);
                 const auditLogs = ref([]);
@@ -1670,6 +2097,40 @@
                     });
                 });
 
+                const filteredUsers = computed(() => {
+                    const query = (userFilters.value.query || '').toLowerCase().trim();
+                    return users.value.filter(user => {
+                        const roleMatch = userFilters.value.role === 'all' || String(user.role || '').toLowerCase() === userFilters.value.role;
+                        const statusMatch = userFilters.value.status === 'all' || String(user.status || '').toLowerCase() === userFilters.value.status;
+                        const queryMatch = !query || [user.name, user.email].some(value => String(value || '').toLowerCase().includes(query));
+                        return roleMatch && statusMatch && queryMatch;
+                    });
+                });
+
+                const filteredPlugins = computed(() => {
+                    const query = (pluginSearch.value || '').toLowerCase().trim();
+                    const category = String(pluginCategory.value || 'all').toLowerCase();
+                    const status = String(pluginStatusFilter.value || 'all').toLowerCase();
+
+                    return plugins.value.filter(plugin => {
+                        const pluginCategoryValue = String(plugin.category || '').toLowerCase();
+                        const matchesCategory = category === 'all' || pluginCategoryValue === category;
+                        const isBlocked = Array.isArray(plugin.disable_blockers) && plugin.disable_blockers.length > 0;
+                        const matchesStatus = status === 'all'
+                            || (status === 'enabled' && !!plugin.enabled)
+                            || (status === 'disabled' && !plugin.enabled)
+                            || (status === 'blocked' && isBlocked);
+                        const matchesQuery = !query || [plugin.name, plugin.description, plugin.module, plugin.plugin_id]
+                            .some(value => String(value || '').toLowerCase().includes(query));
+                        return matchesCategory && matchesStatus && matchesQuery;
+                    });
+                });
+
+                const allVisiblePluginsSelected = computed(() => {
+                    if (!filteredPlugins.value.length) return false;
+                    return filteredPlugins.value.every(plugin => selectedPluginIds.value.includes(plugin.plugin_id));
+                });
+
                 const filteredAppRequests = computed(() => {
                     const query = filters.value.appRequestQuery.trim().toLowerCase();
                     const status = filters.value.appRequestStatus;
@@ -1761,6 +2222,158 @@
                         errors.value.users = error.message;
                     } finally {
                         isLoading.value.users = false;
+                    }
+                };
+
+                const loadPlugins = async () => {
+                    isLoading.value.plugins = true;
+                    errors.value.plugins = '';
+                    try {
+                        const payload = await apiRequest('/admin/plugins');
+                        plugins.value = extractList(payload, ['plugins', 'data', 'items']);
+                        const visibleIds = new Set(plugins.value.map(p => p.plugin_id));
+                        selectedPluginIds.value = selectedPluginIds.value.filter(id => visibleIds.has(id));
+                        pluginStats.value = Object.assign({
+                            total_plugins: plugins.value.length,
+                            enabled_count: plugins.value.filter(p => p.enabled).length,
+                            loaded_count: plugins.value.filter(p => p.is_loaded).length
+                        }, payload?.stats || {});
+                    } catch (error) {
+                        errors.value.plugins = error.message;
+                        plugins.value = [];
+                        pluginStats.value = {
+                            total_plugins: 0,
+                            enabled_count: 0,
+                            loaded_count: 0
+                        };
+                    } finally {
+                        isLoading.value.plugins = false;
+                    }
+                };
+
+                const togglePlugin = async (plugin) => {
+                    if (!plugin || plugin.required || !plugin.plugin_id) return;
+
+                    const actionLabel = plugin.enabled ? 'deactivate' : 'activate';
+                    if (!confirm(`Do you want to ${actionLabel} "${plugin.name}"?`)) {
+                        return;
+                    }
+
+                    let body = null;
+                    if (plugin.enabled) {
+                        const phrase = prompt('Type DEACTIVATE to confirm deactivation:');
+                        if (phrase !== 'DEACTIVATE') {
+                            showSuccess('Deactivation cancelled (confirmation phrase mismatch)');
+                            return;
+                        }
+                        body = JSON.stringify({ confirmation_phrase: 'DEACTIVATE' });
+                    }
+
+                    const endpoint = plugin.enabled
+                        ? `/admin/plugins/${plugin.plugin_id}/disable`
+                        : `/admin/plugins/${plugin.plugin_id}/enable`;
+
+                    try {
+                        if (!pluginRowLoadingIds.value.includes(plugin.plugin_id)) {
+                            pluginRowLoadingIds.value.push(plugin.plugin_id);
+                        }
+                        await apiRequest(endpoint, { method: 'POST', body });
+                        showSuccess(`Plugin ${plugin.enabled ? 'deactivated' : 'activated'} successfully`);
+                        await loadPlugins();
+                    } catch (error) {
+                        showSuccess(error.message || 'Plugin action failed');
+                    } finally {
+                        pluginRowLoadingIds.value = pluginRowLoadingIds.value.filter(id => id !== plugin.plugin_id);
+                    }
+                };
+
+                const togglePluginSelection = (pluginId, checked) => {
+                    if (!pluginId) return;
+                    if (checked) {
+                        if (!selectedPluginIds.value.includes(pluginId)) {
+                            selectedPluginIds.value.push(pluginId);
+                        }
+                    } else {
+                        selectedPluginIds.value = selectedPluginIds.value.filter(id => id !== pluginId);
+                    }
+                };
+
+                const toggleSelectAllPlugins = (checked) => {
+                    if (checked) {
+                        const ids = filteredPlugins.value.map(p => p.plugin_id).filter(Boolean);
+                        selectedPluginIds.value = Array.from(new Set([...selectedPluginIds.value, ...ids]));
+                    } else {
+                        const visible = new Set(filteredPlugins.value.map(p => p.plugin_id));
+                        selectedPluginIds.value = selectedPluginIds.value.filter(id => !visible.has(id));
+                    }
+                };
+
+                const bulkTogglePlugins = async (action) => {
+                    const ids = selectedPluginIds.value.slice();
+                    if (!ids.length) {
+                        showSuccess('Select at least one plugin first');
+                        return;
+                    }
+
+                    const actionLabel = action === 'deactivate' ? 'deactivate' : 'activate';
+                    if (!confirm(`Do you want to ${actionLabel} ${ids.length} selected plugin(s)?`)) {
+                        return;
+                    }
+
+                    const payload = {
+                        action: actionLabel,
+                        plugin_ids: ids
+                    };
+
+                    if (actionLabel === 'deactivate') {
+                        const phrase = prompt('Type DEACTIVATE to confirm bulk deactivation:');
+                        if (phrase !== 'DEACTIVATE') {
+                            showSuccess('Bulk deactivation cancelled (confirmation phrase mismatch)');
+                            return;
+                        }
+                        payload.confirmation_phrase = 'DEACTIVATE';
+                    }
+
+                    try {
+                        const response = await apiRequest('/admin/plugins/bulk', {
+                            method: 'POST',
+                            body: JSON.stringify(payload)
+                        });
+
+                        const summary = `${response.updated_count || 0} updated, ${response.blocked_count || 0} blocked, ${response.failed_count || 0} failed`;
+                        const blockedDetails = Array.isArray(response.blocked)
+                            ? response.blocked.map(item => {
+                                const pluginId = item.plugin_id || 'unknown';
+                                const blockers = Array.isArray(item.blockers) ? item.blockers.join(', ') : 'dependency'
+                                return `${pluginId} (blocked by: ${blockers})`;
+                            })
+                            : [];
+                        const failedDetails = Array.isArray(response.failed)
+                            ? response.failed.map(item => `${item.plugin_id || 'unknown'} (${item.reason || 'failed'})`)
+                            : [];
+
+                        let feedback = `Bulk ${actionLabel} completed: ${summary}`;
+                        if (blockedDetails.length) {
+                            feedback += ` | Blocked: ${blockedDetails.slice(0, 3).join('; ')}`;
+                        }
+                        if (failedDetails.length) {
+                            feedback += ` | Failed: ${failedDetails.slice(0, 3).join('; ')}`;
+                        }
+
+                        bulkActionReport.value = {
+                            action: actionLabel,
+                            updated_count: response.updated_count || 0,
+                            blocked_count: response.blocked_count || 0,
+                            failed_count: response.failed_count || 0,
+                            blocked: Array.isArray(response.blocked) ? response.blocked : [],
+                            failed: Array.isArray(response.failed) ? response.failed : [],
+                            timestamp: new Date().toLocaleString()
+                        };
+
+                        showSuccess(feedback);
+                        await loadPlugins();
+                    } catch (error) {
+                        showSuccess(error.message || 'Bulk plugin update failed');
                     }
                 };
 
@@ -2146,14 +2759,14 @@
 
                 // ===== USER METHODS =====
                 const addUser = () => {
-                    formData.value = { name: '', email: '', role: 'Admin', date: '', location: '', team: '', event: '' };
+                    formData.value = { name: '', email: '', role: 'admin', status: 'active', password: '', date: '', location: '', team: '', event: '' };
                     editingId.value = null;
                     modalType.value = 'user';
                     showModal.value = true;
                 };
 
                 const editUser = (user) => {
-                    formData.value = { ...user };
+                    formData.value = { ...user, role: String(user.role || '').toLowerCase(), status: String(user.status || 'active').toLowerCase(), password: '' };
                     editingId.value = user.id;
                     modalType.value = 'user';
                     showModal.value = true;
@@ -2172,10 +2785,21 @@
 
                 const saveUser = async () => {
                     try {
+                        const userPayload = {
+                            name: formData.value.name,
+                            email: formData.value.email,
+                            role: formData.value.role,
+                            status: formData.value.status
+                        };
+
+                        if (formData.value.password) {
+                            userPayload.password = formData.value.password;
+                        }
+
                         if (editingId.value) {
                             const payload = await apiRequest(`/admin/users/${editingId.value}`, {
                                 method: 'PUT',
-                                body: JSON.stringify(formData.value)
+                                body: JSON.stringify(userPayload)
                             });
                             const idx = users.value.findIndex(u => u.id === editingId.value);
                             const updated = payload?.user || payload;
@@ -2184,7 +2808,7 @@
                         } else {
                             const payload = await apiRequest('/admin/users', {
                                 method: 'POST',
-                                body: JSON.stringify(formData.value)
+                                body: JSON.stringify(userPayload)
                             });
                             const created = payload?.user || payload;
                             if (created) users.value.unshift(created);
@@ -2195,6 +2819,30 @@
                     } finally {
                         showModal.value = false;
                     }
+                };
+
+                const toggleUserStatus = async (user) => {
+                    const nextStatus = user.status === 'active' ? 'suspended' : 'active';
+                    try {
+                        const payload = await apiRequest(`/admin/users/${user.id}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ status: nextStatus })
+                        });
+                        const updated = payload?.user || payload;
+                        const idx = users.value.findIndex(item => item.id === user.id);
+                        if (idx >= 0) {
+                            users.value[idx] = { ...users.value[idx], ...updated };
+                        }
+                        showSuccess(`User ${nextStatus === 'active' ? 'activated' : 'suspended'} successfully`);
+                    } catch (error) {
+                        showSuccess('Status update failed');
+                    }
+                };
+
+                const formatRole = (role) => {
+                    const raw = String(role || '');
+                    if (!raw) return 'Unknown';
+                    return raw.replace(/_/g, ' ').replace(/\b\w/g, (ch) => ch.toUpperCase());
                 };
 
                 const getPageTitle = () => {
@@ -2322,6 +2970,7 @@
                         loadRaces(),
                         loadAthletes(),
                         loadUsers(),
+                        loadPlugins(),
                         loadResults(),
                         loadSettings(),
                         loadAuditLogs(),
@@ -2342,6 +2991,7 @@
                     currentPage,
                     sidebarExpanded,
                     isDarkMode,
+                    settingsTab,
                     showNotifications,
                     showUserMenu,
                     showModal,
@@ -2357,6 +3007,15 @@
                     recentRaces,
                     recentAthletes,
                     users,
+                    plugins,
+                    pluginStats,
+                    pluginSearch,
+                    pluginCategory,
+                    pluginStatusFilter,
+                    selectedPluginIds,
+                    bulkActionReport,
+                    pluginRowLoadingIds,
+                    userFilters,
                     results,
                     backups,
                     notifications,
@@ -2367,6 +3026,9 @@
                     filteredAthletes,
                     filteredAuditLogs,
                     filteredResults,
+                    filteredUsers,
+                    filteredPlugins,
+                    allVisiblePluginsSelected,
                     applyRaceFilters,
                     applyAthleteFilters,
                     applyAuditFilters,
@@ -2395,6 +3057,13 @@
                     editUser,
                     deleteUser,
                     saveUser,
+                    toggleUserStatus,
+                    loadPlugins,
+                    togglePlugin,
+                    togglePluginSelection,
+                    toggleSelectAllPlugins,
+                    bulkTogglePlugins,
+                    formatRole,
                     createBackup,
                     downloadBackup,
                     restoreBackup,

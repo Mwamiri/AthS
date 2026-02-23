@@ -534,8 +534,384 @@ SYSTEM_SETTINGS = {
     'logo': None,  # Will store base64 encoded logo
     'organization_name': 'AthSys Athletics',
     'allow_public_registration': True,
-    'require_email_verification': False
+    'require_email_verification': False,
+    'system_name': 'AthSys - Athletics Management',
+    'organization': 'Athletics Organization',
+    'primary_color': '#ff6b35',
+    'smtp_server': 'smtp.example.com',
+    'smtp_port': 587,
+    'theme_mode': 'system',
+    'density_mode': 'comfortable',
+    'password_min_length': 12,
+    'password_rotation_days': 90,
+    'session_timeout_minutes': 30,
+    'max_failed_logins': 5,
+    'require_mfa_admin': True,
+    'auto_disable_inactive_days': 90,
+    'access_review_frequency_days': 90,
+    'user_access_recertification_required': True,
+    'iso_framework': 'ISO/IEC 27001:2022',
+    'iso_readiness_level': 'in_progress',
+    'security_review_last_date': None,
+    'audit_log_retention_days': 365,
+    'pii_data_retention_days': 365,
+    'itil_practice_level': 'managed',
+    'incident_sla_hours': 8,
+    'service_request_sla_hours': 24,
+    'major_incident_escalation_minutes': 30,
+    'problem_review_cadence_days': 30,
+    'change_approval_required': True,
+    'service_desk_contact': 'servicedesk@athsys.com'
 }
+
+FRONTPAGE_CHAMPIONSHIP_DATA = {
+    'championship_name': 'AthSys Championship 2026',
+    'countdown_target': '2026-08-15T08:00:00Z',
+    'highlights': [
+        {
+            'title': 'Records pipeline enabled',
+            'summary': 'Race results now feed personal bests, rankings, and standards tracking.'
+        },
+        {
+            'title': 'Admin compliance workflow live',
+            'summary': 'ITIL-aligned controls now cover access review, incident SLA, and change approval settings.'
+        },
+        {
+            'title': 'Progressive front-end UX',
+            'summary': 'System-wide responsive baseline and progressive loading bar active across pages.'
+        }
+    ],
+    'past_races': [
+        {
+            'name': 'City Marathon Finals 2025',
+            'date': '2025-09-21',
+            'location': 'Nairobi',
+            'link': '/races-results.html'
+        },
+        {
+            'name': 'National Sprint Trials 2025',
+            'date': '2025-07-12',
+            'location': 'Kasarani Stadium',
+            'link': '/public-results.html'
+        },
+        {
+            'name': 'Regional Relay Championship 2024',
+            'date': '2024-11-03',
+            'location': 'Eldoret',
+            'link': '/records-rankings.html'
+        }
+    ],
+    'event_calendar': [
+        {
+            'date_range': '15 Aug 2026 - 19 Aug 2026',
+            'event': 'AthSys Championship 2026',
+            'city': 'Nairobi',
+            'country': 'KEN',
+            'results_link': '/public-results.html',
+            'news_link': '/landing.html'
+        },
+        {
+            'date_range': '21 Sep 2025 - 24 Sep 2025',
+            'event': 'City Marathon Finals 2025',
+            'city': 'Nairobi',
+            'country': 'KEN',
+            'results_link': '/races-results.html',
+            'news_link': '/landing.html'
+        },
+        {
+            'date_range': '12 Jul 2025 - 14 Jul 2025',
+            'event': 'National Sprint Trials 2025',
+            'city': 'Kasarani',
+            'country': 'KEN',
+            'results_link': '/public-results.html',
+            'news_link': '/status.html'
+        },
+        {
+            'date_range': '03 Nov 2024 - 05 Nov 2024',
+            'event': 'Regional Relay Championship 2024',
+            'city': 'Eldoret',
+            'country': 'KEN',
+            'results_link': '/records-rankings.html',
+            'news_link': '/landing.html'
+        }
+    ],
+    'medal_table': [
+        {'rank': 1, 'country': 'USA', 'gold': 16, 'silver': 5, 'bronze': 5, 'total': 26},
+        {'rank': 2, 'country': 'KEN', 'gold': 7, 'silver': 2, 'bronze': 2, 'total': 11},
+        {'rank': 3, 'country': 'CAN', 'gold': 3, 'silver': 1, 'bronze': 1, 'total': 5},
+        {'rank': 4, 'country': 'NED', 'gold': 2, 'silver': 2, 'bronze': 2, 'total': 6},
+        {'rank': 5, 'country': 'NZL', 'gold': 2, 'silver': 0, 'bronze': 1, 'total': 3}
+    ],
+    'results_spotlight': [
+        {'event': '100m', 'winner': 'Oblique Seville (JAM)', 'performance': '9.77'},
+        {'event': '200m', 'winner': 'Noah Lyles (USA)', 'performance': '19.52'},
+        {'event': '1500m', 'winner': 'Faith Kipyegon (KEN)', 'performance': '3:52.15'},
+        {'event': 'Marathon', 'winner': 'Peres Jepchirchir (KEN)', 'performance': '2:24:43'},
+        {'event': 'Pole Vault', 'winner': 'Armand Duplantis (SWE)', 'performance': '6.30'}
+    ],
+    'discipline_timetable': [
+        {'discipline': '100 Metres', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': '200 Metres', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': '400 Metres', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': '800 Metres', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': '1500 Metres', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': '5000 Metres', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': 'Marathon', 'men': True, 'women': True, 'mixed': False, 'category': 'road'},
+        {'discipline': '20km Race Walk', 'men': True, 'women': True, 'mixed': False, 'category': 'road'},
+        {'discipline': '400 Metres Hurdles', 'men': True, 'women': True, 'mixed': False, 'category': 'track'},
+        {'discipline': 'High Jump', 'men': True, 'women': True, 'mixed': False, 'category': 'field'},
+        {'discipline': 'Pole Vault', 'men': True, 'women': True, 'mixed': False, 'category': 'field'},
+        {'discipline': '4x400 Metres Relay', 'men': True, 'women': True, 'mixed': True, 'category': 'relay'}
+    ],
+    'timetable_by_day': [
+        {'day': 'Day 1', 'date': '15 Aug 2026', 'sessions': '100m Heats, Shot Put Finals, Mixed Relay'},
+        {'day': 'Day 2', 'date': '16 Aug 2026', 'sessions': '200m Heats, Pole Vault Qualifiers, 1500m Heats'},
+        {'day': 'Day 3', 'date': '17 Aug 2026', 'sessions': '400m Semis, Long Jump Final, 10,000m Final'},
+        {'day': 'Day 4', 'date': '18 Aug 2026', 'sessions': '800m Heats, Discus Final, 100m Finals'},
+        {'day': 'Day 5', 'date': '19 Aug 2026', 'sessions': 'Relay Finals, Marathon, Championship Closing Session'}
+    ]
+}
+
+
+def _build_frontpage_past_races(limit=8):
+    """Build past races from persisted race archive (completed or already elapsed)."""
+    try:
+        db = next(get_db())
+        today = datetime.utcnow().date()
+
+        races = (
+            db.query(Race)
+            .filter((Race.status == 'completed') | (Race.date < today))
+            .order_by(Race.date.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return [
+            {
+                'name': race.name,
+                'date': race.date.isoformat() if race.date else None,
+                'location': race.location,
+                'link': '/races-results.html'
+            }
+            for race in races
+        ]
+    except Exception as e:
+        print(f"Frontpage past races build error: {e}")
+        return []
+
+
+def _build_frontpage_event_calendar(limit=30):
+    """Build frontpage event calendar from race archive ordered by date descending."""
+    try:
+        db = next(get_db())
+        races = (
+            db.query(Race)
+            .order_by(Race.date.desc())
+            .limit(limit)
+            .all()
+        )
+
+        calendar_items = []
+        for race in races:
+            location = (race.location or '').strip()
+            location_parts = [part.strip() for part in location.split(',') if part.strip()]
+            city = location_parts[0] if location_parts else (location or 'Unknown')
+            country = location_parts[-1].upper() if len(location_parts) > 1 else 'KEN'
+
+            if len(country) > 3:
+                country = country[:3]
+
+            date_str = race.date.strftime('%d %b %Y') if race.date else 'TBD'
+            calendar_items.append({
+                'date_range': date_str,
+                'event': race.name,
+                'city': city,
+                'country': country,
+                'results_link': '/races-results.html',
+                'news_link': '/landing.html'
+            })
+
+        return calendar_items
+    except Exception as e:
+        print(f"Frontpage event calendar build error: {e}")
+        return []
+
+ALLOWED_ADMIN_USER_ROLES = {
+    'admin', 'chief_registrar', 'registrar', 'starter', 'coach', 'official', 'athlete', 'viewer'
+}
+ALLOWED_USER_STATUSES = {'active', 'inactive', 'suspended'}
+
+
+def _parse_positive_int(value, minimum, maximum, field_name):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f'{field_name} must be an integer')
+
+    if parsed < minimum or parsed > maximum:
+        raise ValueError(f'{field_name} must be between {minimum} and {maximum}')
+    return parsed
+
+
+def _normalize_bool(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {'true', '1', 'yes'}:
+            return True
+        if lowered in {'false', '0', 'no'}:
+            return False
+    raise ValueError('Boolean value expected')
+
+
+def _validate_and_normalize_settings(data):
+    if not isinstance(data, dict):
+        raise ValueError('Settings payload must be a JSON object')
+
+    normalized = {}
+    integer_ranges = {
+        'smtp_port': (1, 65535),
+        'password_min_length': (8, 64),
+        'password_rotation_days': (30, 365),
+        'session_timeout_minutes': (5, 480),
+        'max_failed_logins': (3, 20),
+        'audit_log_retention_days': (90, 3650),
+        'pii_data_retention_days': (30, 3650),
+        'auto_disable_inactive_days': (30, 365),
+        'access_review_frequency_days': (30, 365),
+        'incident_sla_hours': (1, 168),
+        'service_request_sla_hours': (1, 720),
+        'major_incident_escalation_minutes': (5, 240),
+        'problem_review_cadence_days': (7, 180)
+    }
+
+    enum_values = {
+        'theme_mode': {'system', 'light', 'dark'},
+        'density_mode': {'compact', 'comfortable', 'spacious'},
+        'iso_readiness_level': {'not_started', 'in_progress', 'internal_audit_ready', 'external_audit_ready', 'certified'},
+        'itil_practice_level': {'initial', 'managed', 'defined', 'optimized'}
+    }
+
+    boolean_fields = {
+        'allow_public_registration',
+        'require_email_verification',
+        'require_mfa_admin',
+        'user_access_recertification_required',
+        'change_approval_required'
+    }
+
+    date_fields = {'security_review_last_date'}
+
+    for key, value in data.items():
+        if key not in SYSTEM_SETTINGS:
+            continue
+
+        if key in integer_ranges:
+            minimum, maximum = integer_ranges[key]
+            normalized[key] = _parse_positive_int(value, minimum, maximum, key)
+            continue
+
+        if key in enum_values:
+            candidate = str(value or '').strip().lower()
+            if candidate not in enum_values[key]:
+                allowed = ', '.join(sorted(enum_values[key]))
+                raise ValueError(f'{key} must be one of: {allowed}')
+            normalized[key] = candidate
+            continue
+
+        if key in boolean_fields:
+            normalized[key] = _normalize_bool(value)
+            continue
+
+        if key in date_fields:
+            if value in (None, ''):
+                normalized[key] = None
+            else:
+                date_candidate = str(value).strip()
+                try:
+                    datetime.strptime(date_candidate, '%Y-%m-%d')
+                except ValueError:
+                    raise ValueError(f'{key} must use YYYY-MM-DD format')
+                normalized[key] = date_candidate
+            continue
+
+        if key in {'primary_color'}:
+            color = str(value or '').strip()
+            if not color.startswith('#') or len(color) not in {4, 7}:
+                raise ValueError('primary_color must be a valid hex value')
+            normalized[key] = color
+            continue
+
+        normalized[key] = value
+
+    return normalized
+
+
+def _serialize_user(user):
+    return {
+        'id': user.id,
+        'name': user.name,
+        'email': user.email,
+        'role': user.role,
+        'status': user.status,
+        'lastLogin': user.last_login.isoformat() if user.last_login else None,
+        'createdAt': user.created_at.isoformat() if user.created_at else None,
+        'twoFactorEnabled': bool(getattr(user, 'two_factor_enabled', False))
+    }
+
+
+def _validate_admin_user_payload(data, is_create=False, current_user_id=None, target_user_id=None):
+    if not isinstance(data, dict):
+        raise ValueError('Request body must be a JSON object')
+
+    normalized = {}
+    if is_create:
+        missing = [field for field in ['name', 'email', 'role'] if not str(data.get(field, '')).strip()]
+        if missing:
+            raise ValueError(f'Missing required fields: {", ".join(missing)}')
+
+    if 'name' in data:
+        name = str(data.get('name', '')).strip()
+        if len(name) < 2:
+            raise ValueError('name must be at least 2 characters')
+        normalized['name'] = name
+
+    if 'email' in data:
+        email = str(data.get('email', '')).strip().lower()
+        if '@' not in email:
+            raise ValueError('email must be valid')
+        normalized['email'] = email
+
+    if 'role' in data:
+        role = normalize_role(data.get('role'))
+        if role not in ALLOWED_ADMIN_USER_ROLES:
+            allowed = ', '.join(sorted(ALLOWED_ADMIN_USER_ROLES))
+            raise ValueError(f'role must be one of: {allowed}')
+        normalized['role'] = role
+
+    if 'status' in data:
+        status = str(data.get('status', '')).strip().lower()
+        if status not in ALLOWED_USER_STATUSES:
+            allowed = ', '.join(sorted(ALLOWED_USER_STATUSES))
+            raise ValueError(f'status must be one of: {allowed}')
+        normalized['status'] = status
+
+    if 'password' in data and data.get('password'):
+        password = str(data.get('password'))
+        min_length = int(SYSTEM_SETTINGS.get('password_min_length', 12) or 12)
+        if len(password) < min_length:
+            raise ValueError(f'password must be at least {min_length} characters')
+        normalized['password'] = password
+
+    if is_create and 'status' not in normalized:
+        normalized['status'] = 'active'
+
+    if current_user_id and target_user_id and normalized.get('status') in {'inactive', 'suspended'} and int(current_user_id) == int(target_user_id):
+        raise ValueError('cannot deactivate your own active admin session')
+
+    return normalized
 
 
 # Middleware to log requests and add timing
@@ -586,6 +962,32 @@ def after_request(response):
                     },
                     expiry=app.config['IDEMPOTENCY_TTL_SECONDS']
                 )
+
+    content_type = (response.headers.get('Content-Type') or '').lower()
+    if response.status_code == 200 and 'text/html' in content_type:
+        try:
+            if response.direct_passthrough:
+                response.direct_passthrough = False
+
+            html_body = response.get_data(as_text=True)
+            stylesheet_ref = '/responsive-system.css'
+            script_ref = '/responsive-system.js'
+            if html_body and stylesheet_ref not in html_body and '</head>' in html_body:
+                html_body = html_body.replace(
+                    '</head>',
+                    f'    <link rel="stylesheet" href="{stylesheet_ref}">\n</head>',
+                    1
+                )
+            if html_body and script_ref not in html_body and '</body>' in html_body:
+                html_body = html_body.replace(
+                    '</body>',
+                    f'    <script src="{script_ref}"></script>\n</body>',
+                    1
+                )
+            response.set_data(html_body)
+            response.headers.pop('Content-Length', None)
+        except Exception:
+            pass
     
     response.headers['X-Request-ID'] = getattr(request, 'request_id', f'req_{uuid.uuid4().hex[:12]}')
     response.headers['X-Powered-By'] = 'AthSys'
@@ -637,6 +1039,54 @@ def api_version():
         'phase': 'V3 Enterprise',
         'message': '✅ Version information retrieved successfully'
     }))
+
+
+@app.route('/api/frontpage/competition-hub', methods=['GET'])
+def frontpage_competition_hub():
+    """Frontpage championship/competition content payload for backend-driven UI blocks."""
+    payload_data = dict(FRONTPAGE_CHAMPIONSHIP_DATA)
+
+    archive_past_races = _build_frontpage_past_races(limit=10)
+    archive_calendar = _build_frontpage_event_calendar(limit=40)
+
+    if archive_past_races:
+        payload_data['past_races'] = archive_past_races
+    if archive_calendar:
+        payload_data['event_calendar'] = archive_calendar
+
+    return jsonify(add_metadata({
+        'data': payload_data,
+        'message': '✅ Frontpage competition hub data retrieved successfully'
+    })), 200
+
+
+@app.route('/api/frontpage/event-calendar', methods=['GET'])
+def frontpage_event_calendar():
+    """Frontpage event calendar data with optional year/country filtering."""
+    calendar_items = _build_frontpage_event_calendar(limit=80)
+    if not calendar_items:
+        calendar_items = FRONTPAGE_CHAMPIONSHIP_DATA.get('event_calendar', [])
+
+    year_filter = str(request.args.get('year', '')).strip()
+    country_filter = str(request.args.get('country', '')).strip().upper()
+
+    filtered = []
+    for item in calendar_items:
+        date_range = str(item.get('date_range', ''))
+        country = str(item.get('country', '')).upper()
+
+        if year_filter and year_filter not in date_range:
+            continue
+        if country_filter and country_filter != country:
+            continue
+
+        filtered.append(item)
+
+    return jsonify(add_metadata({
+        'calendar': filtered,
+        'count': len(filtered),
+        'message': '✅ Frontpage event calendar data retrieved successfully'
+    })), 200
 
 
 @app.route('/health')
@@ -858,7 +1308,7 @@ def create_athlete():
         }), 400
     
     # Validate required fields
-    required_fields = ['name', 'country']
+    required_fields = ['name']
     missing_fields = [field for field in required_fields if field not in data]
     
     if missing_fields:
@@ -870,14 +1320,27 @@ def create_athlete():
     try:
         db = next(get_db())
         
+        country_value = (data.get('country') or data.get('countryCode') or 'KEN').upper()
+        if len(country_value) > 3:
+            country_value = country_value[:3]
+
+        date_of_birth = None
+        raw_dob = data.get('dateOfBirth')
+        if raw_dob:
+            try:
+                date_of_birth = datetime.strptime(raw_dob, '%Y-%m-%d').date()
+            except ValueError:
+                date_of_birth = None
+
         # Create new athlete
         new_athlete = Athlete(
             name=data.get('name'),
-            country=data.get('country'),
-            date_of_birth=data.get('dateOfBirth'),
+            country=country_value,
+            date_of_birth=date_of_birth,
             gender=data.get('gender'),
-            email=data.get('email'),
-            phone=data.get('phone'),
+            contact_email=data.get('email'),
+            contact_phone=data.get('phone'),
+            club_team=data.get('team') or data.get('clubTeam'),
             coach_name=data.get('coachName'),
             bib_number=data.get('bibNumber')
         )
@@ -906,10 +1369,70 @@ def create_athlete():
         }), 500
 
 
+@app.route('/api/athletes/<int:athlete_id>', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar'])
+def update_athlete(athlete_id):
+    """Update athlete"""
+    data = request.get_json() or {}
+
+    db = next(get_db())
+    athlete = db.query(Athlete).filter(Athlete.id == athlete_id).first()
+    if not athlete:
+        return jsonify({'error': 'Athlete not found'}), 404
+
+    if 'name' in data:
+        athlete.name = data.get('name')
+    if 'country' in data or 'countryCode' in data:
+        country_value = (data.get('country') or data.get('countryCode') or athlete.country or 'KEN').upper()
+        athlete.country = country_value[:3]
+    if 'dateOfBirth' in data:
+        raw_dob = data.get('dateOfBirth')
+        if raw_dob:
+            try:
+                athlete.date_of_birth = datetime.strptime(raw_dob, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+        else:
+            athlete.date_of_birth = None
+    if 'gender' in data:
+        athlete.gender = data.get('gender')
+    if 'email' in data:
+        athlete.contact_email = data.get('email')
+    if 'phone' in data:
+        athlete.contact_phone = data.get('phone')
+    if 'team' in data or 'clubTeam' in data:
+        athlete.club_team = data.get('team') or data.get('clubTeam')
+    if 'coachName' in data:
+        athlete.coach_name = data.get('coachName')
+    if 'bibNumber' in data:
+        athlete.bib_number = data.get('bibNumber')
+
+    db.commit()
+    db.refresh(athlete)
+    RedisCache.delete('athletes:all')
+
     return jsonify(add_metadata({
-        'message': '✅ Athlete created successfully',
-        'athlete': new_athlete
-    })), 201
+        'message': '✅ Athlete updated successfully',
+        'athlete': athlete.to_dict()
+    })), 200
+
+
+@app.route('/api/athletes/<int:athlete_id>', methods=['DELETE'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar'])
+def delete_athlete(athlete_id):
+    """Delete athlete"""
+    db = next(get_db())
+    athlete = db.query(Athlete).filter(Athlete.id == athlete_id).first()
+    if not athlete:
+        return jsonify({'error': 'Athlete not found'}), 404
+
+    db.delete(athlete)
+    db.commit()
+    RedisCache.delete('athletes:all')
+
+    return jsonify(add_metadata({
+        'message': '✅ Athlete deleted successfully'
+    })), 200
 
 
 # ============ ATHLETE PROFILE ENDPOINTS ============
@@ -1655,16 +2178,12 @@ def logout():
 
 
 @app.route('/api/admin/users', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def get_users():
     """Get all users (admin only)"""
-    # In production, check authentication token and admin role
-    # For demo, return all users without password
-    
-    users_data = [
-        {k: v for k, v in user.items() if k != 'password'}
-        for user in DEMO_USERS
-    ]
-    
+    db = next(get_db())
+    users_data = [_serialize_user(user) for user in db.query(User).order_by(User.created_at.desc()).all()]
+
     return jsonify(add_metadata({
         'users': users_data,
         'count': len(users_data),
@@ -1673,113 +2192,105 @@ def get_users():
 
 
 @app.route('/api/admin/users', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def create_user():
     """Create new user (admin only)"""
-    data = request.get_json()
-    
-    if not data:
-        return jsonify({
-            'error': 'Invalid request',
-            'message': 'Request body is required'
-        }), 400
-    
-    # Validate required fields
-    required_fields = ['name', 'email', 'role']
-    missing_fields = [field for field in required_fields if field not in data]
-    
-    if missing_fields:
-        return jsonify({
-            'error': 'Validation error',
-            'message': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
-    
-    # Check if email already exists
-    if any(u['email'] == data['email'] for u in DEMO_USERS):
-        return jsonify({
-            'error': 'User creation failed',
-            'message': 'Email already exists'
-        }), 409
-    
-    # Create new user
-    new_user = {
-        'id': len(DEMO_USERS) + 1,
-        'name': data['name'],
-        'email': data['email'],
-        'password': data.get('password', 'TempPass@123'),
-        'role': data['role'],
-        'status': data.get('status', 'active'),
-        'lastLogin': 'Never',
-        'createdAt': datetime.now().strftime('%Y-%m-%d')
-    }
-    
-    DEMO_USERS.append(new_user)
-    
-    # Return user data (excluding password)
-    user_data = {k: v for k, v in new_user.items() if k != 'password'}
-    
+    data = request.get_json(silent=True) or {}
+    try:
+        normalized = _validate_admin_user_payload(data, is_create=True)
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+
+    db = next(get_db())
+    existing_user = db.query(User).filter(User.email == normalized['email']).first()
+    if existing_user:
+        return jsonify({'error': 'User creation failed', 'message': 'Email already exists'}), 409
+
+    new_user = User(
+        name=normalized['name'],
+        email=normalized['email'],
+        role=normalized['role'],
+        status=normalized.get('status', 'active')
+    )
+    new_user.set_password(normalized.get('password', 'TempPass@123!'))
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
     return jsonify(add_metadata({
         'message': '✅ User created successfully',
-        'user': user_data
+        'user': _serialize_user(new_user)
     })), 201
 
 
 @app.route('/api/admin/users/<int:user_id>', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def update_user(user_id):
     """Update user (admin only)"""
-    data = request.get_json()
-    
-    if not data:
-        return jsonify({
-            'error': 'Invalid request',
-            'message': 'Request body is required'
-        }), 400
-    
-    # Find user
-    user = next((u for u in DEMO_USERS if u['id'] == user_id), None)
-    
+    data = request.get_json(silent=True) or {}
+    db = next(get_db())
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return jsonify({
             'error': 'User not found',
             'message': f'No user found with ID {user_id}'
         }), 404
-    
-    # Update user fields
-    if 'name' in data:
-        user['name'] = data['name']
-    if 'email' in data:
-        user['email'] = data['email']
-    if 'role' in data:
-        user['role'] = data['role']
-    if 'status' in data:
-        user['status'] = data['status']
-    if 'password' in data:
-        user['password'] = data['password']
-    
-    # Return user data (excluding password)
-    user_data = {k: v for k, v in user.items() if k != 'password'}
-    
+
+    try:
+        normalized = _validate_admin_user_payload(
+            data,
+            is_create=False,
+            current_user_id=int(request.user.get('id')),
+            target_user_id=user_id
+        )
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+
+    if 'email' in normalized:
+        existing_user = db.query(User).filter(User.email == normalized['email'], User.id != user_id).first()
+        if existing_user:
+            return jsonify({'error': 'User update failed', 'message': 'Email already exists'}), 409
+
+    if 'name' in normalized:
+        user.name = normalized['name']
+    if 'email' in normalized:
+        user.email = normalized['email']
+    if 'role' in normalized:
+        user.role = normalized['role']
+    if 'status' in normalized:
+        user.status = normalized['status']
+    if 'password' in normalized:
+        user.set_password(normalized['password'])
+
+    db.commit()
+    db.refresh(user)
+
     return jsonify(add_metadata({
         'message': '✅ User updated successfully',
-        'user': user_data
+        'user': _serialize_user(user)
     })), 200
 
 
 @app.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+@require_auth(roles=['admin'])
 def delete_user(user_id):
     """Delete user (admin only)"""
-    global DEMO_USERS
-    
-    # Find user
-    user = next((u for u in DEMO_USERS if u['id'] == user_id), None)
-    
+    db = next(get_db())
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return jsonify({
             'error': 'User not found',
             'message': f'No user found with ID {user_id}'
         }), 404
-    
-    # Remove user
-    DEMO_USERS = [u for u in DEMO_USERS if u['id'] != user_id]
+
+    if int(request.user.get('id')) == int(user_id):
+        return jsonify({
+            'error': 'User deletion failed',
+            'message': 'You cannot delete your own account while logged in'
+        }), 400
+
+    db.delete(user)
+    db.commit()
     
     return jsonify(add_metadata({
         'message': '✅ User deleted successfully'
@@ -2096,19 +2607,14 @@ def create_race():
     
     try:
         db = next(get_db())
-        
-        # Generate public registration link
-        import random
-        import string
-        link_id = 'pub_race_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-        
+
         new_race = Race(
             name=data['name'],
             date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
             location=data['location'],
-            status=data.get('status', 'draft'),
-            created_by=data.get('created_by', 2),
-            registration_link=link_id
+            description=data.get('description'),
+            status=data.get('status', 'upcoming'),
+            created_by=getattr(request, 'user', {}).get('id')
         )
         
         db.add(new_race)
@@ -2122,8 +2628,7 @@ def create_race():
         
         return jsonify(add_metadata({
             'message': '✅ Race created successfully',
-            'race': race_data,
-            'registration_url': f'/register/{link_id}'
+            'race': race_data
         })), 201
     except Exception as e:
         print(f"Error creating race: {e}")
@@ -2131,36 +2636,53 @@ def create_race():
 
 
 @app.route('/api/races/<int:race_id>', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def update_race(race_id):
     """Update race (Chief Registrar only)"""
-    data = request.get_json()
-    
-    race = next((r for r in DEMO_RACES if r['id'] == race_id), None)
+    data = request.get_json() or {}
+
+    db = next(get_db())
+    race = db.query(Race).filter(Race.id == race_id).first()
     if not race:
         return jsonify({'error': 'Race not found'}), 404
-    
-    # Update fields
-    for key in ['name', 'date', 'location', 'status', 'events']:
-        if key in data:
-            race[key] = data[key]
-    
+
+    if 'name' in data:
+        race.name = data.get('name')
+    if 'date' in data and data.get('date'):
+        try:
+            race.date = datetime.strptime(data.get('date'), '%Y-%m-%d').date()
+        except ValueError:
+            pass
+    if 'location' in data:
+        race.location = data.get('location')
+    if 'description' in data:
+        race.description = data.get('description')
+    if 'status' in data:
+        race.status = data.get('status')
+
+    db.commit()
+    db.refresh(race)
+    RedisCache.delete('races:all')
+
     return jsonify(add_metadata({
         'message': '✅ Race updated successfully',
-        'race': race
+        'race': race.to_dict()
     })), 200
 
 
 @app.route('/api/races/<int:race_id>', methods=['DELETE'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def delete_race(race_id):
     """Delete race (Chief Registrar only)"""
-    global DEMO_RACES
-    
-    race = next((r for r in DEMO_RACES if r['id'] == race_id), None)
+    db = next(get_db())
+    race = db.query(Race).filter(Race.id == race_id).first()
     if not race:
         return jsonify({'error': 'Race not found'}), 404
-    
-    DEMO_RACES = [r for r in DEMO_RACES if r['id'] != race_id]
-    
+
+    db.delete(race)
+    db.commit()
+    RedisCache.delete('races:all')
+
     return jsonify(add_metadata({
         'message': '✅ Race deleted successfully'
     })), 200
@@ -2447,6 +2969,7 @@ def get_logo():
 
 
 @app.route('/api/settings', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def get_settings():
     """Get system settings"""
     return jsonify(add_metadata({
@@ -2456,13 +2979,18 @@ def get_settings():
 
 
 @app.route('/api/settings', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
 def update_settings():
     """Update system settings (Admin only)"""
-    data = request.get_json()
-    
-    for key, value in data.items():
-        if key in SYSTEM_SETTINGS:
-            SYSTEM_SETTINGS[key] = value
+    data = request.get_json(silent=True) or {}
+
+    try:
+        normalized = _validate_and_normalize_settings(data)
+    except ValueError as exc:
+        return jsonify({'error': 'Validation error', 'message': str(exc)}), 400
+
+    for key, value in normalized.items():
+        SYSTEM_SETTINGS[key] = value
     
     return jsonify(add_metadata({
         'message': '✅ Settings updated successfully',
@@ -2567,6 +3095,27 @@ def disable_plugin(plugin_id):
     """Disable a plugin"""
     try:
         from plugin_manager import plugin_manager
+        target = plugin_manager.get_plugin_info(plugin_id)
+        if not target:
+            return jsonify({
+                'error': 'Failed to disable plugin',
+                'message': f'Plugin {plugin_id} not found'
+            }), 404
+
+        confirmation_phrase = (request.get_json(silent=True) or {}).get('confirmation_phrase', '')
+        if target.get('enabled') and confirmation_phrase != 'DEACTIVATE':
+            return jsonify({
+                'error': 'Confirmation required',
+                'message': 'Provide confirmation_phrase="DEACTIVATE" to deactivate this plugin'
+            }), 400
+
+        blockers = plugin_manager.get_disable_blockers(plugin_id)
+        if blockers:
+            return jsonify({
+                'error': 'Dependency conflict',
+                'message': f'Cannot deactivate plugin while dependents are enabled: {", ".join(blockers)}',
+                'blockers': blockers
+            }), 409
         
         success = plugin_manager.disable_plugin(plugin_id)
         
@@ -2597,6 +3146,88 @@ def disable_plugin(plugin_id):
     except Exception as e:
         return jsonify({
             'error': 'Failed to disable plugin',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/admin/plugins/bulk', methods=['POST'])
+@require_auth(roles=['admin'])
+def bulk_update_plugins():
+    """Bulk activate/deactivate plugins."""
+    try:
+        from plugin_manager import plugin_manager
+
+        data = request.get_json(silent=True) or {}
+        action = str(data.get('action', '')).strip().lower()
+        plugin_ids = data.get('plugin_ids', [])
+
+        if action not in {'activate', 'deactivate'}:
+            return jsonify({'error': 'Validation error', 'message': 'action must be activate or deactivate'}), 400
+        if not isinstance(plugin_ids, list) or not plugin_ids:
+            return jsonify({'error': 'Validation error', 'message': 'plugin_ids must be a non-empty array'}), 400
+
+        if action == 'deactivate':
+            confirmation_phrase = str(data.get('confirmation_phrase', '')).strip()
+            if confirmation_phrase != 'DEACTIVATE':
+                return jsonify({
+                    'error': 'Confirmation required',
+                    'message': 'Provide confirmation_phrase="DEACTIVATE" for bulk deactivation'
+                }), 400
+
+        updated = []
+        blocked = []
+        failed = []
+
+        for plugin_id in plugin_ids:
+            plugin_id = str(plugin_id or '').strip()
+            if not plugin_id:
+                continue
+
+            plugin = plugin_manager.get_plugin_info(plugin_id)
+            if not plugin:
+                failed.append({'plugin_id': plugin_id, 'reason': 'not_found'})
+                continue
+
+            if action == 'deactivate':
+                blockers = plugin_manager.get_disable_blockers(plugin_id)
+                if blockers:
+                    blocked.append({'plugin_id': plugin_id, 'blockers': blockers})
+                    continue
+                success = plugin_manager.disable_plugin(plugin_id)
+            else:
+                success = plugin_manager.enable_plugin(plugin_id)
+
+            if success:
+                refreshed = plugin_manager.get_plugin_info(plugin_id)
+                if refreshed:
+                    updated.append(refreshed)
+            else:
+                failed.append({'plugin_id': plugin_id, 'reason': 'operation_failed'})
+
+        db = next(get_db())
+        audit = AuditLog(
+            user_id=request.user['id'],
+            action=f'bulk_{action}_plugins',
+            entity_type='plugin',
+            details=f'bulk {action}: updated={len(updated)}, blocked={len(blocked)}, failed={len(failed)}',
+            ip_address=request.remote_addr
+        )
+        db.add(audit)
+        db.commit()
+
+        return jsonify(add_metadata({
+            'action': action,
+            'updated': updated,
+            'blocked': blocked,
+            'failed': failed,
+            'updated_count': len(updated),
+            'blocked_count': len(blocked),
+            'failed_count': len(failed),
+            'message': f'✅ Bulk {action} completed'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Bulk plugin update failed',
             'message': str(e)
         }), 500
 

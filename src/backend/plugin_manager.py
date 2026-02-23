@@ -129,7 +129,8 @@ class PluginRegistry:
             'enabled': True,
             'required': False,
             'category': 'security',
-            'module': 'twofa'
+            'module': 'twofa',
+            'dependencies': ['authentication']
         },
         'leaderboard': {
             'name': 'Leaderboard',
@@ -138,7 +139,8 @@ class PluginRegistry:
             'enabled': True,
             'required': False,
             'category': 'features',
-            'module': 'leaderboard'
+            'module': 'leaderboard',
+            'dependencies': ['race_management']
         },
         'results_analytics': {
             'name': 'Results Analytics',
@@ -147,7 +149,8 @@ class PluginRegistry:
             'enabled': True,
             'required': False,
             'category': 'features',
-            'module': 'analytics'
+            'module': 'analytics',
+            'dependencies': ['race_management']
         },
         'official_timing': {
             'name': 'Official Timing System',
@@ -156,7 +159,8 @@ class PluginRegistry:
             'enabled': False,  # Disabled by default until fully tested
             'required': False,
             'category': 'features',
-            'module': 'timing'
+            'module': 'timing',
+            'dependencies': ['race_management']
         },
         'athlete_registration': {
             'name': 'Athlete Self-Registration',
@@ -165,7 +169,8 @@ class PluginRegistry:
             'enabled': True,
             'required': False,
             'category': 'features',
-            'module': 'athlete_registration'
+            'module': 'athlete_registration',
+            'dependencies': ['race_management', 'user_management']
         },
         'reports': {
             'name': 'Report Generation',
@@ -174,7 +179,8 @@ class PluginRegistry:
             'enabled': True,
             'required': False,
             'category': 'features',
-            'module': 'reports'
+            'module': 'reports',
+            'dependencies': ['race_management']
         }
     }
 
@@ -194,10 +200,32 @@ class PluginManager:
             try:
                 with open(self.config_file, 'r') as f:
                     config = json.load(f)
-                    # Merge with defaults
-                    for plugin_id, settings in config.items():
-                        if plugin_id in PluginRegistry.AVAILABLE_PLUGINS:
-                            PluginRegistry.AVAILABLE_PLUGINS[plugin_id].update(settings)
+
+                    if isinstance(config, dict) and 'plugin_states' in config:
+                        custom_plugins = config.get('custom_plugins', {})
+                        for plugin_id, plugin_data in custom_plugins.items():
+                            if plugin_id not in PluginRegistry.AVAILABLE_PLUGINS and isinstance(plugin_data, dict):
+                                custom_entry = plugin_data.copy()
+                                custom_entry.setdefault('name', plugin_id)
+                                custom_entry.setdefault('description', 'Custom plugin')
+                                custom_entry.setdefault('version', '1.0.0')
+                                custom_entry.setdefault('enabled', False)
+                                custom_entry.setdefault('required', False)
+                                custom_entry.setdefault('category', 'features')
+                                custom_entry.setdefault('module', plugin_id)
+                                custom_entry.setdefault('dependencies', [])
+                                custom_entry['builtin'] = False
+                                custom_entry['installed_via'] = custom_entry.get('installed_via', 'admin')
+                                PluginRegistry.AVAILABLE_PLUGINS[plugin_id] = custom_entry
+
+                        for plugin_id, settings in config.get('plugin_states', {}).items():
+                            if plugin_id in PluginRegistry.AVAILABLE_PLUGINS and isinstance(settings, dict):
+                                PluginRegistry.AVAILABLE_PLUGINS[plugin_id].update(settings)
+                    else:
+                        # Backward compatibility with older flat config format
+                        for plugin_id, settings in config.items():
+                            if plugin_id in PluginRegistry.AVAILABLE_PLUGINS and isinstance(settings, dict):
+                                PluginRegistry.AVAILABLE_PLUGINS[plugin_id].update(settings)
             except Exception as e:
                 logger.warning(f"Failed to load plugin config: {e}")
         else:
@@ -206,17 +234,109 @@ class PluginManager:
     def _save_plugin_config(self):
         """Save current plugin configuration to file"""
         try:
-            config = {
+            plugin_states = {
                 plugin_id: {
-                    'enabled': plugin['enabled'],
-                    'last_modified': datetime.now().isoformat()
+                    'enabled': plugin.get('enabled', False),
+                    'last_modified': plugin.get('last_modified') or datetime.now().isoformat()
                 }
                 for plugin_id, plugin in PluginRegistry.AVAILABLE_PLUGINS.items()
             }
+
+            custom_plugins = {
+                plugin_id: {
+                    'name': plugin.get('name', plugin_id),
+                    'description': plugin.get('description', ''),
+                    'version': plugin.get('version', '1.0.0'),
+                    'enabled': plugin.get('enabled', False),
+                    'required': plugin.get('required', False),
+                    'category': plugin.get('category', 'features'),
+                    'module': plugin.get('module', plugin_id),
+                    'dependencies': plugin.get('dependencies', []),
+                    'builtin': False,
+                    'installed_via': plugin.get('installed_via', 'admin')
+                }
+                for plugin_id, plugin in PluginRegistry.AVAILABLE_PLUGINS.items()
+                if not plugin.get('builtin', True)
+            }
+
+            config = {
+                'plugin_states': plugin_states,
+                'custom_plugins': custom_plugins
+            }
+
             with open(self.config_file, 'w') as f:
                 json.dump(config, f, indent=2)
         except Exception as e:
             logger.error(f"Failed to save plugin config: {e}")
+
+    def install_plugin(self, plugin_id: str, plugin_data: Dict[str, Any]) -> bool:
+        """Install a custom plugin into the registry and persist it."""
+        if not plugin_id or plugin_id in PluginRegistry.AVAILABLE_PLUGINS:
+            return False
+
+        plugin_name = str(plugin_data.get('name', '')).strip()
+        module_name = str(plugin_data.get('module', '')).strip()
+        if not plugin_name or not module_name:
+            return False
+
+        raw_dependencies = plugin_data.get('dependencies', [])
+        if isinstance(raw_dependencies, list):
+            dependencies = [str(item).strip() for item in raw_dependencies if str(item).strip()]
+        else:
+            dependencies = []
+
+        plugin_entry = {
+            'name': plugin_name,
+            'description': str(plugin_data.get('description', '')).strip() or 'Custom plugin module',
+            'version': str(plugin_data.get('version', '1.0.0')).strip() or '1.0.0',
+            'enabled': bool(plugin_data.get('enabled', False)),
+            'required': False,
+            'category': str(plugin_data.get('category', 'features')).strip().lower() or 'features',
+            'module': module_name,
+            'dependencies': dependencies,
+            'builtin': False,
+            'installed_via': 'admin',
+            'last_modified': datetime.now().isoformat()
+        }
+
+        PluginRegistry.AVAILABLE_PLUGINS[plugin_id] = plugin_entry
+
+        if plugin_entry['enabled']:
+            self.load_plugin(plugin_id)
+
+        self._save_plugin_config()
+        logger.info(f"Plugin installed: {plugin_entry['name']} ({plugin_id})")
+        return True
+
+    def uninstall_plugin(self, plugin_id: str) -> bool:
+        """Uninstall a custom plugin from the registry and persistence."""
+        if plugin_id not in PluginRegistry.AVAILABLE_PLUGINS:
+            return False
+
+        plugin = PluginRegistry.AVAILABLE_PLUGINS[plugin_id]
+
+        if plugin.get('required', False):
+            logger.warning(f"Cannot uninstall required plugin: {plugin_id}")
+            return False
+
+        if plugin.get('builtin', True):
+            logger.warning(f"Cannot uninstall builtin plugin: {plugin_id}")
+            return False
+
+        blockers = self.get_disable_blockers(plugin_id)
+        if blockers:
+            logger.warning(
+                f"Cannot uninstall plugin {plugin_id}; enabled dependents found: {', '.join(blockers)}"
+            )
+            return False
+
+        if plugin_id in self.loaded_plugins:
+            del self.loaded_plugins[plugin_id]
+
+        del PluginRegistry.AVAILABLE_PLUGINS[plugin_id]
+        self._save_plugin_config()
+        logger.info(f"Plugin uninstalled: {plugin_id}")
+        return True
     
     def load_plugin(self, plugin_id: str) -> bool:
         """Load a specific plugin into memory"""
@@ -303,6 +423,13 @@ class PluginManager:
         if plugin.get('required', False):
             logger.warning(f"Cannot disable required plugin: {plugin_id}")
             return False
+
+        blockers = self.get_disable_blockers(plugin_id)
+        if blockers:
+            logger.warning(
+                f"Cannot disable plugin {plugin_id}; enabled dependents found: {', '.join(blockers)}"
+            )
+            return False
         
         plugin['enabled'] = False
         plugin['last_modified'] = datetime.now().isoformat()
@@ -314,6 +441,15 @@ class PluginManager:
         self._save_plugin_config()
         logger.info(f"Plugin disabled: {plugin['name']} ({plugin_id})")
         return True
+
+    def get_disable_blockers(self, plugin_id: str) -> List[str]:
+        """Return enabled plugins that depend on the target plugin."""
+        blockers = []
+        for dependent_id, plugin in PluginRegistry.AVAILABLE_PLUGINS.items():
+            dependencies = plugin.get('dependencies', []) or []
+            if plugin_id in dependencies and plugin.get('enabled', False):
+                blockers.append(dependent_id)
+        return blockers
     
     def is_enabled(self, plugin_id: str) -> bool:
         """Check if a plugin is enabled"""
@@ -331,7 +467,10 @@ class PluginManager:
             return None
         
         plugin_info = PluginRegistry.AVAILABLE_PLUGINS[plugin_id].copy()
+        plugin_info['plugin_id'] = plugin_id
         plugin_info['is_loaded'] = self.is_loaded(plugin_id)
+        plugin_info['dependencies'] = plugin_info.get('dependencies', [])
+        plugin_info['disable_blockers'] = self.get_disable_blockers(plugin_id)
         
         if plugin_id in self.loaded_plugins:
             plugin_info['loaded_at'] = self.loaded_plugins[plugin_id]['loaded_at']
