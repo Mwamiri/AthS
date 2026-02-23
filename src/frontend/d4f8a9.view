@@ -369,6 +369,7 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="logout-helper.js"></script>
     <script src="auth.js"></script>
     <script src="admin.js"></script>
 </body>

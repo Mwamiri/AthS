@@ -367,32 +367,17 @@ class JoomlaMenu {
     }
 
     async logout() {
-        if (confirm('Are you sure you want to logout?')) {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-            } catch (error) {
-                console.warn('Logout API call failed:', error);
-            } finally {
-                localStorage.removeItem('authToken');
-                sessionStorage.removeItem('authToken');
-                localStorage.removeItem('refreshToken');
-                localStorage.removeItem('user');
-                sessionStorage.removeItem('user');
-                
+        return logoutWithRevocation({
+            redirectTo: 'login.html',
+            delayMs: 1000,
+            confirmMessage: 'Are you sure you want to logout?',
+            showMessage: () => {
                 if (typeof notificationCenter !== 'undefined') {
-                    notificationCenter.add('auth', 'Logged Out', 
+                    notificationCenter.add('auth', 'Logged Out',
                         'You have been successfully logged out', 'success');
                 }
-                
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1000);
             }
-        }
+        });
     }
 }
 

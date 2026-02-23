@@ -609,6 +609,7 @@
         </div>
     </div>
 
+    <script src="logout-helper.js"></script>
     <script>
         // ============ Authentication Check ============
         document.addEventListener('DOMContentLoaded', () => {
@@ -999,24 +1000,10 @@
         }
 
         async function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-                try {
-                    await fetch('/api/auth/logout', {
-                        method: 'POST',
-                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                    });
-                } catch (error) {
-                    console.warn('Logout API call failed:', error);
-                } finally {
-                    localStorage.removeItem('authToken');
-                    sessionStorage.removeItem('authToken');
-                    localStorage.removeItem('refreshToken');
-                    localStorage.removeItem('user');
-                    sessionStorage.removeItem('user');
-                    window.location.href = '/';
-                }
-            }
+            return logoutWithRevocation({
+                redirectTo: '/',
+                confirmMessage: 'Are you sure you want to logout?'
+            });
         }
 
         // Close modals with Escape key

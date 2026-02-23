@@ -870,6 +870,7 @@
         </div>
     </div>
 
+    <script src="logout-helper.js"></script>
     <script>
         const { createApp } = Vue;
 
@@ -1026,21 +1027,11 @@
                 },
 
                 async logout() {
-                    if (confirm('Are you sure you want to logout?')) {
-                        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-                        try {
-                            await fetch('/api/auth/logout', {
-                                method: 'POST',
-                                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                            });
-                        } catch (error) {
-                            console.warn('Logout API call failed:', error);
-                        } finally {
-                            localStorage.clear();
-                            sessionStorage.clear();
-                            window.location.href = 'index.html';
-                        }
-                    }
+                    return logoutWithRevocation({
+                        redirectTo: 'index.html',
+                        clearMode: 'all',
+                        confirmMessage: 'Are you sure you want to logout?'
+                    });
                 }
             },
 

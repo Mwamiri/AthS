@@ -391,6 +391,7 @@
         </div>
     </div>
 
+    <script src="logout-helper.js"></script>
     <script src="2a1f8d.js"></script>
 </body>
 </html>

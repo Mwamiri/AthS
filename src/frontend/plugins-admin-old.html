@@ -495,6 +495,7 @@
 
     <div class="toast-container" id="toast-container"></div>
 
+    <script src="logout-helper.js"></script>
     <script>
         const API_BASE_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:5000' 
@@ -521,19 +522,10 @@
         }
 
         async function logout() {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            try {
-                await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
-            } catch (error) {
-                console.warn('Logout API call failed:', error);
-            } finally {
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = 'login.html';
-            }
+            return logoutWithRevocation({
+                redirectTo: 'login.html',
+                clearMode: 'all'
+            });
         }
 
         // Toast notification

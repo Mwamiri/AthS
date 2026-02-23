@@ -73,25 +73,11 @@ function checkAuth() {
 }
 
 async function logout() {
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    try {
-        await fetch('/api/auth/logout', {
-            method: 'POST',
-            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-    } catch (error) {
-        console.warn('Logout API call failed:', error);
-    } finally {
-        localStorage.removeItem('authToken');
-        sessionStorage.removeItem('authToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
-        toast.show('Logged out successfully', 'success');
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 1000);
-    }
+    return logoutWithRevocation({
+        redirectTo: 'login.html',
+        delayMs: 1000,
+        showMessage: () => toast.show('Logged out successfully', 'success')
+    });
 }
 
 async function fetchWithAuth(url, options = {}) {

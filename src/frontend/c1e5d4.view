@@ -332,6 +332,7 @@
         </div>
     </div>
 
+    <script src="logout-helper.js"></script>
     <script src="auth.js"></script>
     <script src="operations.js"></script>
 </body>
