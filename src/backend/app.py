@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 from functools import wraps
 from sqlalchemy import text
+from dotenv import load_dotenv
 try:
     from flasgger import Swagger
 except ImportError:
@@ -57,6 +58,8 @@ except Exception as e:
 
 # Configure Flask to serve frontend files
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ORIGINS', 'http://localhost:5000,http://127.0.0.1:5000').split(',') if origin.strip()]
 CORS(app, resources={r"/api/*": {"origins": CORS_ORIGINS}}, supports_credentials=True)
@@ -125,6 +128,15 @@ def _build_database_url():
     explicit_url = os.getenv('DATABASE_URL')
     if explicit_url:
         return explicit_url
+
+    has_discrete_db_config = any(
+        os.getenv(key) for key in ('DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_NAME')
+    )
+
+    if not has_discrete_db_config:
+        sqlite_path = os.path.join(PROJECT_ROOT, 'data', 'athsys_local.db')
+        os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
+        return f"sqlite:///{sqlite_path}"
 
     db_user = os.getenv('DB_USER', 'athsys_user')
     db_password = os.getenv('DB_PASSWORD', 'athsys_pass')
@@ -2571,10 +2583,15 @@ def builder_dashboard():
 
 
 @app.route('/admin')
+def admin_dashboard_classic():
+    """Serve the default classic admin dashboard"""
+    return send_from_directory(FRONTEND_DIR, 'admin-old.html')
+
+
 @app.route('/admin-pro')
 @app.route('/admin-pro-complete')
 def admin_pro_dashboard():
-    """Serve the primary modern admin dashboard"""
+    """Serve the modern admin dashboard"""
     return send_from_directory(FRONTEND_DIR, 'admin-pro-complete.html')
 
 

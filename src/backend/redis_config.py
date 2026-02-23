@@ -8,6 +8,10 @@ import os
 import json
 from functools import wraps
 from flask import request
+from dotenv import load_dotenv
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 
 # Redis connection with optimized timeouts to prevent startup blocking
 def _build_redis_url():

@@ -9,6 +9,10 @@ from sqlalchemy.orm import relationship, sessionmaker
 from datetime import datetime
 import bcrypt
 import os
+from dotenv import load_dotenv
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+load_dotenv(os.path.join(PROJECT_ROOT, '.env'))
 
 Base = declarative_base()
 
@@ -17,6 +21,15 @@ def _build_database_url():
     explicit_url = os.getenv('DATABASE_URL')
     if explicit_url:
         return explicit_url
+
+    has_discrete_db_config = any(
+        os.getenv(key) for key in ('DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_NAME')
+    )
+
+    if not has_discrete_db_config:
+        sqlite_path = os.path.join(PROJECT_ROOT, 'data', 'athsys_local.db')
+        os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
+        return f"sqlite:///{sqlite_path}"
 
     db_user = os.getenv('DB_USER', 'athsys_user')
     db_password = os.getenv('DB_PASSWORD', 'athsys_pass')
