@@ -111,7 +111,7 @@ if Swagger:
         "info": {
             "title": "AthSys API",
             "description": "Elite Athletics Management System - Complete REST API",
-            "version": "2.2.0",
+            "version": "3.0.1",
             "contact": {
                 "email": "support@athsys.com"
             },
@@ -234,7 +234,7 @@ else:
     print("[WARNING] Import/Export module disabled")
 
 # Store version and metadata
-APP_VERSION = '3.0.0'
+APP_VERSION = '3.0.1'
 APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
