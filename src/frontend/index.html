@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AthSys v3.0 - Elite Athletics Management</title>
+    <title>AthSys v3.0.1 - Elite Athletics Management</title>
     <meta name="description" content="AthSys enterprise athletics management platform">
     <style>
         * {
@@ -13,9 +13,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0b1220 100%);
             padding: 20px;
             scroll-behavior: smooth;
         }
@@ -24,8 +24,8 @@
             width: 100%;
             max-width: 980px;
             background: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+            border-radius: 16px;
+            box-shadow: 0 22px 70px rgba(2, 6, 23, 0.55);
             overflow: hidden;
             margin: 0 auto;
         }
@@ -35,14 +35,14 @@
             align-items: center;
             justify-content: space-between;
             padding: 16px 24px;
-            border-bottom: 1px solid #ececec;
-            background: #fafafa;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
 
         .brand {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #2f2f2f;
+            color: #f8fafc;
         }
 
         .topbar-links {
@@ -53,28 +53,35 @@
 
         .link-btn {
             text-decoration: none;
-            color: #4f46e5;
-            border: 1px solid #dcdcdc;
-            border-radius: 8px;
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 999px;
             padding: 8px 12px;
             font-size: 0.9rem;
             font-weight: 600;
-            background: #fff;
+            background: rgba(15, 23, 42, 0.65);
+        }
+
+        .link-btn:hover {
+            color: #ffffff;
+            border-color: rgba(251, 146, 60, 0.75);
+            background: rgba(30, 41, 59, 0.95);
         }
 
         .hero {
             padding: 48px 28px 36px;
             text-align: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 58%, #0b1220 100%);
         }
 
         .hero h1 {
-            color: #2c2c2c;
+            color: #f8fafc;
             font-size: 2.1rem;
             margin-bottom: 10px;
         }
 
         .hero p {
-            color: #666;
+            color: #cbd5e1;
             max-width: 680px;
             margin: 0 auto 22px;
             line-height: 1.6;
@@ -102,14 +109,14 @@
         }
 
         .btn-primary {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
             color: #fff;
         }
 
         .btn-secondary {
-            background: #eef2ff;
-            color: #4338ca;
-            border: 1px solid #c7d2fe;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.28);
         }
 
         .status-strip {
@@ -608,7 +615,7 @@
             <div class="topbar-links">
                 <a class="link-btn" href="#overview">🏠 Overview</a>
                 <a class="link-btn" href="#championship">⏱️ Championship Hub</a>
-                <a class="link-btn" href="#world-athletics">🌍 World Athletics</a>
+                <a class="link-btn" href="#records-standards">🌍 Records & Standards</a>
                 <a class="link-btn" href="#frontline-data">📊 Medals & Results</a>
                 <a class="link-btn" href="#timetable">🗓️ Timetable</a>
                 <a class="link-btn" href="#event-calendar">📅 Event Calendar</a>
@@ -634,14 +641,14 @@
             </div>
         </div>
 
-        <div id="world-athletics" class="section">
+        <div id="records-standards" class="section">
             <div class="mini-nav">
                 <a class="link-btn" href="records-rankings.html">Open Records Browser</a>
                 <a class="link-btn" href="docs/RECORDS_README.md">Records Docs</a>
             </div>
-            <h2>World Athletics Standards Integration</h2>
+            <h2>Records & Standards Integration</h2>
             <p class="section-subtitle">
-                AthSys includes the captured World Athletics-style records system: rankings, personal bests, country records,
+                AthSys includes a full records system: rankings, personal bests, country records,
                 and championship qualifying standards with race-result integration.
             </p>
             <div class="wa-grid">
@@ -655,7 +662,7 @@
                 </div>
                 <div class="wa-card">
                     <h3>🇰🇪 Country & World Records</h3>
-                    <p>Reference record sets with country-level and world-level record visibility.</p>
+                    <p>Reference record sets with country-level and global-level record visibility.</p>
                 </div>
                 <div class="wa-card">
                     <h3>📋 Qualifying Standards</h3>
@@ -701,7 +708,7 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Country</th>
+                                    <th>Team / Group</th>
                                     <th>G</th>
                                     <th>S</th>
                                     <th>B</th>
@@ -1114,11 +1121,11 @@
         ];
 
         let MEDAL_DATA = [
-            { rank: 1, country: 'USA', gold: 16, silver: 5, bronze: 5, total: 26 },
-            { rank: 2, country: 'KEN', gold: 7, silver: 2, bronze: 2, total: 11 },
-            { rank: 3, country: 'CAN', gold: 3, silver: 1, bronze: 1, total: 5 },
-            { rank: 4, country: 'NED', gold: 2, silver: 2, bronze: 2, total: 6 },
-            { rank: 5, country: 'NZL', gold: 2, silver: 0, bronze: 1, total: 3 }
+            { rank: 1, team_group: 'Team Elite', gold: 16, silver: 5, bronze: 5, total: 26 },
+            { rank: 2, team_group: 'Kasarani Striders', gold: 7, silver: 2, bronze: 2, total: 11 },
+            { rank: 3, team_group: 'North Squad', gold: 3, silver: 1, bronze: 1, total: 5 },
+            { rank: 4, team_group: 'Relay United', gold: 2, silver: 2, bronze: 2, total: 6 },
+            { rank: 5, team_group: 'Athletics Academy', gold: 2, silver: 0, bronze: 1, total: 3 }
         ];
 
         let RESULTS_SPOTLIGHT = [
@@ -1236,7 +1243,7 @@
             medalTableBody.innerHTML = MEDAL_DATA.map(row => `
                 <tr>
                     <td>${row.rank}</td>
-                    <td><strong>${row.country}</strong></td>
+                    <td><strong>${row.team_group || row.group || row.country || 'Unassigned Group'}</strong></td>
                     <td>${row.gold}</td>
                     <td>${row.silver}</td>
                     <td>${row.bronze}</td>

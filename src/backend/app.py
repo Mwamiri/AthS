@@ -737,6 +737,66 @@ def _build_frontpage_event_calendar(limit=30):
         print(f"Frontpage event calendar build error: {e}")
         return []
 
+
+def _build_frontpage_medal_table(limit=20):
+    """Build medal table grouped by team/group using athlete club_team fallback to country."""
+    try:
+        db = next(get_db())
+        podium_results = (
+            db.query(Result, Athlete)
+            .join(Athlete, Result.athlete_id == Athlete.id)
+            .filter(Result.position.in_([1, 2, 3]))
+            .all()
+        )
+
+        if not podium_results:
+            return []
+
+        table = {}
+        for result, athlete in podium_results:
+            team_group = (athlete.club_team or athlete.country or 'Unassigned Group').strip()
+            if not team_group:
+                team_group = 'Unassigned Group'
+
+            if team_group not in table:
+                table[team_group] = {
+                    'team_group': team_group,
+                    'gold': 0,
+                    'silver': 0,
+                    'bronze': 0,
+                    'total': 0
+                }
+
+            if result.position == 1:
+                table[team_group]['gold'] += 1
+            elif result.position == 2:
+                table[team_group]['silver'] += 1
+            elif result.position == 3:
+                table[team_group]['bronze'] += 1
+
+            table[team_group]['total'] += 1
+
+        sorted_rows = sorted(
+            table.values(),
+            key=lambda item: (-item['gold'], -item['silver'], -item['bronze'], -item['total'], item['team_group'])
+        )
+
+        ranked_rows = []
+        for index, row in enumerate(sorted_rows[:limit], start=1):
+            ranked_rows.append({
+                'rank': index,
+                'team_group': row['team_group'],
+                'gold': row['gold'],
+                'silver': row['silver'],
+                'bronze': row['bronze'],
+                'total': row['total']
+            })
+
+        return ranked_rows
+    except Exception as e:
+        print(f"Frontpage medal table build error: {e}")
+        return []
+
 ALLOWED_ADMIN_USER_ROLES = {
     'admin', 'chief_registrar', 'registrar', 'starter', 'coach', 'official', 'athlete', 'viewer'
 }
@@ -1048,11 +1108,14 @@ def frontpage_competition_hub():
 
     archive_past_races = _build_frontpage_past_races(limit=10)
     archive_calendar = _build_frontpage_event_calendar(limit=40)
+    archive_medal_table = _build_frontpage_medal_table(limit=20)
 
     if archive_past_races:
         payload_data['past_races'] = archive_past_races
     if archive_calendar:
         payload_data['event_calendar'] = archive_calendar
+    if archive_medal_table:
+        payload_data['medal_table'] = archive_medal_table
 
     return jsonify(add_metadata({
         'data': payload_data,

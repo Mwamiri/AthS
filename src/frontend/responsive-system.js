@@ -2,6 +2,59 @@
     if (window.__athsysProgressInit) return;
     window.__athsysProgressInit = true;
 
+    function injectGlobalNavigation() {
+        if (!document.body) return;
+        if (document.getElementById('athsys-global-nav')) return;
+
+        var currentPath = (window.location.pathname || '/').toLowerCase();
+
+        var navItems = [
+            { href: '/', label: '🏠 Front Page', match: ['/', '/index.html'] },
+            { href: '/landing.html', label: '✨ Landing', match: ['/landing.html'] },
+            { href: '/records-rankings.html', label: '🏆 Records', match: ['/records-rankings.html'] },
+            { href: '/public-results.html', label: '📈 Results', match: ['/public-results.html', '/results.html', '/races-results.html'] },
+            { href: '/races.html', label: '🏁 Races', match: ['/races.html', '/race-details.html', '/public-races.html'] },
+            { href: '/athletes.html', label: '🏃 Athletes', match: ['/athletes.html', '/athlete.html'] },
+            { href: '/admin', label: '🛡️ Admin', match: ['/admin', '/admin-pro', '/admin-pro-complete', '/admin-pro-complete.html', '/admin-old', '/admin-old.html', '/admin.html'] },
+            { href: '/status.html', label: '🏥 Status', match: ['/status.html'] }
+        ];
+
+        var nav = document.createElement('nav');
+        nav.id = 'athsys-global-nav';
+        nav.className = 'athsys-global-nav';
+
+        var inner = document.createElement('div');
+        inner.className = 'athsys-global-nav__inner';
+
+        var brand = document.createElement('a');
+        brand.href = '/';
+        brand.className = 'athsys-global-brand';
+        brand.textContent = '🏃 AthSys';
+        inner.appendChild(brand);
+
+        navItems.forEach(function (item) {
+            var link = document.createElement('a');
+            link.href = item.href;
+            link.className = 'athsys-global-link';
+            link.textContent = item.label;
+
+            var isActive = (item.match || []).some(function (path) {
+                return currentPath === path;
+            });
+
+            if (isActive) {
+                link.classList.add('is-active');
+            }
+
+            inner.appendChild(link);
+        });
+
+        nav.appendChild(inner);
+        document.body.insertBefore(nav, document.body.firstChild);
+    }
+
+    injectGlobalNavigation();
+
     var progressRoot = document.createElement('div');
     progressRoot.id = 'athsys-progress';
 
