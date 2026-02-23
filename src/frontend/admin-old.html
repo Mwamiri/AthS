@@ -469,12 +469,23 @@
         });
 
         // ============ Logout ============
-        function logout() {
+        async function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('refreshToken');
-                localStorage.removeItem('user');
-                window.location.href = '/';
+                const token = localStorage.getItem('authToken');
+                try {
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    });
+                } catch (error) {
+                    console.warn('Logout API call failed:', error);
+                } finally {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
             }
         }
 
