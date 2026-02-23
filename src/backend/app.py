@@ -302,7 +302,7 @@ def issue_auth_tokens(session_data):
 
 
 def authenticate_request(roles=None):
-    """Authenticate request from Authorization Bearer token with JWT + legacy fallback."""
+    """Authenticate request from Authorization Bearer JWT access token."""
     auth_header = request.headers.get('Authorization', '').strip()
     if not auth_header or not auth_header.lower().startswith('bearer '):
         return None, 'No authorization header', 401
@@ -310,9 +310,6 @@ def authenticate_request(roles=None):
     token = auth_header.split(' ', 1)[1].strip()
     if not token:
         return None, 'Invalid token', 401
-
-    session = None
-    token_error = None
 
     try:
         payload = jwt.decode(token, app.config['JWT_SECRET'], algorithms=[app.config['JWT_ALGORITHM']])
@@ -325,20 +322,10 @@ def authenticate_request(roles=None):
             return None, 'Invalid or expired session', 401
     except jwt.ExpiredSignatureError:
         return None, 'Access token expired', 401
-    except jwt.InvalidTokenError as error:
-        token_error = error
+    except jwt.InvalidTokenError:
+        return None, 'Invalid token', 401
     except (TypeError, ValueError):
         return None, 'Invalid token', 401
-
-    # Backward compatibility for legacy numeric token format
-    if session is None:
-        try:
-            legacy_user_id = int(token)
-            session = SessionManager.get_session(legacy_user_id)
-            if not session:
-                return None, 'Invalid or expired session', 401
-        except Exception:
-            return None, 'Invalid token', 401
 
     if roles:
         role = normalize_role(session.get('role'))
@@ -1642,6 +1629,23 @@ def refresh_access_token():
         return jsonify({'error': 'Refresh token expired'}), 401
     except (jwt.InvalidTokenError, TypeError, ValueError):
         return jsonify({'error': 'Invalid refresh token'}), 401
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+@require_auth()
+def logout():
+    """Logout endpoint: revoke active session and refresh token."""
+    try:
+        user_id = int(getattr(request, 'user', {}).get('id'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid session context'}), 401
+
+    SessionManager.delete_session(user_id)
+    RedisCache.delete(f"refresh_jti:{user_id}")
+
+    return jsonify(add_metadata({
+        'message': 'Logged out successfully'
+    })), 200
 
 
 @app.route('/api/admin/users', methods=['GET'])

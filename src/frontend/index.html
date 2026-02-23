@@ -495,7 +495,8 @@
                     const adminRoles = ['admin', 'chief_registrar'];
 
                     if (adminRoles.includes(userRole)) {
-                        window.location.href = '/admin';
+                        const dashboardPreference = (localStorage.getItem('adminDashboardPreference') || 'pro').toLowerCase();
+                        window.location.href = dashboardPreference === 'classic' ? '/admin-old' : '/admin';
                     } else {
                         window.location.href = '/athlete.html';
                     }

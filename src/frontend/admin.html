@@ -34,11 +34,18 @@
             </div>
 
             <div class="d-grid gap-2">
-                <a class="btn btn-primary btn-lg" href="/admin">Open Pro Admin</a>
-                <a class="btn btn-outline-secondary" href="/admin-old">Open Classic Admin</a>
+                <a class="btn btn-primary btn-lg" href="/admin" onclick="setDashboardPreference('pro')">Open Pro Admin</a>
+                <a class="btn btn-outline-secondary" href="/admin-old" onclick="setDashboardPreference('classic')">Open Classic Admin</a>
                 <a class="btn btn-link" href="/">Back to Home</a>
             </div>
         </div>
     </div>
+
+    <script>
+        function setDashboardPreference(mode) {
+            if (!mode) return;
+            localStorage.setItem('adminDashboardPreference', mode);
+        }
+    </script>
 </body>
 </html>
