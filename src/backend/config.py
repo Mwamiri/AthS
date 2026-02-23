@@ -68,12 +68,13 @@ class BaseConfig:
     METRICS_PORT = 9090
     
     # Application Version
-    APP_VERSION = '2.3.0'  # Semantic versioning: MAJOR.MINOR.PATCH
-    API_VERSION = 'v2.3'
+    APP_VERSION = '3.0.0'  # Semantic versioning: MAJOR.MINOR.PATCH
+    API_VERSION = 'v3.0'
     API_TITLE = 'AthSys API'
     
     # Version History for tracking
     VERSION_HISTORY = {
+        '3.0.0': 'V3 Enterprise release: JWT auth with refresh rotation, global admin RBAC enforcement, Redis in-memory fallback resilience, request correlation IDs, global API idempotency replay support, and canonical version endpoint',
         '2.3.0': 'Enterprise reliability baseline: JWT auth with refresh rotation, global admin RBAC enforcement, Redis in-memory fallback resilience, request correlation IDs, global API idempotency replay support',
         '2.2.0': 'Modular plugin system with 20+ configurable plugins, Official timing system for chiefs/officials with manual timer, Public races & results portal (no login required), Plugin admin dashboard, Advanced search and filtering, World Athletics standard timing format',
         '2.1.6': 'CI/CD pipeline, Database migrations, Health monitoring with alerts, Audit logging, Email notifications, Feature flags, Request deduplication, Rate limit dashboard, Graceful shutdown, 2FA optional',

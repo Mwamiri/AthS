@@ -234,7 +234,7 @@ else:
     print("[WARNING] Import/Export module disabled")
 
 # Store version and metadata
-APP_VERSION = '2.3.0'
+APP_VERSION = '3.0.0'
 APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
@@ -601,7 +601,8 @@ def after_request(response):
                 )
     
     response.headers['X-Request-ID'] = getattr(request, 'request_id', f'req_{uuid.uuid4().hex[:12]}')
-    response.headers['X-Powered-By'] = f"AthSys v{APP_VERSION}"
+    response.headers['X-Powered-By'] = 'AthSys'
+    response.headers['X-API-Version'] = f'v{APP_VERSION}'
     return response
 
 
@@ -637,6 +638,17 @@ def api_info():
             'documentation': '/api/docs'
         },
         'message': '🏃‍♂️ Welcome to AthSys - Elite Athletics Management System'
+    }))
+
+
+@app.route('/api/version')
+def api_version():
+    """Canonical platform and API version endpoint"""
+    return jsonify(add_metadata({
+        'platform_version': APP_VERSION,
+        'api_version': 'v3.0',
+        'phase': 'V3 Enterprise',
+        'message': '✅ Version information retrieved successfully'
     }))
 
 
@@ -2819,16 +2831,17 @@ def builder_dashboard():
 
 
 @app.route('/admin')
-def admin_dashboard_classic():
-    """Serve the default classic admin dashboard"""
-    return send_from_directory(FRONTEND_DIR, 'admin-old.html')
-
-
 @app.route('/admin-pro')
 @app.route('/admin-pro-complete')
 def admin_pro_dashboard():
-    """Serve the modern admin dashboard"""
+    """Serve the default modern admin dashboard"""
     return send_from_directory(FRONTEND_DIR, 'admin-pro-complete.html')
+
+
+@app.route('/admin-old')
+def admin_dashboard_classic():
+    """Serve the classic admin dashboard fallback"""
+    return send_from_directory(FRONTEND_DIR, 'admin-old.html')
 
 
 # 4. Error handlers - lowest priority
