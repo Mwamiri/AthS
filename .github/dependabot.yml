@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/src/backend"
+    schedule:
+      interval: "daily"
+      time: "05:00"
+      timezone: "Africa/Nairobi"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "deps"
+    groups:
+      python-patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Africa/Nairobi"
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"

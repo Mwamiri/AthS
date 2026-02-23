@@ -91,6 +91,33 @@ def get_page(page_id):
         db.close()
 
 
+@builder_bp.route('/pages/slug/<slug>', methods=['GET'])
+def get_published_page_by_slug(slug):
+    """Get a published page by slug for public rendering"""
+    try:
+        db = SessionLocal()
+        page = db.query(PageBuilder).filter_by(slug=slug, status='published').first()
+        if not page:
+            return jsonify({'error': 'Published page not found'}), 404
+
+        page_dict = page.to_dict()
+        page_dict['sections'] = [
+            {
+                **section.to_dict(),
+                'blocks': [block.to_dict() for block in section.blocks]
+            } for section in page.sections if section.is_visible
+        ]
+
+        return jsonify({
+            'success': True,
+            'data': page_dict
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
+
+
 @builder_bp.route('/pages', methods=['POST'])
 @token_required
 @admin_or_moderator_required

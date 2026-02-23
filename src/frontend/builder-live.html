@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthSys Page</title>
+    <style>
+        body { margin: 0; font-family: Inter, Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        .section { margin-bottom: 20px; padding: 18px; border-radius: 12px; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(148, 163, 184, 0.2); }
+        .section h2 { margin: 0 0 12px; font-size: 1.2rem; color: #f8fafc; }
+        .block { margin-bottom: 12px; padding: 12px; border-radius: 10px; background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(148, 163, 184, 0.2); }
+        .block:last-child { margin-bottom: 0; }
+        .btn { display: inline-block; margin-top: 8px; padding: 8px 14px; border-radius: 8px; text-decoration: none; background: #0ea5e9; color: #fff; }
+        .error { color: #fecaca; background: rgba(127, 29, 29, 0.5); border: 1px solid rgba(248, 113, 113, 0.4); padding: 14px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <main id="app"></main>
+    </div>
+
+    <script>
+        function getSlugFromPath() {
+            const path = window.location.pathname || '';
+            const parts = path.split('/').filter(Boolean);
+            return parts.length >= 2 ? parts[1] : 'home';
+        }
+
+        function esc(value) {
+            const div = document.createElement('div');
+            div.textContent = value == null ? '' : String(value);
+            return div.innerHTML;
+        }
+
+        function renderBlock(block) {
+            const content = block.content || {};
+            const title = content.title || block.name || '';
+            const text = content.text || content.description || content.body || '';
+            const image = content.imageUrl || content.image || '';
+            const buttonText = content.buttonText || '';
+            const buttonLink = content.buttonLink || '#';
+
+            let html = '<article class="block" data-type="' + esc(block.blockType || 'content') + '">';
+            if (title) {
+                html += '<h3>' + esc(title) + '</h3>';
+            }
+            if (text) {
+                html += '<p>' + esc(text) + '</p>';
+            }
+            if (image) {
+                html += '<img src="' + esc(image) + '" alt="" style="max-width:100%;border-radius:8px;" />';
+            }
+            if (buttonText) {
+                html += '<a class="btn" href="' + esc(buttonLink) + '">' + esc(buttonText) + '</a>';
+            }
+            html += '</article>';
+            return html;
+        }
+
+        function renderSection(section) {
+            const sectionTitle = section.name || section.sectionType || 'Section';
+            const blocks = Array.isArray(section.blocks) ? section.blocks : [];
+            return '<section class="section"><h2>' + esc(sectionTitle) + '</h2>' + blocks.map(renderBlock).join('') + '</section>';
+        }
+
+        async function loadPage() {
+            const app = document.getElementById('app');
+            const slug = getSlugFromPath();
+            document.title = 'AthSys | ' + slug;
+
+            try {
+                const response = await fetch(`/api/builder/pages/slug/${encodeURIComponent(slug)}`);
+                const result = await response.json();
+
+                if (!response.ok || !result.data) {
+                    app.innerHTML = '<div class="error">Published page not found.</div>';
+                    return;
+                }
+
+                const page = result.data;
+                const sections = Array.isArray(page.sections) ? page.sections : [];
+
+                const descriptionHtml = page.description
+                    ? '<p style="margin:0;color:#cbd5e1;">' + esc(page.description) + '</p>'
+                    : '';
+                const sectionsHtml = sections.length
+                    ? sections.map(renderSection).join('')
+                    : '<div class="error">This page has no visible sections yet.</div>';
+
+                app.innerHTML = '<header style="margin-bottom:20px;"><h1 style="margin:0 0 8px;">'
+                    + esc(page.title || 'Page')
+                    + '</h1>'
+                    + descriptionHtml
+                    + '</header>'
+                    + sectionsHtml;
+            } catch (error) {
+                app.innerHTML = '<div class="error">Failed to load page: ' + esc(error.message) + '</div>';
+            }
+        }
+
+        loadPage();
+    </script>
+</body>
+</html>

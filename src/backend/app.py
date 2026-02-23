@@ -4,7 +4,7 @@ Main application entry point with enhanced UX features
 Production-ready with PostgreSQL and Redis
 """
 
-from flask import Flask, jsonify, request, send_from_directory, make_response, send_file
+from flask import Flask, jsonify, request, send_from_directory, make_response, send_file, redirect
 from flask_cors import CORS
 import os
 import time
@@ -12,6 +12,7 @@ import uuid
 import jwt
 import json
 import hashlib
+import base64
 from datetime import datetime, timedelta
 from functools import wraps
 from sqlalchemy import text
@@ -24,7 +25,8 @@ except ImportError:
 # Import database models and Redis config
 from models import (
     get_db, init_db, 
-    User, Athlete, Race, Event, Registration, Result, AuditLog, PluginConfig, FrontendConfig
+    User, Athlete, Race, Event, Registration, Result, AuditLog, PluginConfig, FrontendConfig,
+    PageBuilder, SessionLocal
 )
 from redis_config import (
     RedisCache, RateLimiter, SessionManager, 
@@ -111,7 +113,7 @@ if Swagger:
         "info": {
             "title": "AthSys API",
             "description": "Elite Athletics Management System - Complete REST API",
-            "version": "3.0.1",
+            "version": "3.0.3",
             "contact": {
                 "email": "support@athsys.com"
             },
@@ -234,7 +236,7 @@ else:
     print("[WARNING] Import/Export module disabled")
 
 # Store version and metadata
-APP_VERSION = '3.0.1'
+APP_VERSION = '3.0.3'
 APP_NAME = 'AthSys - Athletics Management System'
 
 # Request counter for demo purposes
@@ -423,6 +425,72 @@ def log_audit(action, entity_type, entity_id=None, details=None):
     except Exception as e:
         print(f"Audit log error: {e}")
 
+
+def _gallery_root_dir():
+    gallery_root = os.path.join(PROJECT_ROOT, 'uploads', 'gallery')
+    os.makedirs(gallery_root, exist_ok=True)
+    return gallery_root
+
+
+def _decode_base64_image(image_data):
+    if not image_data or not isinstance(image_data, str):
+        raise ValueError('Image data is required')
+
+    mime_type = None
+    payload = image_data.strip()
+    if payload.startswith('data:') and ';base64,' in payload:
+        header, payload = payload.split(';base64,', 1)
+        mime_type = header.replace('data:', '', 1).lower().strip()
+
+    decoded = base64.b64decode(payload)
+    if not decoded:
+        raise ValueError('Image payload is empty')
+
+    return decoded, mime_type
+
+
+def _extension_for_mime_type(mime_type):
+    mapping = {
+        'image/jpeg': '.jpg',
+        'image/jpg': '.jpg',
+        'image/png': '.png',
+        'image/webp': '.webp',
+        'image/gif': '.gif'
+    }
+    return mapping.get((mime_type or '').lower(), '.png')
+
+
+def _sanitize_team_key(team_name):
+    raw = (team_name or '').strip().lower()
+    return ''.join(ch if ch.isalnum() else '_' for ch in raw).strip('_')
+
+
+def _upsert_frontend_config(db, key, value, description=''):
+    config = db.query(FrontendConfig).filter(FrontendConfig.key == key).first()
+    if config:
+        config.value = json.dumps(value)
+        config.description = description or config.description
+        config.updated_at = datetime.utcnow()
+    else:
+        config = FrontendConfig(
+            key=key,
+            value=json.dumps(value),
+            description=description
+        )
+        db.add(config)
+    return config
+
+
+def _get_team_photos_map(db):
+    config = db.query(FrontendConfig).filter(FrontendConfig.key == 'team_photos').first()
+    if not config or not config.value:
+        return {}
+    try:
+        parsed = json.loads(config.value)
+        return parsed if isinstance(parsed, dict) else {}
+    except Exception:
+        return {}
+
 # Password validation helper
 def validate_password_strength(password):
     """Validate password meets security requirements"""
@@ -520,6 +588,41 @@ DEMO_FORM_SUBMISSIONS = [
         'submitted_at': '2026-02-21 10:45',
         'status': 'approved',
         'notes': 'Verified by registrar'
+    }
+]
+
+DEMO_BUILDER_APPS = [
+    {
+        'id': 1,
+        'name': 'Athlete Intake App',
+        'slug': 'athlete-intake-app',
+        'description': 'Collect athlete onboarding details and route to registrar review.',
+        'status': 'draft',
+        'canvas': {
+            'screens': [
+                {'id': 'screen-1', 'name': 'Welcome', 'components': ['title', 'summary', 'button']},
+                {'id': 'screen-2', 'name': 'Intake Form', 'components': ['form', 'upload', 'submit']}
+            ]
+        },
+        'created_at': '2026-02-21',
+        'updated_at': '2026-02-21'
+    }
+]
+
+DEMO_FORM_TEMPLATES = [
+    {
+        'id': 1,
+        'name': 'Athlete Registration Form',
+        'slug': 'athlete-registration',
+        'description': 'Standard registration form for new athletes.',
+        'status': 'published',
+        'fields': [
+            {'id': 'f1', 'type': 'text', 'label': 'Full Name', 'required': True, 'placeholder': 'Enter full name'},
+            {'id': 'f2', 'type': 'email', 'label': 'Email Address', 'required': True, 'placeholder': 'name@example.com'},
+            {'id': 'f3', 'type': 'select', 'label': 'Category', 'required': True, 'options': ['Junior', 'Senior', 'Masters']}
+        ],
+        'created_at': '2026-02-20',
+        'updated_at': '2026-02-20'
     }
 ]
 
@@ -1495,6 +1598,264 @@ def delete_athlete(athlete_id):
 
     return jsonify(add_metadata({
         'message': '✅ Athlete deleted successfully'
+    })), 200
+
+
+@app.route('/api/admin/gallery', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def list_gallery_assets():
+    """List athlete and team photo assignments for gallery management."""
+    entity_type = (request.args.get('entityType') or 'all').strip().lower()
+    include_without_photos = (request.args.get('includeWithoutPhotos') or 'false').lower() == 'true'
+
+    db = next(get_db())
+
+    team_photos_map = _get_team_photos_map(db)
+    teams = []
+    if entity_type in ('all', 'team', 'teams'):
+        distinct_teams = db.query(Athlete.club_team).filter(
+            Athlete.club_team.isnot(None),
+            Athlete.club_team != ''
+        ).distinct().all()
+        seen = set()
+        for row in distinct_teams:
+            team_name = row[0]
+            team_key = _sanitize_team_key(team_name)
+            if team_key in seen:
+                continue
+            seen.add(team_key)
+            photo_url = team_photos_map.get(team_key)
+            if photo_url or include_without_photos:
+                teams.append({
+                    'teamName': team_name,
+                    'teamKey': team_key,
+                    'photoUrl': photo_url
+                })
+
+    athletes = []
+    if entity_type in ('all', 'athlete', 'athletes'):
+        athlete_query = db.query(Athlete)
+        if not include_without_photos:
+            athlete_query = athlete_query.filter(Athlete.photo_url.isnot(None), Athlete.photo_url != '')
+
+        athletes = [
+            {
+                'id': athlete.id,
+                'name': athlete.name,
+                'clubTeam': athlete.club_team,
+                'photoUrl': athlete.photo_url
+            }
+            for athlete in athlete_query.order_by(Athlete.name.asc()).all()
+        ]
+
+    return jsonify(add_metadata({
+        'message': '✅ Gallery assets retrieved successfully',
+        'gallery': {
+            'athletes': athletes,
+            'teams': teams
+        }
+    })), 200
+
+
+@app.route('/api/admin/gallery/upload', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def upload_gallery_asset():
+    """Upload photo and assign to athlete or team."""
+    data = request.get_json() or {}
+    image_data = data.get('imageData')
+    entity_type = (data.get('entityType') or '').strip().lower()
+
+    if entity_type not in ('athlete', 'team'):
+        return jsonify({'error': 'Validation error', 'message': 'entityType must be athlete or team'}), 400
+
+    if not image_data:
+        return jsonify({'error': 'Validation error', 'message': 'imageData is required'}), 400
+
+    try:
+        image_bytes, mime_type = _decode_base64_image(image_data)
+        extension = _extension_for_mime_type(mime_type)
+
+        target_dir = os.path.join(_gallery_root_dir(), 'athletes' if entity_type == 'athlete' else 'teams')
+        os.makedirs(target_dir, exist_ok=True)
+
+        filename = f"{entity_type}_{uuid.uuid4().hex[:12]}{extension}"
+        file_path = os.path.join(target_dir, filename)
+
+        with open(file_path, 'wb') as img_file:
+            img_file.write(image_bytes)
+
+        relative_media_path = f"gallery/{'athletes' if entity_type == 'athlete' else 'teams'}/{filename}"
+        media_url = f"/media/{relative_media_path}"
+
+        db = next(get_db())
+
+        if entity_type == 'athlete':
+            athlete_id = data.get('athleteId')
+            if not athlete_id:
+                return jsonify({'error': 'Validation error', 'message': 'athleteId is required for athlete images'}), 400
+
+            athlete = db.query(Athlete).filter(Athlete.id == int(athlete_id)).first()
+            if not athlete:
+                return jsonify({'error': 'Not found', 'message': 'Athlete not found'}), 404
+
+            athlete.photo_url = media_url
+            db.commit()
+            db.refresh(athlete)
+
+            return jsonify(add_metadata({
+                'message': '✅ Athlete photo uploaded successfully',
+                'mediaUrl': media_url,
+                'athlete': athlete.to_dict()
+            })), 201
+
+        team_name = (data.get('teamName') or '').strip()
+        if not team_name:
+            return jsonify({'error': 'Validation error', 'message': 'teamName is required for team images'}), 400
+
+        team_key = _sanitize_team_key(team_name)
+        if not team_key:
+            return jsonify({'error': 'Validation error', 'message': 'teamName is invalid'}), 400
+
+        team_photos = _get_team_photos_map(db)
+        team_photos[team_key] = media_url
+        _upsert_frontend_config(
+            db,
+            'team_photos',
+            team_photos,
+            'Team photo mapping by normalized team name'
+        )
+        db.commit()
+
+        return jsonify(add_metadata({
+            'message': '✅ Team photo uploaded successfully',
+            'mediaUrl': media_url,
+            'team': {
+                'teamName': team_name,
+                'teamKey': team_key,
+                'photoUrl': media_url
+            }
+        })), 201
+    except ValueError as value_error:
+        return jsonify({'error': 'Validation error', 'message': str(value_error)}), 400
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'message': f'Failed to upload image: {e}'}), 500
+
+
+@app.route('/api/admin/gallery/athletes/<int:athlete_id>/photo', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def set_athlete_photo(athlete_id):
+    """Assign existing media URL to athlete profile photo."""
+    data = request.get_json() or {}
+    photo_url = (data.get('photoUrl') or '').strip()
+
+    if not photo_url:
+        return jsonify({'error': 'Validation error', 'message': 'photoUrl is required'}), 400
+
+    db = next(get_db())
+    athlete = db.query(Athlete).filter(Athlete.id == athlete_id).first()
+    if not athlete:
+        return jsonify({'error': 'Not found', 'message': 'Athlete not found'}), 404
+
+    athlete.photo_url = photo_url
+    db.commit()
+    db.refresh(athlete)
+
+    return jsonify(add_metadata({
+        'message': '✅ Athlete photo updated successfully',
+        'athlete': athlete.to_dict()
+    })), 200
+
+
+@app.route('/api/admin/gallery/teams/<team_key>/photo', methods=['PUT'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def set_team_photo(team_key):
+    """Assign existing media URL to a team key."""
+    data = request.get_json() or {}
+    photo_url = (data.get('photoUrl') or '').strip()
+    team_name = (data.get('teamName') or team_key).strip()
+
+    normalized_key = _sanitize_team_key(team_key)
+    if not normalized_key:
+        return jsonify({'error': 'Validation error', 'message': 'Invalid team key'}), 400
+    if not photo_url:
+        return jsonify({'error': 'Validation error', 'message': 'photoUrl is required'}), 400
+
+    db = next(get_db())
+    team_photos = _get_team_photos_map(db)
+    team_photos[normalized_key] = photo_url
+    _upsert_frontend_config(
+        db,
+        'team_photos',
+        team_photos,
+        'Team photo mapping by normalized team name'
+    )
+    db.commit()
+
+    return jsonify(add_metadata({
+        'message': '✅ Team photo updated successfully',
+        'team': {
+            'teamName': team_name,
+            'teamKey': normalized_key,
+            'photoUrl': photo_url
+        }
+    })), 200
+
+
+@app.route('/api/admin/gallery/photo', methods=['DELETE'])
+@require_auth(roles=['admin', 'chief_registrar'])
+def delete_gallery_photo():
+    """Delete photo assignment and optionally remove file from disk."""
+    data = request.get_json() or {}
+    entity_type = (data.get('entityType') or '').strip().lower()
+    delete_file = bool(data.get('deleteFile', True))
+
+    if entity_type not in ('athlete', 'team'):
+        return jsonify({'error': 'Validation error', 'message': 'entityType must be athlete or team'}), 400
+
+    db = next(get_db())
+    removed_url = None
+
+    if entity_type == 'athlete':
+        athlete_id = data.get('athleteId')
+        if not athlete_id:
+            return jsonify({'error': 'Validation error', 'message': 'athleteId is required'}), 400
+
+        athlete = db.query(Athlete).filter(Athlete.id == int(athlete_id)).first()
+        if not athlete:
+            return jsonify({'error': 'Not found', 'message': 'Athlete not found'}), 404
+
+        removed_url = athlete.photo_url
+        athlete.photo_url = None
+        db.commit()
+    else:
+        team_name = data.get('teamName')
+        team_key = _sanitize_team_key(team_name or data.get('teamKey'))
+        if not team_key:
+            return jsonify({'error': 'Validation error', 'message': 'teamName or teamKey is required'}), 400
+
+        team_photos = _get_team_photos_map(db)
+        removed_url = team_photos.pop(team_key, None)
+        _upsert_frontend_config(
+            db,
+            'team_photos',
+            team_photos,
+            'Team photo mapping by normalized team name'
+        )
+        db.commit()
+
+    if delete_file and removed_url and removed_url.startswith('/media/'):
+        relative_path = removed_url.replace('/media/', '', 1).lstrip('/\\')
+        candidate_path = os.path.abspath(os.path.join(PROJECT_ROOT, 'uploads', relative_path))
+        uploads_root = os.path.abspath(os.path.join(PROJECT_ROOT, 'uploads'))
+        if candidate_path.startswith(uploads_root) and os.path.isfile(candidate_path):
+            try:
+                os.remove(candidate_path)
+            except Exception:
+                pass
+
+    return jsonify(add_metadata({
+        'message': '✅ Photo removed successfully',
+        'removedUrl': removed_url
     })), 200
 
 
@@ -2610,6 +2971,205 @@ def reject_form_submission(submission_id):
     })), 200
 
 
+# ===== APPLICATION BUILDER + FORM CREATION CANVAS =====
+
+@app.route('/api/admin/app-builder/apps', methods=['GET'])
+def list_builder_apps():
+    """List low-code applications designed in canvas."""
+    return jsonify(add_metadata({
+        'apps': DEMO_BUILDER_APPS,
+        'count': len(DEMO_BUILDER_APPS),
+        'message': '✅ Application canvas projects retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/app-builder/apps', methods=['POST'])
+def create_builder_app():
+    """Create low-code application project from canvas definition."""
+    data = request.get_json() or {}
+    required = ['name', 'slug']
+    missing = [field for field in required if not data.get(field)]
+    if missing:
+        return jsonify({'error': f'Missing required fields: {", ".join(missing)}'}), 400
+
+    slug = str(data.get('slug')).strip().lower()
+    if any(app_entry.get('slug') == slug for app_entry in DEMO_BUILDER_APPS):
+        return jsonify({'error': 'Slug already exists'}), 400
+
+    now = datetime.now().strftime('%Y-%m-%d')
+    new_app = {
+        'id': (max((item['id'] for item in DEMO_BUILDER_APPS), default=0) + 1),
+        'name': data.get('name'),
+        'slug': slug,
+        'description': data.get('description', ''),
+        'status': data.get('status', 'draft'),
+        'canvas': data.get('canvas', {'screens': []}),
+        'created_at': now,
+        'updated_at': now
+    }
+    DEMO_BUILDER_APPS.append(new_app)
+
+    return jsonify(add_metadata({
+        'message': '✅ Application builder project created successfully',
+        'app': new_app
+    })), 201
+
+
+@app.route('/api/admin/app-builder/apps/<int:app_id>', methods=['PUT'])
+def update_builder_app(app_id):
+    """Update application canvas project."""
+    app_entry = next((item for item in DEMO_BUILDER_APPS if item['id'] == app_id), None)
+    if not app_entry:
+        return jsonify({'error': 'Application project not found'}), 404
+
+    data = request.get_json() or {}
+    if 'name' in data:
+        app_entry['name'] = data.get('name')
+    if 'slug' in data and data.get('slug'):
+        new_slug = str(data.get('slug')).strip().lower()
+        if any(item['slug'] == new_slug and item['id'] != app_id for item in DEMO_BUILDER_APPS):
+            return jsonify({'error': 'Slug already exists'}), 400
+        app_entry['slug'] = new_slug
+    if 'description' in data:
+        app_entry['description'] = data.get('description', '')
+    if 'status' in data:
+        app_entry['status'] = data.get('status', app_entry['status'])
+    if 'canvas' in data:
+        app_entry['canvas'] = data.get('canvas', app_entry.get('canvas', {'screens': []}))
+
+    app_entry['updated_at'] = datetime.now().strftime('%Y-%m-%d')
+    return jsonify(add_metadata({
+        'message': '✅ Application builder project updated successfully',
+        'app': app_entry
+    })), 200
+
+
+@app.route('/api/admin/app-builder/apps/<int:app_id>', methods=['DELETE'])
+def delete_builder_app(app_id):
+    """Delete application canvas project."""
+    app_entry = next((item for item in DEMO_BUILDER_APPS if item['id'] == app_id), None)
+    if not app_entry:
+        return jsonify({'error': 'Application project not found'}), 404
+
+    DEMO_BUILDER_APPS[:] = [item for item in DEMO_BUILDER_APPS if item['id'] != app_id]
+    return jsonify(add_metadata({
+        'message': '✅ Application builder project deleted successfully'
+    })), 200
+
+
+@app.route('/api/admin/form-builder/forms', methods=['GET'])
+def list_form_templates():
+    """List form templates created via form canvas."""
+    return jsonify(add_metadata({
+        'forms': DEMO_FORM_TEMPLATES,
+        'count': len(DEMO_FORM_TEMPLATES),
+        'message': '✅ Form templates retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/form-builder/forms/<int:form_id>', methods=['GET'])
+def get_form_template(form_id):
+    """Get single form template by id."""
+    form = next((item for item in DEMO_FORM_TEMPLATES if item['id'] == form_id), None)
+    if not form:
+        return jsonify({'error': 'Form template not found'}), 404
+    return jsonify(add_metadata({'form': form, 'message': '✅ Form template retrieved successfully'})), 200
+
+
+@app.route('/api/admin/form-builder/forms', methods=['POST'])
+def create_form_template():
+    """Create form template from canvas schema."""
+    data = request.get_json() or {}
+    required = ['name', 'slug']
+    missing = [field for field in required if not data.get(field)]
+    if missing:
+        return jsonify({'error': f'Missing required fields: {", ".join(missing)}'}), 400
+
+    slug = str(data.get('slug')).strip().lower()
+    if any(form['slug'] == slug for form in DEMO_FORM_TEMPLATES):
+        return jsonify({'error': 'Slug already exists'}), 400
+
+    now = datetime.now().strftime('%Y-%m-%d')
+    new_form = {
+        'id': (max((item['id'] for item in DEMO_FORM_TEMPLATES), default=0) + 1),
+        'name': data.get('name'),
+        'slug': slug,
+        'description': data.get('description', ''),
+        'status': data.get('status', 'draft'),
+        'fields': data.get('fields', []),
+        'created_at': now,
+        'updated_at': now
+    }
+
+    DEMO_FORM_TEMPLATES.append(new_form)
+    return jsonify(add_metadata({'message': '✅ Form template created successfully', 'form': new_form})), 201
+
+
+@app.route('/api/admin/form-builder/forms/<int:form_id>', methods=['PUT'])
+def update_form_template(form_id):
+    """Update form template from canvas schema."""
+    form = next((item for item in DEMO_FORM_TEMPLATES if item['id'] == form_id), None)
+    if not form:
+        return jsonify({'error': 'Form template not found'}), 404
+
+    data = request.get_json() or {}
+    if 'name' in data:
+        form['name'] = data.get('name')
+    if 'slug' in data and data.get('slug'):
+        new_slug = str(data.get('slug')).strip().lower()
+        if any(item['slug'] == new_slug and item['id'] != form_id for item in DEMO_FORM_TEMPLATES):
+            return jsonify({'error': 'Slug already exists'}), 400
+        form['slug'] = new_slug
+    if 'description' in data:
+        form['description'] = data.get('description', '')
+    if 'status' in data:
+        form['status'] = data.get('status', form['status'])
+    if 'fields' in data:
+        form['fields'] = data.get('fields', [])
+
+    form['updated_at'] = datetime.now().strftime('%Y-%m-%d')
+    return jsonify(add_metadata({'message': '✅ Form template updated successfully', 'form': form})), 200
+
+
+@app.route('/api/admin/form-builder/forms/<int:form_id>', methods=['DELETE'])
+def delete_form_template(form_id):
+    """Delete form template from canvas."""
+    form = next((item for item in DEMO_FORM_TEMPLATES if item['id'] == form_id), None)
+    if not form:
+        return jsonify({'error': 'Form template not found'}), 404
+
+    DEMO_FORM_TEMPLATES[:] = [item for item in DEMO_FORM_TEMPLATES if item['id'] != form_id]
+    return jsonify(add_metadata({'message': '✅ Form template deleted successfully'})), 200
+
+
+@app.route('/api/form-builder/forms/<slug>/submit', methods=['POST'])
+def submit_canvas_form(slug):
+    """Public form submission endpoint for published form templates."""
+    form = next((item for item in DEMO_FORM_TEMPLATES if item['slug'] == slug), None)
+    if not form:
+        return jsonify({'error': 'Form template not found'}), 404
+    if form.get('status') != 'published':
+        return jsonify({'error': 'Form is not published'}), 400
+
+    payload = request.get_json() or {}
+    submitter = payload.get('submitted_by') or payload.get('email') or 'web_form_user'
+    new_submission = {
+        'id': len(DEMO_FORM_SUBMISSIONS) + 1,
+        'form_name': form.get('name'),
+        'submitted_by': submitter,
+        'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'status': 'pending',
+        'notes': payload.get('notes', ''),
+        'payload': payload
+    }
+    DEMO_FORM_SUBMISSIONS.append(new_submission)
+
+    return jsonify(add_metadata({
+        'message': '✅ Form submitted successfully',
+        'submission': new_submission
+    })), 201
+
+
 # Race Management Endpoints (Chief Registrar)
 
 @app.route('/api/races', methods=['GET'])
@@ -3645,11 +4205,78 @@ def admin_dashboard_classic():
     return send_from_directory(FRONTEND_DIR, 'admin-old.html')
 
 
+@app.route('/media/<path:filename>')
+def serve_media_file(filename):
+    """Serve uploaded media files from /uploads directory."""
+    if '..' in filename or filename.startswith('/'):
+        return jsonify({'error': 'Invalid path'}), 400
+
+    uploads_root = os.path.abspath(os.path.join(PROJECT_ROOT, 'uploads'))
+    target_path = os.path.abspath(os.path.join(uploads_root, filename))
+    if not target_path.startswith(uploads_root):
+        return jsonify({'error': 'Invalid path'}), 400
+    if not os.path.isfile(target_path):
+        return jsonify({'error': 'Not Found', 'message': 'Media file not found'}), 404
+
+    return send_file(target_path)
+
+
+def _published_builder_page_exists(slug):
+    """Check whether a published builder page exists for the given slug."""
+    db = SessionLocal()
+    try:
+        page = db.query(PageBuilder.id).filter_by(slug=slug, status='published').first()
+        return page is not None
+    except Exception:
+        return False
+    finally:
+        db.close()
+
+
+@app.route('/builder-live/<slug>')
+def builder_live_page(slug):
+    """Serve runtime renderer for published page-builder pages."""
+    return send_from_directory(FRONTEND_DIR, 'builder-live.html')
+
+
+@app.route('/landing')
+def landing_live_page():
+    """Serve landing from published page-builder slug when available."""
+    if _published_builder_page_exists('landing'):
+        return redirect('/builder-live/landing', code=302)
+    return send_from_directory(FRONTEND_DIR, 'landing.html')
+
+
+@app.route('/frontpage')
+def frontpage_live_page():
+    """Serve frontpage from published page-builder slug when available."""
+    if _published_builder_page_exists('frontpage'):
+        return redirect('/builder-live/frontpage', code=302)
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
+
+@app.route('/pages/<slug>')
+def pages_live_page(slug):
+    """Serve generic published page-builder slug."""
+    if _published_builder_page_exists(slug):
+        return redirect(f'/builder-live/{slug}', code=302)
+    return jsonify({
+        'error': 'Not Found',
+        'status_code': 404,
+        'message': f'Published page "{slug}" does not exist',
+        'timestamp': datetime.now().isoformat()
+    }), 404
+
+
 # 4. Error handlers - lowest priority
 
 @app.route('/')
 def root():
-    """Serve root landing page - return index.html"""
+    """Serve root from builder home page when published, fallback to index.html."""
+    if _published_builder_page_exists('home'):
+        return redirect('/builder-live/home', code=302)
+    if _published_builder_page_exists('landing'):
+        return redirect('/builder-live/landing', code=302)
     return send_from_directory(FRONTEND_DIR, 'index.html')
 
 

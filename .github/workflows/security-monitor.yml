@@ -1,0 +1,72 @@
+name: Security Monitor
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  python-security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "src/backend/requirements.txt"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/backend/requirements.txt
+          pip install pip-audit bandit safety
+
+      - name: Run pip-audit
+        run: |
+          pip-audit -r src/backend/requirements.txt -f json -o pip-audit-report.json
+
+      - name: Run Safety
+        run: |
+          safety check -r src/backend/requirements.txt --json > safety-report.json
+        continue-on-error: true
+
+      - name: Run Bandit
+        run: |
+          bandit -r src/backend -f json -o bandit-report.json
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            pip-audit-report.json
+            safety-report.json
+            bandit-report.json
+
+      - name: Fail on dependency vulnerabilities
+        run: |
+          python - << 'PY'
+          import json
+          from pathlib import Path
+
+          report_path = Path('pip-audit-report.json')
+          if not report_path.exists():
+              raise SystemExit(1)
+
+          data = json.loads(report_path.read_text(encoding='utf-8'))
+          vulns = data.get('vulnerabilities', [])
+          if vulns:
+              print(f"Found {len(vulns)} dependency vulnerabilities.")
+              raise SystemExit(1)
+          print('No dependency vulnerabilities found by pip-audit.')
+          PY
