@@ -366,21 +366,32 @@ class JoomlaMenu {
         return roleNames[role] || role;
     }
 
-    logout() {
+    async logout() {
         if (confirm('Are you sure you want to logout?')) {
-            localStorage.removeItem('authToken');
-            sessionStorage.removeItem('authToken');
-            localStorage.removeItem('user');
-            sessionStorage.removeItem('user');
-            
-            if (typeof notificationCenter !== 'undefined') {
-                notificationCenter.add('auth', 'Logged Out', 
-                    'You have been successfully logged out', 'success');
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+            } catch (error) {
+                console.warn('Logout API call failed:', error);
+            } finally {
+                localStorage.removeItem('authToken');
+                sessionStorage.removeItem('authToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('user');
+                sessionStorage.removeItem('user');
+                
+                if (typeof notificationCenter !== 'undefined') {
+                    notificationCenter.add('auth', 'Logged Out', 
+                        'You have been successfully logged out', 'success');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1000);
             }
-            
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1000);
         }
     }
 }

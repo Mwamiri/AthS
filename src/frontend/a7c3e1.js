@@ -38,11 +38,22 @@ function checkAuth() {
     return user;
 }
 
-function logout() {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    window.location.href = 'login.html';
+async function logout() {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+    } catch (error) {
+        console.warn('Logout API call failed:', error);
+    } finally {
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+    }
 }
 
 async function fetchWithAuth(url, options = {}) {

@@ -42,10 +42,21 @@ const authStore = {
     },
     
     async logout() {
-      this.user = null;
-      this.token = null;
-      this.isAuthenticated = false;
-      localStorage.removeItem('authToken');
+      const token = localStorage.getItem('authToken') || this.token;
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+      } catch (error) {
+        console.warn('Logout API call failed:', error);
+      } finally {
+        this.user = null;
+        this.token = null;
+        this.isAuthenticated = false;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+      }
     },
     
     async refreshToken() {

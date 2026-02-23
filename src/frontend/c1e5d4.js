@@ -921,9 +921,19 @@ async function loadSettings() {
 }
 
 // Logout
-function logout() {
-    localStorage.clear();
-    sessionStorage.clear();
-    ToastManager.show('Logged out successfully', 'success');
-    setTimeout(() => window.location.href = 'login.html', 1000);
+async function logout() {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+    } catch (error) {
+        console.warn('Logout API call failed:', error);
+    } finally {
+        localStorage.clear();
+        sessionStorage.clear();
+        ToastManager.show('Logged out successfully', 'success');
+        setTimeout(() => window.location.href = 'login.html', 1000);
+    }
 }

@@ -343,16 +343,27 @@ function checkAuth() {
 }
 
 // Logout functionality
-function logout() {
-    localStorage.removeItem('authToken');
-    sessionStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    
-    toast.show('Logged out successfully', 'info');
-    
-    setTimeout(() => {
-        window.location.href = 'login.html';
-    }, 1500);
+async function logout() {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+    } catch (error) {
+        console.warn('Logout API call failed:', error);
+    } finally {
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+
+        toast.show('Logged out successfully', 'info');
+
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+    }
 }
 
 // Password visibility toggle
