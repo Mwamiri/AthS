@@ -6,6 +6,8 @@ Handles caching, session management, and real-time features
 import redis
 import os
 import json
+import time
+import fnmatch
 from functools import wraps
 from flask import request
 from dotenv import load_dotenv
@@ -39,6 +41,39 @@ redis_client = redis.from_url(
     retry_on_timeout=False      # Don't retry on timeout during init
 )
 
+_memory_cache_store = {}
+_memory_rate_limit_store = {}
+_memory_session_store = {}
+
+
+def _set_memory(store, key, value, expiry):
+    expires_at = time.time() + max(1, int(expiry or 1))
+    store[key] = (value, expires_at)
+
+
+def _get_memory(store, key):
+    record = store.get(key)
+    if not record:
+        return None
+
+    value, expires_at = record
+    if expires_at <= time.time():
+        store.pop(key, None)
+        return None
+
+    return value
+
+
+def _delete_memory(store, key):
+    return store.pop(key, None) is not None
+
+
+def _clear_memory_pattern(store, pattern):
+    keys = [k for k in list(store.keys()) if fnmatch.fnmatch(k, pattern)]
+    for key in keys:
+        store.pop(key, None)
+    return bool(keys)
+
 
 class RedisCache:
     """Redis caching utilities"""
@@ -51,7 +86,7 @@ class RedisCache:
             return json.loads(value) if value else None
         except Exception as e:
             print(f"Redis GET error: {e}")
-            return None
+            return _get_memory(_memory_cache_store, key)
     
     @staticmethod
     def set(key, value, expiry=300):
@@ -61,7 +96,8 @@ class RedisCache:
             return True
         except Exception as e:
             print(f"Redis SET error: {e}")
-            return False
+            _set_memory(_memory_cache_store, key, value, expiry)
+            return True
     
     @staticmethod
     def delete(key):
@@ -71,7 +107,7 @@ class RedisCache:
             return True
         except Exception as e:
             print(f"Redis DELETE error: {e}")
-            return False
+            return _delete_memory(_memory_cache_store, key)
     
     @staticmethod
     def clear_pattern(pattern):
@@ -83,7 +119,7 @@ class RedisCache:
             return True
         except Exception as e:
             print(f"Redis CLEAR PATTERN error: {e}")
-            return False
+            return _clear_memory_pattern(_memory_cache_store, pattern)
 
 
 def cache_result(key_prefix, expiry=300):
@@ -136,7 +172,22 @@ class RateLimiter:
             return True, max_requests - count - 1
         except Exception as e:
             print(f"Rate limiter error: {e}")
-            return True, max_requests  # Fail open on error
+            key = f"rate_limit:{identifier}"
+            now = time.time()
+            record = _memory_rate_limit_store.get(key)
+
+            if not record or record['expires_at'] <= now:
+                _memory_rate_limit_store[key] = {
+                    'count': 1,
+                    'expires_at': now + window
+                }
+                return True, max_requests - 1
+
+            if record['count'] >= max_requests:
+                return False, 0
+
+            record['count'] += 1
+            return True, max_requests - record['count']
 
 
 class SessionManager:
@@ -151,7 +202,9 @@ class SessionManager:
             return session_key
         except Exception as e:
             print(f"Session create error: {e}")
-            return None
+            session_key = f"session:{user_id}"
+            _set_memory(_memory_session_store, session_key, session_data, expiry)
+            return session_key
     
     @staticmethod
     def get_session(user_id):
@@ -161,7 +214,7 @@ class SessionManager:
             return json.loads(session_data) if session_data else None
         except Exception as e:
             print(f"Session get error: {e}")
-            return None
+            return _get_memory(_memory_session_store, f"session:{user_id}")
     
     @staticmethod
     def delete_session(user_id):
@@ -171,7 +224,7 @@ class SessionManager:
             return True
         except Exception as e:
             print(f"Session delete error: {e}")
-            return False
+            return _delete_memory(_memory_session_store, f"session:{user_id}")
     
     @staticmethod
     def refresh_session(user_id, expiry=86400):
@@ -182,7 +235,11 @@ class SessionManager:
             return True
         except Exception as e:
             print(f"Session refresh error: {e}")
-            return False
+            session_data = _get_memory(_memory_session_store, f"session:{user_id}")
+            if session_data is None:
+                return False
+            _set_memory(_memory_session_store, f"session:{user_id}", session_data, expiry)
+            return True
 
 
 class LeaderboardManager:

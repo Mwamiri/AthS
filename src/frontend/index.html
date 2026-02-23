@@ -481,8 +481,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Store auth token and user info
-                    localStorage.setItem('authToken', data.token);
+                    // Store auth tokens and user info
+                    const accessToken = data.access_token || data.token;
+                    const refreshToken = data.refresh_token || '';
+                    localStorage.setItem('authToken', accessToken);
+                    if (refreshToken) {
+                        localStorage.setItem('refreshToken', refreshToken);
+                    }
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     // Redirect based on normalized role
@@ -539,8 +544,13 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Store auth token and user info
-                    localStorage.setItem('authToken', data.token);
+                    // Store auth tokens and user info
+                    const accessToken = data.access_token || data.token;
+                    const refreshToken = data.refresh_token || '';
+                    localStorage.setItem('authToken', accessToken);
+                    if (refreshToken) {
+                        localStorage.setItem('refreshToken', refreshToken);
+                    }
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     // Redirect to athlete dashboard

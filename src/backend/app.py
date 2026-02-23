@@ -8,7 +8,9 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
 import time
-from datetime import datetime
+import uuid
+import jwt
+from datetime import datetime, timedelta
 from functools import wraps
 from sqlalchemy import text
 from dotenv import load_dotenv
@@ -168,13 +170,22 @@ app.config['PORT'] = int(os.getenv('PORT', 5000))
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'development-secret-key-change-in-production')
 app.config['DATABASE_URL'] = _build_database_url()
 app.config['REDIS_URL'] = _build_redis_url()
+app.config['JWT_SECRET'] = os.getenv('JWT_SECRET_KEY') or os.getenv('JWT_SECRET') or app.config['SECRET_KEY']
+app.config['JWT_ALGORITHM'] = os.getenv('JWT_ALGORITHM', 'HS256')
+app.config['JWT_ACCESS_EXPIRES_SECONDS'] = int(os.getenv('JWT_ACCESS_EXPIRES_SECONDS', 3600))
+app.config['JWT_REFRESH_EXPIRES_SECONDS'] = int(os.getenv('JWT_REFRESH_EXPIRES_SECONDS', 604800))
 
 # Initialize connections on startup (Flask 3.0+ compatible)
 def initialize():
     """Initialize database and test connections (non-blocking)"""
     try:
-        # Basic check only - don't do heavy operations during startup
-        # Database is already initialized by docker-entrypoint.sh
+        should_init_db = (
+            app.config['DATABASE_URL'].startswith('sqlite:///')
+            or os.getenv('AUTO_INIT_DB', 'False') == 'True'
+        )
+
+        if should_init_db:
+            init_db()
         print("[OK] Database connection ready")
     except Exception as e:
         print(f"[WARNING] Database connection warning: {e}")
@@ -241,36 +252,126 @@ def rate_limit(max_requests=100, window=3600):
     return decorator
 
 # Authentication decorator
+def normalize_role(role):
+    return str(role or '').strip().lower()
+
+
+def issue_auth_tokens(session_data):
+    """Generate access and refresh JWTs and rotate refresh token pointer."""
+    user_id = int(session_data.get('id'))
+    role = normalize_role(session_data.get('role'))
+    now_ts = int(time.time())
+    access_exp_ts = now_ts + app.config['JWT_ACCESS_EXPIRES_SECONDS']
+    refresh_exp_ts = now_ts + app.config['JWT_REFRESH_EXPIRES_SECONDS']
+    refresh_jti = str(uuid.uuid4())
+
+    access_payload = {
+        'sub': str(user_id),
+        'type': 'access',
+        'role': role,
+        'email': session_data.get('email'),
+        'iat': now_ts,
+        'exp': access_exp_ts
+    }
+
+    refresh_payload = {
+        'sub': str(user_id),
+        'type': 'refresh',
+        'jti': refresh_jti,
+        'iat': now_ts,
+        'exp': refresh_exp_ts
+    }
+
+    access_token = jwt.encode(access_payload, app.config['JWT_SECRET'], algorithm=app.config['JWT_ALGORITHM'])
+    refresh_token = jwt.encode(refresh_payload, app.config['JWT_SECRET'], algorithm=app.config['JWT_ALGORITHM'])
+
+    RedisCache.set(
+        f"refresh_jti:{user_id}",
+        {'jti': refresh_jti},
+        expiry=app.config['JWT_REFRESH_EXPIRES_SECONDS']
+    )
+
+    return {
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'expires_in': app.config['JWT_ACCESS_EXPIRES_SECONDS']
+    }
+
+
+def authenticate_request(roles=None):
+    """Authenticate request from Authorization Bearer token with JWT + legacy fallback."""
+    auth_header = request.headers.get('Authorization', '').strip()
+    if not auth_header or not auth_header.lower().startswith('bearer '):
+        return None, 'No authorization header', 401
+
+    token = auth_header.split(' ', 1)[1].strip()
+    if not token:
+        return None, 'Invalid token', 401
+
+    session = None
+    token_error = None
+
+    try:
+        payload = jwt.decode(token, app.config['JWT_SECRET'], algorithms=[app.config['JWT_ALGORITHM']])
+        if payload.get('type') != 'access':
+            return None, 'Invalid token type', 401
+
+        user_id = int(payload.get('sub'))
+        session = SessionManager.get_session(user_id)
+        if not session:
+            return None, 'Invalid or expired session', 401
+    except jwt.ExpiredSignatureError:
+        return None, 'Access token expired', 401
+    except jwt.InvalidTokenError as error:
+        token_error = error
+    except (TypeError, ValueError):
+        return None, 'Invalid token', 401
+
+    # Backward compatibility for legacy numeric token format
+    if session is None:
+        try:
+            legacy_user_id = int(token)
+            session = SessionManager.get_session(legacy_user_id)
+            if not session:
+                return None, 'Invalid or expired session', 401
+        except Exception:
+            return None, 'Invalid token', 401
+
+    if roles:
+        role = normalize_role(session.get('role'))
+        allowed_roles = {normalize_role(r) for r in roles}
+        if role not in allowed_roles:
+            return None, 'Insufficient permissions', 403
+
+    request.user = session
+    return session, None, 200
+
+
 def require_auth(roles=None):
     """Authentication decorator with role-based access"""
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # Get auth token from header
-            auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                return jsonify({'error': 'No authorization header'}), 401
-            
-            # For demo, extract user_id from token (In production, use JWT)
-            try:
-                user_id = int(auth_header.replace('Bearer ', ''))
-                
-                # Get session from Redis
-                session = SessionManager.get_session(user_id)
-                if not session:
-                    return jsonify({'error': 'Invalid or expired session'}), 401
-                
-                # Check role if specified
-                if roles and session.get('role') not in roles:
-                    return jsonify({'error': 'Insufficient permissions'}), 403
-                
-                # Add user to request context
-                request.user = session
-                return func(*args, **kwargs)
-            except Exception as e:
-                return jsonify({'error': 'Invalid token'}), 401
+            _, error_message, status_code = authenticate_request(roles=roles)
+            if error_message:
+                return jsonify({'error': error_message}), status_code
+            return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+@app.before_request
+def enforce_admin_api_access():
+    """Enforce admin role checks for all /api/admin/* endpoints."""
+    if request.method == 'OPTIONS':
+        return None
+
+    if request.path.startswith('/api/admin'):
+        _, error_message, status_code = authenticate_request(roles=['admin', 'chief_registrar'])
+        if error_message:
+            return jsonify({'error': error_message}), status_code
+
+    return None
 
 # Audit logging
 def log_audit(action, entity_type, entity_id=None, details=None):
@@ -1194,8 +1295,7 @@ def login():
         session_data = user.to_dict()
         SessionManager.create_session(user.id, session_data, expiry=86400)  # 24 hours
         
-        # Generate token (in production, use JWT with secret key)
-        token = f"{user.id}"  # Simplified for demo
+        auth_tokens = issue_auth_tokens(session_data)
         
         # Log successful login
         log_audit('login_success', 'user', user.id, f'Logged in from {request.remote_addr}')
@@ -1205,7 +1305,11 @@ def login():
         
         return jsonify(add_metadata({
             'message': 'Login successful',
-            'token': token,
+            'token': auth_tokens['access_token'],
+            'access_token': auth_tokens['access_token'],
+            'refresh_token': auth_tokens['refresh_token'],
+            'token_type': 'Bearer',
+            'expires_in': auth_tokens['expires_in'],
             'user': session_data
         })), 200
         
@@ -1319,12 +1423,15 @@ def register():
         session_data = new_user.to_dict()
         SessionManager.create_session(new_user.id, session_data, expiry=86400)
         
-        # Generate token
-        token = f"{new_user.id}"
+        auth_tokens = issue_auth_tokens(session_data)
         
         return jsonify(add_metadata({
             'message': '✅ Registration successful',
-            'token': token,
+            'token': auth_tokens['access_token'],
+            'access_token': auth_tokens['access_token'],
+            'refresh_token': auth_tokens['refresh_token'],
+            'token_type': 'Bearer',
+            'expires_in': auth_tokens['expires_in'],
             'user': session_data
         })), 201
         
@@ -1356,7 +1463,7 @@ def reset_password():
             'error': 'Validation error',
             'message': 'Please provide a valid email address'
         }), 400
-    
+
     try:
         # Find user by email
         db = next(get_db())
@@ -1394,6 +1501,59 @@ def reset_password():
             'error': 'Server error',
             'message': 'An error occurred. Please try again later.'
         }), 500
+
+
+@app.route('/api/auth/refresh', methods=['POST'])
+@rate_limit(max_requests=20, window=3600)
+def refresh_access_token():
+    """Refresh access token using refresh token with rotation."""
+    data = request.get_json(silent=True) or {}
+    refresh_token = data.get('refresh_token')
+
+    if not refresh_token:
+        auth_header = request.headers.get('Authorization', '').strip()
+        if auth_header.lower().startswith('bearer '):
+            refresh_token = auth_header.split(' ', 1)[1].strip()
+
+    if not refresh_token:
+        return jsonify({'error': 'Refresh token is required'}), 400
+
+    try:
+        payload = jwt.decode(
+            refresh_token,
+            app.config['JWT_SECRET'],
+            algorithms=[app.config['JWT_ALGORITHM']]
+        )
+
+        if payload.get('type') != 'refresh':
+            return jsonify({'error': 'Invalid token type'}), 401
+
+        user_id = int(payload.get('sub'))
+        token_jti = payload.get('jti')
+        stored_jti_payload = RedisCache.get(f"refresh_jti:{user_id}") or {}
+        stored_jti = stored_jti_payload.get('jti') if isinstance(stored_jti_payload, dict) else stored_jti_payload
+
+        if not token_jti or token_jti != stored_jti:
+            return jsonify({'error': 'Refresh token is invalid or rotated'}), 401
+
+        session_data = SessionManager.get_session(user_id)
+        if not session_data:
+            return jsonify({'error': 'Invalid or expired session'}), 401
+
+        auth_tokens = issue_auth_tokens(session_data)
+
+        return jsonify(add_metadata({
+            'message': 'Token refreshed successfully',
+            'token': auth_tokens['access_token'],
+            'access_token': auth_tokens['access_token'],
+            'refresh_token': auth_tokens['refresh_token'],
+            'token_type': 'Bearer',
+            'expires_in': auth_tokens['expires_in']
+        })), 200
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Refresh token expired'}), 401
+    except (jwt.InvalidTokenError, TypeError, ValueError):
+        return jsonify({'error': 'Invalid refresh token'}), 401
 
 
 @app.route('/api/admin/users', methods=['GET'])

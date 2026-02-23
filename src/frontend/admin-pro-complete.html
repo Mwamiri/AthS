@@ -1476,6 +1476,43 @@
                 const API_BASE = window.AthSysConfig?.apiBase || '/api';
 
                 const getAuthToken = () => localStorage.getItem('authToken') || localStorage.getItem('token');
+                const getRefreshToken = () => localStorage.getItem('refreshToken');
+
+                const refreshAccessToken = async () => {
+                    const refreshToken = getRefreshToken();
+                    if (!refreshToken) {
+                        return false;
+                    }
+
+                    try {
+                        const response = await fetch(`${API_BASE}/auth/refresh`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ refresh_token: refreshToken })
+                        });
+
+                        if (!response.ok) {
+                            return false;
+                        }
+
+                        const payload = await response.json();
+                        const accessToken = payload?.access_token || payload?.token;
+                        const nextRefreshToken = payload?.refresh_token || refreshToken;
+
+                        if (!accessToken) {
+                            return false;
+                        }
+
+                        localStorage.setItem('authToken', accessToken);
+                        localStorage.setItem('refreshToken', nextRefreshToken);
+                        return true;
+                    } catch (error) {
+                        return false;
+                    }
+                };
 
                 const normalizeRole = (role) => (role || '').toString().trim().toLowerCase();
 
@@ -1537,7 +1574,7 @@
                     return true;
                 };
 
-                const apiRequest = async (path, options = {}) => {
+                const apiRequest = async (path, options = {}, allowRetry = true) => {
                     const token = getAuthToken();
                     const headers = Object.assign(
                         { 'Accept': 'application/json' },
@@ -1557,6 +1594,13 @@
                     const payload = contentType.includes('application/json')
                         ? await response.json()
                         : await response.text();
+
+                    if (response.status === 401 && allowRetry) {
+                        const refreshed = await refreshAccessToken();
+                        if (refreshed) {
+                            return apiRequest(path, options, false);
+                        }
+                    }
 
                     if (!response.ok) {
                         const message = typeof payload === 'string'
@@ -2170,6 +2214,7 @@
                 const logout = () => {
                     if (confirm('Are you sure you want to logout?')) {
                         localStorage.removeItem('authToken');
+                        localStorage.removeItem('refreshToken');
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
                         window.location.href = '/';

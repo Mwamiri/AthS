@@ -9,18 +9,98 @@ class AthSysAPI {
             ? 'http://localhost:5000' 
             : window.location.origin);
         this.token = localStorage.getItem('authToken');
-        this.headers = {
+        this.refreshToken = localStorage.getItem('refreshToken');
+    }
+
+    setTokens(accessToken, refreshToken = '') {
+        this.token = accessToken || '';
+        this.refreshToken = refreshToken || this.refreshToken || '';
+
+        if (this.token) {
+            localStorage.setItem('authToken', this.token);
+        }
+
+        if (this.refreshToken) {
+            localStorage.setItem('refreshToken', this.refreshToken);
+        }
+    }
+
+    clearTokens() {
+        this.token = '';
+        this.refreshToken = '';
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+    }
+
+    getHeaders(extraHeaders = {}) {
+        const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.token}`
+            ...extraHeaders
         };
+
+        const activeToken = localStorage.getItem('authToken') || this.token;
+        if (activeToken) {
+            headers['Authorization'] = `Bearer ${activeToken}`;
+        }
+
+        return headers;
+    }
+
+    async refreshAccessToken() {
+        const refreshToken = localStorage.getItem('refreshToken') || this.refreshToken;
+        if (!refreshToken) {
+            return false;
+        }
+
+        try {
+            const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            });
+
+            if (!response.ok) {
+                this.clearTokens();
+                return false;
+            }
+
+            const data = await response.json().catch(() => ({}));
+            const accessToken = data.access_token || data.token;
+            const nextRefreshToken = data.refresh_token || refreshToken;
+
+            if (!accessToken) {
+                this.clearTokens();
+                return false;
+            }
+
+            this.setTokens(accessToken, nextRefreshToken);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    async request(endpoint, options = {}, allowRetry = true) {
+        const response = await fetch(`${this.baseURL}${endpoint}`, {
+            ...options,
+            headers: this.getHeaders(options.headers || {})
+        });
+
+        if (response.status === 401 && allowRetry) {
+            const refreshed = await this.refreshAccessToken();
+            if (refreshed) {
+                return this.request(endpoint, options, false);
+            }
+        }
+
+        return response;
     }
 
     // GET request with error handling
     async get(endpoint, options = {}) {
         try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
+            const response = await this.request(endpoint, {
                 method: 'GET',
-                headers: this.headers,
                 ...options
             });
             return await this.handleResponse(response);
@@ -33,9 +113,8 @@ class AthSysAPI {
     // POST request with error handling
     async post(endpoint, data = {}, options = {}) {
         try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
+            const response = await this.request(endpoint, {
                 method: 'POST',
-                headers: this.headers,
                 body: JSON.stringify(data),
                 ...options
             });
@@ -49,9 +128,8 @@ class AthSysAPI {
     // PUT request with error handling
     async put(endpoint, data = {}, options = {}) {
         try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
+            const response = await this.request(endpoint, {
                 method: 'PUT',
-                headers: this.headers,
                 body: JSON.stringify(data),
                 ...options
             });
@@ -65,9 +143,8 @@ class AthSysAPI {
     // DELETE request with error handling
     async delete(endpoint, options = {}) {
         try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
+            const response = await this.request(endpoint, {
                 method: 'DELETE',
-                headers: this.headers,
                 ...options
             });
             return await this.handleResponse(response);
@@ -80,7 +157,7 @@ class AthSysAPI {
     // Handle response and errors
     async handleResponse(response) {
         if (response.status === 401) {
-            localStorage.removeItem('authToken');
+            this.clearTokens();
             window.location.href = 'index.html';
             throw new Error('Unauthorized - please login again');
         }
