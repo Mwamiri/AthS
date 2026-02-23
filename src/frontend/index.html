@@ -4,181 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AthSys v3.0 - Elite Athletics Management</title>
-    <meta name="description" content="Modern Vue 3 + TailwindCSS athletics management platform">
-</head>
-<body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-</body>
-</html>
-
-        /* Navigation */
-        nav {
-            background: white;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+    <meta name="description" content="AthSys enterprise athletics management platform">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .nav-content {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
             display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 980px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+            overflow: hidden;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid #ececec;
+            background: #fafafa;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .btn-login {
-            background: var(--primary);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-login:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Hero Section */
-        main {
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem 0;
-        }
-
-        .hero-content {
-            text-align: center;
-            max-width: 700px;
-        }
-
-        .hero-content h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-content p {
+        .brand {
             font-size: 1.2rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
-            line-height: 1.8;
+            font-weight: 700;
+            color: #2f2f2f;
         }
 
-        .hero-buttons {
+        .topbar-links {
             display: flex;
-            gap: 1rem;
-            justify-content: center;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            padding: 0.8rem 1.8rem;
-            border-radius: 6px;
+        .link-btn {
             text-decoration: none;
+            color: #4f46e5;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
             font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-            display: inline-block;
+            background: #fff;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+        .hero {
+            padding: 48px 28px 36px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            color: #2c2c2c;
+            font-size: 2.1rem;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: #666;
+            max-width: 680px;
+            margin: 0 auto 22px;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: #fff;
         }
 
         .btn-secondary {
-            background: transparent;
-            color: var(--primary);
-            padding: 0.8rem 1.8rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            border: 2px solid var(--primary);
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1rem;
-            display: inline-block;
+            background: #eef2ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
         }
 
-        .btn-secondary:hover {
-            background: var(--primary);
-            color: white;
+        .status-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            gap: 12px;
+            padding: 0 28px 28px;
         }
 
-        /* Footer */
-        footer {
-            background: #f5f5f5;
-            padding: 2rem 0;
+        .status-card {
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+            background: #fff;
+        }
+
+        .status-card h3 {
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .status-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .status-meta {
+            color: #777;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .healthy {
+            border-color: #06d6a0;
+            background: #f0fdf4;
+        }
+
+        .warning {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .footer {
+            border-top: 1px solid #efefef;
+            padding: 16px 24px;
             text-align: center;
-            color: var(--text-light);
-            border-top: 1px solid var(--border);
-            margin-top: 4rem;
+            color: #777;
+            font-size: 0.88rem;
+            background: #fafafa;
         }
 
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal.active {
@@ -186,185 +186,162 @@
         }
 
         .modal-content {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 10px;
-            max-width: 420px;
-            width: 90%;
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 460px;
+            padding: 24px;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
 
         .close-btn {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
+            top: 8px;
+            right: 10px;
             border: none;
+            background: none;
             font-size: 1.5rem;
+            color: #666;
             cursor: pointer;
-            color: var(--text-light);
-        }
-
-        .modal-header {
-            margin-bottom: 1.5rem;
         }
 
         .modal-header h2 {
-            margin: 0;
-            color: var(--primary);
-            font-size: 1.8rem;
+            color: #2f2f2f;
+            margin-bottom: 12px;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--text);
-            font-size: 0.95rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 1rem;
-            font-family: inherit;
-            transition: all 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .error-message {
-            color: #e74c3c;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: rgba(231, 76, 60, 0.1);
-            border-radius: 6px;
-            display: none;
-        }
-
-        .switch-form {
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.95rem;
-        }
-
-        .switch-form a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .switch-form a:hover {
-            text-decoration: underline;
+        .welcome-text {
+            color: #666;
+            margin-bottom: 14px;
         }
 
         .welcome-buttons {
             display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
+            gap: 10px;
         }
 
-        .welcome-buttons .btn {
-            flex: 1;
+        .hidden-form {
+            display: none;
         }
 
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            border: 1px solid #d8d8d8;
+            border-radius: 8px;
+            padding: 10px 11px;
+            font-size: 0.96rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+
+        .error-message {
+            display: none;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            padding: 10px;
+            color: #b91c1c;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            font-size: 0.9rem;
+        }
+
+        .switch-form {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 0.92rem;
+            color: #555;
+        }
+
+        .switch-form a {
+            color: #4f46e5;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        @media (max-width: 860px) {
+            .status-strip {
+                grid-template-columns: 1fr;
             }
 
-            .hero-content h1 {
-                font-size: 2rem;
+            .hero h1 {
+                font-size: 1.6rem;
             }
 
-            .hero-buttons {
+            .topbar {
+                align-items: flex-start;
+                gap: 10px;
                 flex-direction: column;
-            }
-
-            main {
-                min-height: 60vh;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="container">
-            <div class="nav-content">
-                <div class="logo">🏃 AthSys</div>
-                <div class="nav-right">
-                    <ul class="nav-links">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="races-results.html">🏁 Races & Results</a></li>
-                        <li><a href="#about">About</a></li>
-                    </ul>
-                    <a href="#" onclick="openLoginModal(); return false;" class="btn-login">Login</a>
-                </div>
+    <div class="container">
+        <div class="topbar">
+            <div class="brand">🏃 AthSys v3.0</div>
+            <div class="topbar-links">
+                <a class="link-btn" href="status.html">🏥 Status</a>
+                <a class="link-btn" href="landing.html">✨ Landing</a>
+                <a class="link-btn" href="/admin">🛡️ Admin Pro</a>
             </div>
         </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <main>
-        <div class="container">
-            <div class="hero-content">
-                <h1>🏆 Track Excellence, Deliver Results</h1>
-                <p>The modern platform for managing professional athletics competitions. Register athletes, manage races, and track performance all in one place.</p>
-                <div class="hero-buttons">
-                    <a href="#" onclick="openLoginModal(); return false;" class="btn-primary">🔐 Login / Admin</a>
-                    <a href="#" onclick="openLoginModal(); switchToRegister(); return false;" class="btn-secondary">🏃 Athletes Register</a>
-                </div>
+        <div class="hero">
+            <h1>Elite Athletics Management, Clean & Fast</h1>
+            <p>
+                Manage athletes, races, registrations, and results from a single platform with enterprise security,
+                health monitoring, and modern admin workflows.
+            </p>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="openLoginModal()">🔐 Login / Admin</button>
+                <button class="btn btn-secondary" onclick="openLoginModal(); switchToRegister();">🏃 Athlete Register</button>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>© 2026 <strong>AthSys v3.0</strong> - Elite Athletics Management System</p>
-            <p>Developed with ❤️ by <strong>Mwamiri</strong> | <a href="https://appstore.co.ke" target="_blank" rel="noopener">appstore.co.ke</a> | <a href="status.html">🏥 System Status</a></p>
+        <div class="status-strip">
+            <div id="healthCard" class="status-card">
+                <h3>System Health</h3>
+                <div id="healthValue" class="status-value">Checking...</div>
+                <div id="healthMeta" class="status-meta">Loading health endpoint</div>
+            </div>
+            <div class="status-card">
+                <h3>Platform Version</h3>
+                <div id="versionValue" class="status-value">Loading...</div>
+                <div id="versionMeta" class="status-meta">Version service</div>
+            </div>
+            <div class="status-card">
+                <h3>Default Admin</h3>
+                <div class="status-value">Pro Dashboard</div>
+                <div class="status-meta">Classic fallback available</div>
+            </div>
         </div>
-    </footer>
 
-    <!-- Login Modal -->
+        <div class="footer">
+            © 2026 <strong>AthSys</strong> — Enterprise Athletics Platform
+        </div>
+    </div>
+
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeLoginModal()">&times;</button>
-            
-            <!-- Login Message -->
+
             <div id="loginMessage">
                 <div class="modal-header">
                     <h2>Welcome</h2>
@@ -376,12 +353,11 @@
                 </div>
             </div>
 
-            <!-- Login Form -->
             <form id="loginForm" onsubmit="handleLogin(event)" class="hidden-form">
                 <div class="modal-header">
                     <h2>Login</h2>
                 </div>
-                
+
                 <div id="loginError" class="error-message"></div>
 
                 <div class="form-group">
@@ -394,14 +370,13 @@
                     <input type="password" id="loginPassword" placeholder="Enter your password" required>
                 </div>
 
-                <button type="submit" class="btn">🔓 Sign In</button>
+                <button type="submit" class="btn btn-primary">🔓 Sign In</button>
 
                 <div class="switch-form">
                     Don't have an account? <a onclick="switchToRegister(); return false;">Create one</a>
                 </div>
             </form>
 
-            <!-- Register Form -->
             <form id="registerForm" onsubmit="handleRegister(event)" class="hidden-form">
                 <div class="modal-header">
                     <h2>Register</h2>
@@ -429,7 +404,7 @@
                     <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required>
                 </div>
 
-                <button type="submit" class="btn">✍️ Create Account</button>
+                <button type="submit" class="btn btn-primary">✍️ Create Account</button>
 
                 <div class="switch-form">
                     Already have an account? <a onclick="switchToLogin(); return false;">Login here</a>
@@ -439,7 +414,48 @@
     </div>
 
     <script>
-        // ============ Modal Management ============
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000'
+            : '';
+
+        async function hydrateFrontStatus() {
+            const healthCard = document.getElementById('healthCard');
+            const healthValue = document.getElementById('healthValue');
+            const healthMeta = document.getElementById('healthMeta');
+            const versionValue = document.getElementById('versionValue');
+
+            try {
+                const [healthResp, versionResp] = await Promise.all([
+                    fetch(`${API_BASE}/health`),
+                    fetch(`${API_BASE}/api/version`)
+                ]);
+
+                const health = await healthResp.json().catch(() => ({}));
+                const version = await versionResp.json().catch(() => ({}));
+
+                const status = String(health.status || 'unknown').toLowerCase();
+                if (status === 'healthy' || status === 'operational' || status === 'running') {
+                    healthCard.classList.add('healthy');
+                    healthValue.textContent = 'Healthy';
+                } else if (status === 'degraded') {
+                    healthCard.classList.add('warning');
+                    healthValue.textContent = 'Degraded';
+                } else {
+                    healthCard.classList.add('error');
+                    healthValue.textContent = 'Issue Detected';
+                }
+
+                healthMeta.textContent = `Service: ${health.service || 'athsys-backend'}`;
+                const platformVersion = version.platform_version || version.version || version.meta?.version || health.version || 'Unknown';
+                versionValue.textContent = `v${platformVersion}`;
+            } catch (error) {
+                healthCard.classList.add('error');
+                healthValue.textContent = 'Unreachable';
+                healthMeta.textContent = 'Cannot reach health services';
+                versionValue.textContent = 'Unknown';
+            }
+        }
+
         function openLoginModal() {
             document.getElementById('loginModal').classList.add('active');
             document.getElementById('loginMessage').style.display = 'block';
@@ -463,13 +479,13 @@
             document.getElementById('registerForm').style.display = 'block';
         }
 
-        // ============ Login Handler ============
         async function handleLogin(event) {
             event.preventDefault();
-            
+
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
+            errorDiv.style.display = 'none';
 
             try {
                 const response = await fetch('/api/auth/login', {
@@ -480,17 +496,15 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // Store auth tokens and user info
                     const accessToken = data.access_token || data.token;
                     const refreshToken = data.refresh_token || '';
+
                     localStorage.setItem('authToken', accessToken);
                     if (refreshToken) {
                         localStorage.setItem('refreshToken', refreshToken);
                     }
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    // Redirect based on normalized role
+
                     const userRole = (data?.user?.role || '').toString().toLowerCase();
                     const adminRoles = ['admin', 'chief_registrar'];
 
@@ -501,7 +515,7 @@
                         window.location.href = '/athlete.html';
                     }
                 } else {
-                    const error = await response.json();
+                    const error = await response.json().catch(() => ({}));
                     errorDiv.textContent = error.message || 'Login failed';
                     errorDiv.style.display = 'block';
                 }
@@ -511,24 +525,22 @@
             }
         }
 
-        // ============ Register Handler ============
         async function handleRegister(event) {
             event.preventDefault();
-            
+
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
             const errorDiv = document.getElementById('regError');
+            errorDiv.style.display = 'none';
 
-            // Validate passwords match
             if (password !== confirmPassword) {
                 errorDiv.textContent = 'Passwords do not match';
                 errorDiv.style.display = 'block';
                 return;
             }
 
-            // Validate password length
             if (password.length < 8) {
                 errorDiv.textContent = 'Password must be at least 8 characters';
                 errorDiv.style.display = 'block';
@@ -544,20 +556,17 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // Store auth tokens and user info
                     const accessToken = data.access_token || data.token;
                     const refreshToken = data.refresh_token || '';
+
                     localStorage.setItem('authToken', accessToken);
                     if (refreshToken) {
                         localStorage.setItem('refreshToken', refreshToken);
                     }
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    // Redirect to athlete dashboard
                     window.location.href = '/athlete.html';
                 } else {
-                    const error = await response.json();
+                    const error = await response.json().catch(() => ({}));
                     errorDiv.textContent = error.message || 'Registration failed';
                     errorDiv.style.display = 'block';
                 }
@@ -567,19 +576,19 @@
             }
         }
 
-        // ============ Close modal with Escape key ============
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeLoginModal();
             }
         });
 
-        // ============ Close modal when clicking backdrop ============
         document.getElementById('loginModal').addEventListener('click', (e) => {
             if (e.target.id === 'loginModal') {
                 closeLoginModal();
             }
         });
+
+        hydrateFrontStatus();
     </script>
 </body>
 </html>
