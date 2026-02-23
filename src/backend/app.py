@@ -4,7 +4,7 @@ Main application entry point with enhanced UX features
 Production-ready with PostgreSQL and Redis
 """
 
-from flask import Flask, jsonify, request, send_from_directory, make_response
+from flask import Flask, jsonify, request, send_from_directory, make_response, send_file
 from flask_cors import CORS
 import os
 import time
@@ -84,11 +84,11 @@ def set_security_headers(response):
     # Content Security Policy
     response.headers['Content-Security-Policy'] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' fonts.googleapis.com; "
-        "style-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com; "
-        "font-src 'self' fonts.googleapis.com fonts.gstatic.com; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' fonts.googleapis.com cdn.tailwindcss.com unpkg.com cdn.jsdelivr.net cdnjs.cloudflare.com; "
+        "style-src 'self' 'unsafe-inline' fonts.googleapis.com fonts.gstatic.com cdn.jsdelivr.net cdnjs.cloudflare.com; "
+        "font-src 'self' fonts.googleapis.com fonts.gstatic.com cdnjs.cloudflare.com; "
         "img-src 'self' data: https:; "
-        "connect-src 'self' localhost:*; "
+        "connect-src 'self' localhost:* https: ws: wss:; "
         "frame-ancestors 'self'"
     )
     
@@ -1782,6 +1782,100 @@ def delete_user(user_id):
 
 # ===== APP BUILD REQUESTS (Admin Only) =====
 
+@app.route('/api/admin/backups', methods=['GET'])
+def get_backups():
+    """List available backup files"""
+    backup_dir = os.path.join(PROJECT_ROOT, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+
+    backup_files = []
+    for file_name in os.listdir(backup_dir):
+        file_path = os.path.join(backup_dir, file_name)
+        if not os.path.isfile(file_path):
+            continue
+
+        stat = os.stat(file_path)
+        backup_files.append({
+            'id': file_name,
+            'name': file_name,
+            'size_bytes': stat.st_size,
+            'created_at': datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    backup_files.sort(key=lambda item: item['created_at'], reverse=True)
+
+    return jsonify(add_metadata({
+        'backups': backup_files,
+        'count': len(backup_files),
+        'message': '✅ Backups retrieved successfully'
+    })), 200
+
+
+@app.route('/api/admin/backups', methods=['POST'])
+@app.route('/api/admin/backup', methods=['POST'])
+def create_backup():
+    """Create a lightweight backup artifact for demo/admin flows"""
+    backup_dir = os.path.join(PROJECT_ROOT, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+
+    backup_id = f"athsys-backup-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:8]}.json"
+    backup_path = os.path.join(backup_dir, backup_id)
+
+    payload = {
+        'backup_id': backup_id,
+        'created_at': datetime.now().isoformat(),
+        'version': APP_VERSION,
+        'service': APP_NAME,
+        'summary': {
+            'users': len(DEMO_USERS),
+            'app_requests': len(DEMO_APP_REQUESTS),
+            'form_submissions': len(DEMO_FORM_SUBMISSIONS)
+        }
+    }
+
+    with open(backup_path, 'w', encoding='utf-8') as backup_file:
+        json.dump(payload, backup_file, indent=2)
+
+    return jsonify(add_metadata({
+        'message': '✅ Backup created successfully',
+        'backup': {
+            'id': backup_id,
+            'name': backup_id,
+            'created_at': payload['created_at']
+        }
+    })), 201
+
+
+@app.route('/api/admin/backups/<string:backup_id>/download', methods=['GET'])
+def download_backup(backup_id):
+    """Download backup file by id"""
+    backup_dir = os.path.join(PROJECT_ROOT, 'backups')
+    safe_name = os.path.basename(backup_id)
+    backup_path = os.path.join(backup_dir, safe_name)
+
+    if not os.path.isfile(backup_path):
+        return jsonify({'error': 'Backup not found'}), 404
+
+    return send_file(backup_path, as_attachment=True, download_name=safe_name)
+
+
+@app.route('/api/admin/backups/<string:backup_id>/restore', methods=['POST'])
+def restore_backup(backup_id):
+    """Acknowledge backup restore request for admin UX flow"""
+    backup_dir = os.path.join(PROJECT_ROOT, 'backups')
+    safe_name = os.path.basename(backup_id)
+    backup_path = os.path.join(backup_dir, safe_name)
+
+    if not os.path.isfile(backup_path):
+        return jsonify({'error': 'Backup not found'}), 404
+
+    log_audit('backup_restore_requested', 'system', details=f'Restore requested for {safe_name}')
+
+    return jsonify(add_metadata({
+        'message': '✅ Backup restore initiated',
+        'backup_id': safe_name
+    })), 200
+
 @app.route('/api/admin/app-requests', methods=['GET'])
 def get_app_requests():
     """Get all app build requests"""
@@ -1853,7 +1947,7 @@ def reject_app_request(request_id):
 
     data = request.get_json() or {}
     req['status'] = 'rejected'
-    req['rejected_reason'] = data.get('reason', 'Not specified')
+    req['rejected_reason'] = data.get('reason') or data.get('rejected_reason') or 'Not specified'
 
     return jsonify(add_metadata({
         'message': '✅ App request rejected',
@@ -1909,7 +2003,10 @@ def approve_form_submission(submission_id):
     if not submission:
         return jsonify({'error': 'Form submission not found'}), 404
 
+    data = request.get_json() or {}
     submission['status'] = 'approved'
+    if 'notes' in data:
+        submission['notes'] = data.get('notes', submission.get('notes', ''))
     return jsonify(add_metadata({
         'message': '✅ Form submission approved',
         'submission': submission

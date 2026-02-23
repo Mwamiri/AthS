@@ -229,13 +229,47 @@
     </div>
     
     <script>
-        const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:5000' : '';
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000'
+            : '';
         let autoRefreshInterval;
+
+        async function fetchJsonWithFallback(paths) {
+            let lastError = null;
+            for (const path of paths) {
+                try {
+                    const response = await fetch(`${API_BASE}${path}`);
+                    if (!response.ok) {
+                        lastError = new Error(`HTTP ${response.status} for ${path}`);
+                        continue;
+                    }
+                    return await response.json();
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+            throw lastError || new Error('Unable to fetch endpoint');
+        }
         
         async function fetchHealthStatus() {
             try {
-                const response = await fetch(`${API_BASE}/api/health`);
-                const data = await response.json();
+                const [healthData, versionData] = await Promise.all([
+                    fetchJsonWithFallback(['/health', '/api/health']),
+                    fetchJsonWithFallback(['/api/version', '/api/info'])
+                ]);
+
+                const resolvedVersion =
+                    healthData.version ||
+                    versionData.platform_version ||
+                    versionData.version ||
+                    versionData.meta?.version ||
+                    'Unknown';
+
+                const data = {
+                    ...healthData,
+                    version: resolvedVersion,
+                    api_version: versionData.api_version || versionData.phase || 'v3.0'
+                };
                 renderStatus(data);
             } catch (error) {
                 console.error('Error fetching health status:', error);
@@ -253,7 +287,7 @@
             const mainCard = createStatusCard(
                 'System Status',
                 data.status || 'unknown',
-                data.status === 'healthy' ? 'healthy' : 'error',
+                ['healthy', 'operational', 'running'].includes(String(data.status || '').toLowerCase()) ? 'healthy' : 'error',
                 `Service: ${data.service}<br>Version: ${data.version}`
             );
             statusGrid.appendChild(mainCard);
@@ -304,6 +338,10 @@
                 <div class="version-row">
                     <strong>Version</strong>
                     <span>${data.version || 'Unknown'}</span>
+                </div>
+                <div class="version-row">
+                    <strong>API Version</strong>
+                    <span>${data.api_version || 'v3.0'}</span>
                 </div>
                 <div class="version-row">
                     <strong>Status</strong>
