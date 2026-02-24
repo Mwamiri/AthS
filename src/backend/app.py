@@ -3087,6 +3087,8 @@ def get_events_results():
         
         results = query.order_by(Result.position).all()
         
+        include_workflow = (request.args.get('include_workflow') or 'false').lower() == 'true'
+
         results_data = [
             {
                 'id': r.id,
@@ -3101,7 +3103,8 @@ def get_events_results():
                 'category': r.event.category if r.event else None,
                 'gender': r.event.gender if r.event else None,
                 'recordType': r.record_type,
-                'isRecord': r.is_record
+                'isRecord': r.is_record,
+                **({'workflowStatus': _result_workflow_status(db, r.id)} if include_workflow else {})
             }
             for r in results
         ]
@@ -3119,20 +3122,231 @@ def get_events_results():
         }), 500
 
 
+RESULT_WORKFLOW_STATES = ('captured', 'reviewed', 'ratified', 'published')
+RESULT_WORKFLOW_TRANSITIONS = {
+    'captured': {'reviewed'},
+    'reviewed': {'captured', 'ratified'},
+    'ratified': {'reviewed', 'published'},
+    'published': {'ratified'}
+}
+
+
+def _safe_json_loads(value):
+    if not value:
+        return {}
+    if isinstance(value, dict):
+        return value
+    try:
+        return json.loads(value)
+    except (TypeError, ValueError):
+        return {'message': str(value)}
+
+
+def _result_workflow_status(db, result_id):
+    latest_transition = db.query(AuditLog).filter(
+        AuditLog.entity_type == 'result',
+        AuditLog.entity_id == result_id,
+        AuditLog.action == 'result_workflow_transition'
+    ).order_by(AuditLog.created_at.desc(), AuditLog.id.desc()).first()
+
+    if not latest_transition:
+        return 'captured'
+
+    details = _safe_json_loads(latest_transition.details)
+    to_state = details.get('to_state')
+    return to_state if to_state in RESULT_WORKFLOW_STATES else 'captured'
+
+
+def _result_workflow_history(db, result_id):
+    transition_logs = db.query(AuditLog).filter(
+        AuditLog.entity_type == 'result',
+        AuditLog.entity_id == result_id,
+        AuditLog.action == 'result_workflow_transition'
+    ).order_by(AuditLog.created_at.asc(), AuditLog.id.asc()).all()
+
+    history = []
+    for item in transition_logs:
+        details = _safe_json_loads(item.details)
+        history.append({
+            'id': item.id,
+            'fromState': details.get('from_state'),
+            'toState': details.get('to_state'),
+            'reason': details.get('reason'),
+            'changedByUserId': item.user_id,
+            'changedAt': item.created_at.isoformat() if item.created_at else None
+        })
+    return history
+
+
+def _serialize_result_row(result_row, workflow_status=None):
+    return {
+        'id': result_row.id,
+        'athleteId': result_row.athlete_id,
+        'athleteName': result_row.athlete.name if result_row.athlete else None,
+        'eventId': result_row.event_id,
+        'eventName': result_row.event.name if result_row.event else None,
+        'raceId': result_row.event.race_id if result_row.event else None,
+        'position': result_row.position,
+        'timeSeconds': result_row.time_seconds,
+        'distanceMeters': result_row.distance_meters,
+        'points': result_row.points,
+        'status': result_row.status,
+        'heatNumber': result_row.heat_number,
+        'laneNumber': result_row.lane_number,
+        'windSpeed': result_row.wind_speed,
+        'isRecord': result_row.is_record,
+        'recordType': result_row.record_type,
+        'recordedAt': result_row.recorded_at.isoformat() if result_row.recorded_at else None,
+        'recordedBy': result_row.recorded_by,
+        'workflowStatus': workflow_status or 'captured'
+    }
+
+
 @app.route('/api/results', methods=['GET'])
 def get_results():
-    """Get competition results"""
-    demo_results = [
-        {'athlete': 'Eliud Kipchoge', 'event': 'Marathon', 'time': '2:01:39', 'position': 1},
-        {'athlete': 'Faith Kipyegon', 'event': '1500m', 'time': '3:50.37', 'position': 1},
-        {'athlete': 'Usain Bolt', 'event': '100m', 'time': '9.58', 'position': 1},
-    ]
-    
-    return jsonify(add_metadata({
-        'results': demo_results,
-        'count': len(demo_results),
-        'message': '✅ Results retrieved successfully'
-    }))
+    """Get competition results from database with optional workflow filtering"""
+    try:
+        db = next(get_db())
+        race_id = request.args.get('race_id', type=int)
+        event_id = request.args.get('event_id', type=int)
+        athlete_id = request.args.get('athlete_id', type=int)
+        workflow_status = (request.args.get('workflow_status') or '').strip().lower()
+
+        query = db.query(Result).join(Event)
+        if race_id:
+            query = query.filter(Event.race_id == race_id)
+        if event_id:
+            query = query.filter(Result.event_id == event_id)
+        if athlete_id:
+            query = query.filter(Result.athlete_id == athlete_id)
+
+        result_rows = query.order_by(Result.recorded_at.desc(), Result.id.desc()).all()
+
+        results_data = []
+        for item in result_rows:
+            current_workflow = _result_workflow_status(db, item.id)
+            if workflow_status and current_workflow != workflow_status:
+                continue
+            results_data.append(_serialize_result_row(item, current_workflow))
+
+        return jsonify(add_metadata({
+            'results': results_data,
+            'count': len(results_data),
+            'message': '✅ Results retrieved successfully'
+        }))
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve results',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/results/<int:result_id>', methods=['GET'])
+def get_result_detail(result_id):
+    """Get detailed single result with workflow state"""
+    try:
+        db = next(get_db())
+        result_row = db.query(Result).filter(Result.id == result_id).first()
+        if not result_row:
+            return jsonify({'error': 'Result not found'}), 404
+
+        current_workflow = _result_workflow_status(db, result_id)
+        return jsonify(add_metadata({
+            'result': _serialize_result_row(result_row, current_workflow),
+            'message': '✅ Result retrieved successfully'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve result',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/results/<int:result_id>/workflow-history', methods=['GET'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar', 'official', 'coach', 'viewer'])
+def get_result_workflow_history(result_id):
+    """Return workflow transition history for a result"""
+    try:
+        db = next(get_db())
+        result_row = db.query(Result).filter(Result.id == result_id).first()
+        if not result_row:
+            return jsonify({'error': 'Result not found'}), 404
+
+        history = _result_workflow_history(db, result_id)
+        return jsonify(add_metadata({
+            'resultId': result_id,
+            'currentState': _result_workflow_status(db, result_id),
+            'history': history,
+            'count': len(history),
+            'message': '✅ Workflow history retrieved successfully'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to retrieve workflow history',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/results/<int:result_id>/workflow-transition', methods=['POST'])
+@require_auth(roles=['admin', 'chief_registrar', 'registrar', 'official'])
+@idempotency_guard()
+def transition_result_workflow(result_id):
+    """Transition result certification workflow state and persist via audit trail"""
+    data = request.get_json() or {}
+    to_state = (data.get('toState') or data.get('to_state') or '').strip().lower()
+    reason = (data.get('reason') or '').strip()
+
+    if to_state not in RESULT_WORKFLOW_STATES:
+        return jsonify({
+            'error': 'Validation error',
+            'message': f"toState must be one of: {', '.join(RESULT_WORKFLOW_STATES)}"
+        }), 400
+
+    try:
+        db = next(get_db())
+        result_row = db.query(Result).filter(Result.id == result_id).first()
+        if not result_row:
+            return jsonify({'error': 'Result not found'}), 404
+
+        current_state = _result_workflow_status(db, result_id)
+        if to_state == current_state:
+            return jsonify({
+                'error': 'No-op transition',
+                'message': f'Result is already in {to_state} state'
+            }), 409
+
+        allowed_next_states = RESULT_WORKFLOW_TRANSITIONS.get(current_state, set())
+        if to_state not in allowed_next_states:
+            return jsonify({
+                'error': 'Invalid transition',
+                'message': f'Cannot transition from {current_state} to {to_state}'
+            }), 400
+
+        actor = getattr(request, 'user', {})
+        log_audit(
+            'result_workflow_transition',
+            'result',
+            result_id,
+            {
+                'from_state': current_state,
+                'to_state': to_state,
+                'reason': reason,
+                'changed_by_role': actor.get('role')
+            }
+        )
+
+        return jsonify(add_metadata({
+            'resultId': result_id,
+            'fromState': current_state,
+            'toState': to_state,
+            'workflowStatus': to_state,
+            'message': '✅ Result workflow transitioned successfully'
+        })), 200
+    except Exception as e:
+        return jsonify({
+            'error': 'Failed to transition workflow',
+            'message': str(e)
+        }), 500
 
 
 @app.route('/api/stats')
