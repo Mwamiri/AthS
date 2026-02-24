@@ -905,7 +905,7 @@ FRONTPAGE_MARKETING_DEFAULTS = {
     'demo_video': {
         'title': 'AthSys Product Demo',
         'description': 'Explore race management, athlete registry, live timing, analytics, and admin controls.',
-        'embed_url': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        'embed_url': '',
         'thumbnail_url': '',
         'duration': '03:48'
     },

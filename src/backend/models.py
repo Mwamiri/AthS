@@ -908,7 +908,7 @@ class WorldRecord(Base):
     location = Column(String(100))
     
     # Source
-    source = Column(String(50), default='World Athletics')  # Where data came from
+    source = Column(String(50), default='AthSys Reference')  # Where data came from
     url = Column(String(255), nullable=True)  # Link to official record
     
     created_at = Column(DateTime, default=datetime.utcnow)

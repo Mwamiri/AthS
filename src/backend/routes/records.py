@@ -1,6 +1,6 @@
 """
 Records & Standards API Routes
-Handles Personal Bests, Season Bests, Country Records, and World Athletics-style rankings
+Handles Personal Bests, Season Bests, Country Records, and standardized rankings
 """
 
 from flask import Blueprint, request, jsonify

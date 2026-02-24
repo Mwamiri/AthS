@@ -1,6 +1,6 @@
 """
 Records System Data Seeder
-Populates database with World Athletics records and standards
+Populates database with standardized records and standards
 
 Usage:
     python seed_records.py
@@ -16,7 +16,7 @@ from models import (
 
 
 class RecordsSeeder:
-    """Seeds records system with World Athletics data"""
+    """Seeds records system with standardized baseline data"""
 
     # World Records (as of 2024)
     WORLD_RECORDS = [
@@ -106,7 +106,7 @@ class RecordsSeeder:
 
     def seed_all(self):
         """Run all seeding operations"""
-        print("🌱 Seeding World Athletics Records System...\n")
+        print("🌱 Seeding Records System...\n")
         
         try:
             self.seed_world_records()
@@ -143,8 +143,8 @@ class RecordsSeeder:
                     country=country,
                     date_set=datetime.now() - timedelta(days=365),
                     location='World',
-                    source='World Athletics',
-                    external_url=f'https://worldathletics.org/athletes/{athlete.lower()}'
+                    source='AthSys Reference',
+                    external_url=''
                 )
                 db.add(record)
                 count += 1
