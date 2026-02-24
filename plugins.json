@@ -1,0 +1,85 @@
+{
+  "plugin_states": {
+    "authentication": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192427"
+    },
+    "user_management": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192467"
+    },
+    "race_management": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192472"
+    },
+    "audit_logging": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192475"
+    },
+    "email_notifications": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192478"
+    },
+    "health_monitoring": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192481"
+    },
+    "rate_limiting": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192485"
+    },
+    "feature_flags": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192488"
+    },
+    "request_deduplication": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192491"
+    },
+    "database_migrations": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192494"
+    },
+    "ci_cd_pipeline": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192498"
+    },
+    "two_fa": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192502"
+    },
+    "leaderboard": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192505"
+    },
+    "results_analytics": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192509"
+    },
+    "official_timing": {
+      "enabled": false,
+      "last_modified": "2026-02-24T07:57:25.192512"
+    },
+    "athlete_registration": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192516"
+    },
+    "reports": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192520"
+    },
+    "gallery_manager": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192523"
+    },
+    "file_manager": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192526"
+    },
+    "subscription_manager": {
+      "enabled": true,
+      "last_modified": "2026-02-24T07:57:25.192528"
+    }
+  },
+  "custom_plugins": {}
+}
