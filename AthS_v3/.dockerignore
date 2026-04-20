@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+node_modules/
+dist/
+build/
+*.log
+.git/
+.github/
+README.md
+SECURITY.md
+CHANGELOG.md

@@ -41,7 +41,15 @@ def _build_database_url():
 
 
 DATABASE_URL = _build_database_url()
-engine = create_engine(DATABASE_URL, pool_size=10, max_overflow=20)
+engine = create_engine(
+    DATABASE_URL, 
+    pool_size=20, 
+    max_overflow=40,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    pool_timeout=30,
+    echo=False
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

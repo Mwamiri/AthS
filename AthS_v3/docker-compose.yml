@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: aths_db
+    environment:
+      POSTGRES_USER: aths_user
+      POSTGRES_PASSWORD: aths_password
+      POSTGRES_DB: aths_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aths_user -d aths_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aths_network
+
+  cache:
+    image: redis:7-alpine
+    container_name: aths_cache
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aths_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aths_backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aths_user:aths_password@db:5432/aths_db
+      REDIS_URL: redis://cache:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aths_network
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile.frontend
+    container_name: aths_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - aths_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  aths_network:
+    driver: bridge
