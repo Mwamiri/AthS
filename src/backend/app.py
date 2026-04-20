@@ -1205,8 +1205,18 @@ def api_version():
 
 
 @app.route('/api/frontpage/competition-hub', methods=['GET'])
+@rate_limit(max_requests=500, window=3600)
 def frontpage_competition_hub():
     """Frontpage championship/competition content payload for backend-driven UI blocks."""
+    # Try cache first
+    cache_key = "frontpage:competition-hub"
+    cached = RedisCache.get(cache_key)
+    if cached:
+        return jsonify(add_metadata({
+            'data': cached,
+            'message': '✅ Frontpage competition hub data retrieved successfully (cached)'
+        })), 200
+    
     payload_data = dict(FRONTPAGE_CHAMPIONSHIP_DATA)
 
     archive_past_races = _build_frontpage_past_races(limit=10)
@@ -1220,6 +1230,9 @@ def frontpage_competition_hub():
     if archive_medal_table:
         payload_data['medal_table'] = archive_medal_table
 
+    # Cache for 10 minutes
+    RedisCache.set(cache_key, payload_data, expiry=600)
+
     return jsonify(add_metadata({
         'data': payload_data,
         'message': '✅ Frontpage competition hub data retrieved successfully'
@@ -1227,14 +1240,27 @@ def frontpage_competition_hub():
 
 
 @app.route('/api/frontpage/event-calendar', methods=['GET'])
+@rate_limit(max_requests=500, window=3600)
 def frontpage_event_calendar():
     """Frontpage event calendar data with optional year/country filtering."""
+    # Try cache first (without filters)
+    cache_key = "frontpage:event-calendar"
+    cached = RedisCache.get(cache_key)
+    
+    year_filter = str(request.args.get('year', '')).strip()
+    country_filter = str(request.args.get('country', '')).strip().upper()
+    
+    # Use cache only if no filters applied
+    if cached and not year_filter and not country_filter:
+        return jsonify(add_metadata({
+            'calendar': cached,
+            'count': len(cached),
+            'message': '✅ Frontpage event calendar data retrieved successfully (cached)'
+        })), 200
+    
     calendar_items = _build_frontpage_event_calendar(limit=80)
     if not calendar_items:
         calendar_items = FRONTPAGE_CHAMPIONSHIP_DATA.get('event_calendar', [])
-
-    year_filter = str(request.args.get('year', '')).strip()
-    country_filter = str(request.args.get('country', '')).strip().upper()
 
     filtered = []
     for item in calendar_items:
@@ -1247,6 +1273,10 @@ def frontpage_event_calendar():
             continue
 
         filtered.append(item)
+
+    # Cache unfiltered results for 10 minutes
+    if not year_filter and not country_filter:
+        RedisCache.set(cache_key, filtered, expiry=600)
 
     return jsonify(add_metadata({
         'calendar': filtered,
